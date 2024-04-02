@@ -9,6 +9,28 @@
 
 #include "USACharacterBase.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FUSAGameplayAbilityHandle
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
+	int32 InputID = -1;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
+	//FName GameplayTag;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
+	class UInputAction* InputAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
+	TSubclassOf<class UGameplayAbility> GameplayAbility;
+
+	//FORCEINLINE TObjectPtr <class UInputAction> GetInputAction() { return InputAction;}
+};
+
 UCLASS()
 class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface
 {
@@ -76,6 +98,10 @@ protected:
 
 	void Look(const struct FInputActionValue& Value);
 
+	void InputPressGameplayAbilityByInputID(int32 InputID);
+	void InputReleaseGameplayAbilityByInputID(int32 InputID);
+
+	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
 
 	// Ability System
 public:
@@ -87,10 +113,10 @@ public:
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartAbilities;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TMap<int32, TSubclassOf<class UGameplayAbility>> GameplayActiveAbilities;
+	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
 
 
 protected:
-	void SetupGAS();
+	virtual void SetupGAS();
 
 };

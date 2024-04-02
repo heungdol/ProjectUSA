@@ -15,6 +15,12 @@ class PROJECTUSA_API AUSACharacterPlayer : public AUSACharacterBase
 	GENERATED_BODY()
 	
 public:
-	virtual void PossessedBy(class AController* NewController) override;
+	AUSACharacterPlayer();
 	
+public:
+	virtual void PossessedBy(class AController* NewController) override;
+
+protected:
+	virtual void SetupGAS() override;
+
 };

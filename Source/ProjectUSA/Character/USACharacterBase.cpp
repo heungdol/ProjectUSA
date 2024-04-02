@@ -45,6 +45,7 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 4000.f;
+	GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
 
 	CameraSpringArmComponent = CreateDefaultSubobject <UUSASpringArmComponent>(TEXT("Camera Spring Arm Component"));
 	CameraSpringArmComponent->SetupAttachment(RootComponent);
@@ -66,14 +67,17 @@ AUSACharacterBase::AUSACharacterBase()
 
 	JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
 	JellyEffectComponent->SetMeshComponent(GetMesh());
+
+	ASC = nullptr;
 }
 
 void AUSACharacterBase::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	//GetCapsuleComponent()->InitCapsuleSize(CapsuleRadius, CapsuleHeight*0.5f);
-	//GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * 0.5f));
+	GetCapsuleComponent()->InitCapsuleSize(CapsuleRadius, CapsuleHeight*0.5f);
+
+	GetMesh()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * -0.5f));
 }
 
 // Called when the game starts or when spawned
@@ -104,13 +108,27 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Move);
-
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
 
+
+		for (const auto& GameplayActiveAbility : GameplayActiveAbilities)
+		{
+			if (GameplayActiveAbility.InputID < 0)
+			{
+				continue;
+			}
+
+			//UE_LOG(LogTemp, Log, TEXT("GameplayActiveAbility Binding... %s"), *GameplayActiveAbility.InputAction->GetName());
+
+			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Triggered,
+				this, &AUSACharacterBase::InputPressGameplayAbilityByInputID, GameplayActiveAbility.InputID);
+			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Completed,
+				this, &AUSACharacterBase::InputReleaseGameplayAbilityByInputID, GameplayActiveAbility.InputID);
+		}
 	}
 }
 
@@ -156,9 +174,75 @@ void AUSACharacterBase::Look(const FInputActionValue& Value)
 	}
 }
 
+void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
+{
+
+	UE_LOG(LogTemp, Log, TEXT("Input Action %i : ASC is null?"), InputID);
+
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Input Action %i : Spec is null?"), InputID);
+
+	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
+
+	if (GameplayAbilitySpec == nullptr)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Input Action %i"), InputID);
+
+	if (GameplayAbilitySpec->IsActive())
+	{
+		ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+	}
+	else
+	{
+		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+	}
+}
+
+void AUSACharacterBase::InputReleaseGameplayAbilityByInputID(int32 InputID)
+{
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
+	if (GameplayAbilitySpec == nullptr)
+	{
+		return;
+	}
+
+	if (GameplayAbilitySpec->IsActive())
+	{
+		ASC->AbilitySpecInputReleased(*GameplayAbilitySpec);
+	}
+}
+
+void AUSACharacterBase::TryGameplayAbilityByGameplayTag(FName GameplayTag)
+{
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	if (GameplayTag == TEXT(""))
+	{
+		return;
+	}
+
+	FGameplayTagContainer TagContainer(FGameplayTag::RequestGameplayTag(GameplayTag));
+	ASC->TryActivateAbilitiesByTag(TagContainer);
+}
+
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 {
-	return nullptr;
+	return ASC;
 }
 
 void AUSACharacterBase::SetupGAS()
@@ -166,17 +250,6 @@ void AUSACharacterBase::SetupGAS()
 	if (ASC == nullptr)
 	{
 		return;
-	}
-
-	IAbilitySystemInterface* AbilitySystemInterface = Cast <IAbilitySystemInterface>(GetPlayerState ());
-
-	if (AbilitySystemInterface != nullptr)
-	{
-		ASC->InitAbilityActorInfo(Cast<AActor>(GetPlayerState()), this);
-	}
-	else
-	{
-		ASC->InitAbilityActorInfo(this, this);
 	}
 
 	// 서버에서만 수행
@@ -190,8 +263,13 @@ void AUSACharacterBase::SetupGAS()
 
 		for (const auto& GameplayActionAbility : GameplayActiveAbilities)
 		{
-			FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.Value);
-			GameplayAbilityActionSpec.InputID = GameplayActionAbility.Key;
+			FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
+
+			if (GameplayActionAbility.InputID >= 0)
+			{
+				GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
+			}
+
 			ASC->GiveAbility(GameplayAbilityActionSpec);
 		}
 	}

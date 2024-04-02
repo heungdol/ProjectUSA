@@ -13,5 +13,11 @@ UCLASS()
 class PROJECTUSA_API AUSACharacterNonPlayer : public AUSACharacterBase
 {
 	GENERATED_BODY()
+
+public:
+	AUSACharacterNonPlayer();
+
+protected:
+	virtual void SetupGAS() override;
 	
 };
