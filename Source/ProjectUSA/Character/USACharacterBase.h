@@ -109,8 +109,11 @@ public:
 
 	TObjectPtr <class UAbilitySystemComponent> ASC;
 
-	UPROPERTY (EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartAbilities;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayTriggerAbilities;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;

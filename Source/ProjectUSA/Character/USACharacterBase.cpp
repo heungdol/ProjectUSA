@@ -92,6 +92,32 @@ void AUSACharacterBase::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	// 게임 시작 어빌리티
+	for (const auto& GameplayStartAbility : GameplayStartAbilities)
+	{
+		//FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
+		//ASC->TryActivateAbility
+
+
+		FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
+
+		if (GameplayAbilitySpec == nullptr)
+		{
+			return;
+		}
+
+		//UE_LOG(LogTemp, Log, TEXT("%s"), *GameplayStartAbility->GetName());
+
+		if (GameplayAbilitySpec->IsActive())
+		{
+			ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+		}
+		else
+		{
+			ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+		}
+	}
 }
 
 // Called every frame
@@ -177,14 +203,14 @@ void AUSACharacterBase::Look(const FInputActionValue& Value)
 void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 {
 
-	UE_LOG(LogTemp, Log, TEXT("Input Action %i : ASC is null?"), InputID);
+	//UE_LOG(LogTemp, Log, TEXT("Input Action %i : ASC is null?"), InputID);
 
 	if (ASC == nullptr)
 	{
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Input Action %i : Spec is null?"), InputID);
+	//UE_LOG(LogTemp, Log, TEXT("Input Action %i : Spec is null?"), InputID);
 
 	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
 
@@ -193,7 +219,7 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Input Action %i"), InputID);
+	//UE_LOG(LogTemp, Log, TEXT("Input Action %i"), InputID);
 
 	if (GameplayAbilitySpec->IsActive())
 	{
@@ -255,9 +281,16 @@ void AUSACharacterBase::SetupGAS()
 	// 서버에서만 수행
 	if (HasAuthority() == true)
 	{
+		// 게임 시작 어빌리티
 		for (const auto& GameplayStartAbility : GameplayStartAbilities)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
+			ASC->GiveAbility(GameplayStartAbility);
+		}
+
+		for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
