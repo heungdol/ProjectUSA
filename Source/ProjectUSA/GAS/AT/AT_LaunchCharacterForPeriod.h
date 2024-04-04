@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "AT_SetCharacterVelocityForPeriod.generated.h"
+#include "AT_LaunchCharacterForPeriod.generated.h"
 
 DECLARE_MULTICAST_DELEGATE (FOnFinished)
 
@@ -12,13 +12,13 @@ DECLARE_MULTICAST_DELEGATE (FOnFinished)
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_SetCharacterVelocityForPeriod : public UAbilityTask
+class PROJECTUSA_API UAT_LaunchCharacterForPeriod : public UAbilityTask
 {
 	GENERATED_BODY()
 public:
 	/** Spawn new Actor on the network authority (server) */
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"), Category = "Ability|Tasks")
-	static UAT_SetCharacterVelocityForPeriod* GetNewAbilityTask(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod);
+	static UAT_LaunchCharacterForPeriod* GetNewAbilityTask(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod);
 
 	virtual void Activate() override;
 

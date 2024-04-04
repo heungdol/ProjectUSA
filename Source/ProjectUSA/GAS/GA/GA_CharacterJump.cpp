@@ -3,7 +3,7 @@
 
 #include "GAS/GA/GA_CharacterJump.h"
 
-#include "GAS/AT/AT_SetCharacterVelocityForPeriod.h"
+#include "GAS/AT/AT_LaunchCharacterForPeriod.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -48,7 +48,7 @@ void UGA_CharacterJump::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	FVector JumpVelocity(0, 0, CharacterMovementComponent->JumpZVelocity);
 
-	UAT_SetCharacterVelocityForPeriod* AbilityTask = UAT_SetCharacterVelocityForPeriod::GetNewAbilityTask
+	UAT_LaunchCharacterForPeriod* AbilityTask = UAT_LaunchCharacterForPeriod::GetNewAbilityTask
 	(this, JumpVelocity, false, true, Character->GetJumpMaxHoldTime());
 
 	AbilityTask->OnFinished.AddUObject(this, &UGA_CharacterJump::OnEndCallback);

@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AT_SetCharacterVelocityForPeriod.h"
+#include "AT_LaunchCharacterForPeriod.h"
 
 #include "AbilitySystemComponent.h"
 
 #include "GameFramework/Character.h"
 
 
-UAT_SetCharacterVelocityForPeriod* UAT_SetCharacterVelocityForPeriod::GetNewAbilityTask(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod)
+UAT_LaunchCharacterForPeriod* UAT_LaunchCharacterForPeriod::GetNewAbilityTask(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod)
 {
-	UAT_SetCharacterVelocityForPeriod* MyObj = NewAbilityTask<UAT_SetCharacterVelocityForPeriod>(OwningAbility);
+	UAT_LaunchCharacterForPeriod* MyObj = NewAbilityTask<UAT_LaunchCharacterForPeriod>(OwningAbility);
 
 	//MyObj->MyCharacter = InCharacter;
 	MyObj->LaunchVelocity = InVelocity;
@@ -23,7 +23,7 @@ UAT_SetCharacterVelocityForPeriod* UAT_SetCharacterVelocityForPeriod::GetNewAbil
 	return MyObj;
 }
 
-void UAT_SetCharacterVelocityForPeriod::Activate()
+void UAT_LaunchCharacterForPeriod::Activate()
 {
 	Super::Activate();
 
@@ -34,11 +34,11 @@ void UAT_SetCharacterVelocityForPeriod::Activate()
 	
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_SetCharacterVelocityForPeriod::OnCancelCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_LaunchCharacterForPeriod::OnCancelCallback);
 	}
 }
 
-void UAT_SetCharacterVelocityForPeriod::TickTask(float DeltaTime)
+void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 
@@ -69,7 +69,7 @@ void UAT_SetCharacterVelocityForPeriod::TickTask(float DeltaTime)
 	}
 }
 
-void UAT_SetCharacterVelocityForPeriod::OnCancelCallback()
+void UAT_LaunchCharacterForPeriod::OnCancelCallback()
 {
 	//bIsSettingVelocity = false;
 	
