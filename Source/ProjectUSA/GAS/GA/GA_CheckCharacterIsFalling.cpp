@@ -30,17 +30,17 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	}
 
-	UAT_CheckCharacterIsFalling* AbilityTask = UAT_CheckCharacterIsFalling::SpawnActor(this, MyCharacterMovementComponent);
+	UAT_CheckCharacterIsFalling* AbilityTask = UAT_CheckCharacterIsFalling::GetNewAbilityTask(this, MyCharacterMovementComponent);
 	
-	AbilityTask->OnPositiveFalling.AddUObject(this, &UGA_CheckCharacterIsFalling::CallbackPositiveFalling);
-	AbilityTask->OnNegativeFalling.AddUObject(this, &UGA_CheckCharacterIsFalling::CallbackNegativeFalling);
-	AbilityTask->OnGrounded.AddUObject(this, &UGA_CheckCharacterIsFalling::CallbackGrounded);
-	AbilityTask->OnFinished.AddUObject(this, &UGA_CheckCharacterIsFalling::CallbackFinished);
+	AbilityTask->OnPositiveFalling.AddUObject(this, &UGA_CheckCharacterIsFalling::OnPositiveFallingCallback);
+	AbilityTask->OnNegativeFalling.AddUObject(this, &UGA_CheckCharacterIsFalling::OnNegativeFallingCallback);
+	AbilityTask->OnGrounded.AddUObject(this, &UGA_CheckCharacterIsFalling::OnGroundedCallback);
+	AbilityTask->OnFinished.AddUObject(this, &UGA_CheckCharacterIsFalling::OnFinishedCallback);
 
 	AbilityTask->ReadyForActivation();
 }
 
-void UGA_CheckCharacterIsFalling::CallbackPositiveFalling()
+void UGA_CheckCharacterIsFalling::OnPositiveFallingCallback()
 {
 	for (const auto& PositiveFallingEffect : PositiveFallingEffects)
 	{
@@ -52,7 +52,7 @@ void UGA_CheckCharacterIsFalling::CallbackPositiveFalling()
 	}
 }
 
-void UGA_CheckCharacterIsFalling::CallbackNegativeFalling()
+void UGA_CheckCharacterIsFalling::OnNegativeFallingCallback()
 {
 	for (const auto& NegativeFallingEffect : NegativeFallingEffects)
 	{
@@ -64,7 +64,7 @@ void UGA_CheckCharacterIsFalling::CallbackNegativeFalling()
 	}
 }
 
-void UGA_CheckCharacterIsFalling::CallbackGrounded()
+void UGA_CheckCharacterIsFalling::OnGroundedCallback()
 {
 	for (const auto& GroundedEffect : GroundedEffects)
 	{
@@ -76,7 +76,7 @@ void UGA_CheckCharacterIsFalling::CallbackGrounded()
 	}
 }
 
-void UGA_CheckCharacterIsFalling::CallbackFinished()
+void UGA_CheckCharacterIsFalling::OnFinishedCallback()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

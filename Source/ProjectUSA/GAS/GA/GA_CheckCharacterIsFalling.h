@@ -31,14 +31,14 @@ public:
 	TArray < TSubclassOf<class UGameplayEffect>> GroundedEffects;
 
 	UFUNCTION ()
-	void CallbackPositiveFalling();
+	void OnPositiveFallingCallback();
 	
 	UFUNCTION()
-	void CallbackNegativeFalling();
+	void OnNegativeFallingCallback();
 	
 	UFUNCTION()
-	void CallbackGrounded();
+	void OnGroundedCallback();
 
 	UFUNCTION()
-	void CallbackFinished();
+	void OnFinishedCallback();
 };
