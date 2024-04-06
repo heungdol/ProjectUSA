@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbility.h"
+#include "GAS/GA/USAGameplayAbility.h"
 #include "GA_CharacterDash.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UGA_CharacterDash : public UGameplayAbility
+class PROJECTUSA_API UGA_CharacterDash : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
 	

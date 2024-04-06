@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbility.h"
+#include "GAS/GA/USAGameplayAbility.h"
 #include "GA_CheckCharacterIsFalling.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UGA_CheckCharacterIsFalling : public UGameplayAbility
+class PROJECTUSA_API UGA_CheckCharacterIsFalling : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
 	
@@ -22,7 +22,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere, Category = "GAS")
-	TArray<TSubclassOf<class UGameplayEffect>> PositiveFallingEffects;
+	TArray <TSubclassOf<class UGameplayEffect>> PositiveFallingEffects;
 
 	UPROPERTY(EditAnywhere, Category = "GAS")
 	TArray < TSubclassOf<class UGameplayEffect>> NegativeFallingEffects;

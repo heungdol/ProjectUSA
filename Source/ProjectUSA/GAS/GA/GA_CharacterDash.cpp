@@ -83,6 +83,20 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		FVector ForwardDirection = MyCharacter->GetActorForwardVector();
 		FVector RightDirection = MyCharacter->GetActorRightVector();
 
+		// TODO: 만약 멀티로 개조한다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
+		if (MyCharacter->GetPendingMovementInputVector().Length() > SMALL_NUMBER/* != FVector::ZeroVector*/)
+		{
+			FVector InputVector = MyCharacter->GetPendingMovementInputVector();
+
+			ForwardDirection = InputVector;
+			ForwardDirection.Normalize();
+
+			RightDirection = FVector::CrossProduct(FVector::UpVector ,ForwardDirection);
+			RightDirection.Normalize();
+
+			MyCharacter->SetActorRotation(ForwardDirection.Rotation());
+		}
+
 		FVector EndLocation(0, 0, 0);
 		EndLocation = MyCharacter->GetActorLocation() 
 			+ (ForwardDirection * DashOffsetLocation.X)

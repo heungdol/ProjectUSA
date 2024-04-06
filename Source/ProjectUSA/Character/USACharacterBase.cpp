@@ -26,6 +26,8 @@
 
 #include "Component/USAJellyEffectComponent.h"
 
+#include "Tag/USAGameplayTags.h"
+
 
 // Sets default values
 AUSACharacterBase::AUSACharacterBase()
@@ -266,6 +268,79 @@ void AUSACharacterBase::TryGameplayAbilityByGameplayTag(FName GameplayTag)
 	ASC->TryActivateAbilitiesByTag(TagContainer);
 }
 
+void AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetCharacterMovement() == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+	}
+	else
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+
+}
+
+void AUSACharacterBase::GameplayTagIgnoreMoveInputCallback(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetController () == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		GetController()->SetIgnoreMoveInput (true);
+	}
+	else
+	{
+		GetController()->ResetIgnoreMoveInput ();
+	}
+}
+
+void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetController() == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+
+	}
+	else
+	{
+
+	}
+}
+
+//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas()
+//{
+//	UE_LOG(LogTemp, Log, TEXT("Gameplay Tag Added or Removed"));
+//}
+//
+//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas(UGameplayAbility* GameplayAbility)
+//{
+//	AdjustCharacterInfoByGameplayTagThatASCHas();
+//}
+//
+//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas(const FGameplayAbilitySpec& GameplayAbilitySpec)
+//{
+//	AdjustCharacterInfoByGameplayTagThatASCHas();
+//}
+//
+//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas
+//(UAbilitySystemComponent* InASC, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
+//{
+//	AdjustCharacterInfoByGameplayTagThatASCHas();
+//}
+
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 {
 	return ASC;
@@ -306,6 +381,25 @@ void AUSACharacterBase::SetupGAS()
 			ASC->GiveAbility(GameplayAbilityActionSpec);
 		}
 	}
+
+	//ASC->GenericLocalConfirmCallbacks.AddDynamic(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+	//ASC->GenericLocalCancelCallbacks.AddDynamic(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+
+	//ASC->AbilityEndedCallbacks.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+
+
+	//ASC->OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+	//ASC->OnGameplayEffectAppliedDelegateToTarget.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+	//ASC->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+	//ASC->OnPeriodicGameplayEffectExecuteDelegateOnSelf.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+	//ASC->OnPeriodicGameplayEffectExecuteDelegateOnTarget.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
+
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FIXROTATION, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback);
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_IGNOREMOVEINPUT, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreMoveInputCallback);
 }
 
 

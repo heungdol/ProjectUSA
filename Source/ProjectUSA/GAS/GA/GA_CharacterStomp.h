@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbility.h"
+#include "GAS/GA/USAGameplayAbility.h"
 #include "GA_CharacterStomp.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UGA_CharacterStomp : public UGameplayAbility
+class PROJECTUSA_API UGA_CharacterStomp : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
 
@@ -49,6 +49,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
 	float StompMoveSpeed = 1000;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
+	float StompPreDelay = 0.3f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
+	float StompPostDelay = 0.5f;
 
 	//UPROPERTY()
 	int8 bIsActivaed : 1;

@@ -9,7 +9,7 @@
 
 #include "USACharacterBase.generated.h"
 
-
+// InputID와 InputAction, GameplayAbility를 관리하기 위한 Struct
 USTRUCT(BlueprintType)
 struct FUSAGameplayAbilityHandle
 {
@@ -102,6 +102,24 @@ protected:
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);
 
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
+
+	void GameplayTagIgnoreRotateToMoveCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagIgnoreMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagSlideCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+
+
+	//UFUNCTION()
+	//void AdjustCharacterInfoByGameplayTagThatASCHas();
+
+	//UFUNCTION()
+	//void AdjustCharacterInfoByGameplayTagThatASCHas(class UGameplayAbility* GameplayAbility);
+	//UFUNCTION()
+	//void AdjustCharacterInfoByGameplayTagThatASCHas(const struct FGameplayAbilitySpec& GameplayAbilitySpec);
+	//UFUNCTION()
+	//void AdjustCharacterInfoByGameplayTagThatASCHas
+	//(class UAbilitySystemComponent* InASC
+	//	, const struct FGameplayEffectSpec& GameplayEffectSpec
+	//	, struct FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
 
 	// Ability System
 public:

@@ -17,6 +17,7 @@
 #include "AbilitySystemComponent.h"
 
 
+// TODO: 공중 로테이션 다듬어 볼 것
 UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask(UGameplayAbility* OwningAbility, FName TaskInstanceName, FVector Location, float Duration, UCurveFloat* OptionalInterpolationCurve, UCurveVector* OptionalVectorInterpolationCurve)
 {
 	UAT_MoveToLocationByVelocity* MyObj = NewAbilityTask<UAT_MoveToLocationByVelocity>(OwningAbility, TaskInstanceName);
@@ -60,22 +61,22 @@ void UAT_MoveToLocationByVelocity::Activate()
 		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelAbilityCallback);
 	}
 
-	AActor* MyActor = GetAvatarActor();
-	ACharacter* MyCharacter = nullptr;
-	UCharacterMovementComponent* CharMoveComp = nullptr;
-	if (MyActor)
-	{
-		MyCharacter = Cast<ACharacter>(MyActor);
-		if (MyCharacter)
-		{
-			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-		}
-	}
+	//AActor* MyActor = GetAvatarActor();
+	//ACharacter* MyCharacter = nullptr;
+	//UCharacterMovementComponent* CharMoveComp = nullptr;
+	//if (MyActor)
+	//{
+	//	MyCharacter = Cast<ACharacter>(MyActor);
+	//	if (MyCharacter)
+	//	{
+	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+	//	}
+	//}
 
-	if (CharMoveComp != nullptr)
-	{
-		CharMoveComp->bOrientRotationToMovement = false;
-	}
+	//if (CharMoveComp != nullptr)
+	//{
+	//	CharMoveComp->bOrientRotationToMovement = false;
+	//}
 
 }
 
@@ -161,22 +162,22 @@ void UAT_MoveToLocationByVelocity::OnCancelAbilityCallback()
 {
 	bIsFinished = true;
 
-	AActor* MyActor = GetAvatarActor();
-	ACharacter* MyCharacter = nullptr;
-	UCharacterMovementComponent* CharMoveComp = nullptr;
-	if (MyActor)
-	{
-		MyCharacter = Cast<ACharacter>(MyActor);
-		if (MyCharacter)
-		{
-			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-		}
-	}
+	//AActor* MyActor = GetAvatarActor();
+	//ACharacter* MyCharacter = nullptr;
+	//UCharacterMovementComponent* CharMoveComp = nullptr;
+	//if (MyActor)
+	//{
+	//	MyCharacter = Cast<ACharacter>(MyActor);
+	//	if (MyCharacter)
+	//	{
+	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+	//	}
+	//}
 
-	if (CharMoveComp != nullptr)
-	{
-		CharMoveComp->bOrientRotationToMovement = true;
-	}
+	//if (CharMoveComp != nullptr)
+	//{
+	//	CharMoveComp->bOrientRotationToMovement = true;
+	//}
 
 	EndTask();
 }
@@ -185,22 +186,22 @@ void UAT_MoveToLocationByVelocity::OnEndAbilityCallback()
 {
 	bIsFinished = true;
 
-	AActor* MyActor = GetAvatarActor();
-	ACharacter* MyCharacter = nullptr;
-	UCharacterMovementComponent* CharMoveComp = nullptr;
-	if (MyActor)
-	{
-		MyCharacter = Cast<ACharacter>(MyActor);
-		if (MyCharacter)
-		{
-			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-		}
-	}
+	//AActor* MyActor = GetAvatarActor();
+	//ACharacter* MyCharacter = nullptr;
+	//UCharacterMovementComponent* CharMoveComp = nullptr;
+	//if (MyActor)
+	//{
+	//	MyCharacter = Cast<ACharacter>(MyActor);
+	//	if (MyCharacter)
+	//	{
+	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+	//	}
+	//}
 
-	if (CharMoveComp != nullptr)
-	{
-		CharMoveComp->bOrientRotationToMovement = true;
-	}
+	//if (CharMoveComp != nullptr)
+	//{
+	//	CharMoveComp->bOrientRotationToMovement = true;
+	//}
 
 	EndTask();
 }

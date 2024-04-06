@@ -59,9 +59,9 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		&& MyCharacterMovementComponent != nullptr)
 	{
 		UAT_MoveToGround* AbilityTask = UAT_MoveToGround::GetNewAbilityTask
-		(this, TEXT("Stomp"), StompMoveSpeed);
+		(this, TEXT("Stomp"), StompMoveSpeed, StompPreDelay, StompPostDelay);
 
-		AbilityTask->OnGroundReached.AddUObject(this, &UGA_CharacterStomp::OnEndAbilityCallback);
+		AbilityTask->OnEndTask.AddUObject(this, &UGA_CharacterStomp::OnEndAbilityCallback);
 		AbilityTask->ReadyForActivation();
 
 		bIsActivaed = true;
