@@ -19,7 +19,6 @@ UAT_MoveToGround* UAT_MoveToGround::GetNewAbilityTask(UGameplayAbility* OwningAb
 	MyObj->bIsFinished = false;
 
 	MyObj->bTickingTask = true;
-	//MyObj->bSimulatedTask = true;
 
 	return MyObj;
 }
@@ -34,10 +33,27 @@ void UAT_MoveToGround::Activate()
 {
 	Super::Activate();
 
-	//if (AbilitySystemComponent.IsValid())
-	//{
-	//	AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToGround::OnCancelAbilityCallback);
-	//}
+	if (AbilitySystemComponent.IsValid())
+	{
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToGround::OnCancelAbilityCallback);
+	}
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		CharMoveComp->bOrientRotationToMovement = false;
+	}
 }
 
 void UAT_MoveToGround::TickTask(float DeltaTime)
@@ -65,24 +81,64 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 	if (IsValid(MyCharacterMovementComponent)
 		&& MyCharacterMovementComponent->IsFalling() == false)
 	{
-		bIsFinished = true;
-
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnGroundReached.Broadcast();
 		}
 
-		EndTask();
+		OnEndAbilityCallback();
 	}
 	else
 	{
 		MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
 		MyCharacterMovementComponent->UpdateComponentVelocity();
 	}
-
 }
 
 void UAT_MoveToGround::OnCancelAbilityCallback()
 {
+	bIsFinished = true;
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		CharMoveComp->bOrientRotationToMovement = true;
+	}
+
+	EndTask();
+}
+
+void UAT_MoveToGround::OnEndAbilityCallback()
+{
+	bIsFinished = true;
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		CharMoveComp->bOrientRotationToMovement = true;
+	}
+
 	EndTask();
 }

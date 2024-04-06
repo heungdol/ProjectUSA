@@ -74,6 +74,6 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # 우선 컨텐츠는 포함시키지 않음 (추후 변경될 수 있음)
-Content/*
+# Content/*
 
 

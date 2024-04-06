@@ -30,6 +30,9 @@ public:
 
 	UFUNCTION()
 	void OnCancelAbilityCallback();
+
+	UFUNCTION()
+	void OnEndAbilityCallback();
 	
 	
 	FOnGroundReached OnGroundReached;

@@ -29,6 +29,9 @@ public:
 	UFUNCTION()
 	void OnCancelAbilityCallback ();
 
+	UFUNCTION()
+	void OnEndAbilityCallback();
+
 protected:
 	UPROPERTY(Replicated)
 	FVector PrevLocation;

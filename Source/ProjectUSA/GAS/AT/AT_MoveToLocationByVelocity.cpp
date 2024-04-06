@@ -55,10 +55,28 @@ void UAT_MoveToLocationByVelocity::Activate()
 
 	PrevLocation = StartLocation;
 
-	//if (AbilitySystemComponent.IsValid())
-	//{
-	//	AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelAbilityCallback);
-	//}
+	if (AbilitySystemComponent.IsValid())
+	{
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelAbilityCallback);
+	}
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		CharMoveComp->bOrientRotationToMovement = false;
+	}
+
 }
 
 void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
@@ -98,13 +116,13 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 			{
 				OnTargetLocationReached.Broadcast();
 			}
-			EndTask();
 
 			if (MyActor->GetLocalRole() == ROLE_Authority)
 			{
 				MyActor->ForceNetUpdate();
 			}
 
+			OnEndAbilityCallback();
 		}
 		else
 		{
@@ -135,14 +153,55 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 	}
 	else
 	{
-		bIsFinished = true;
-		EndTask();
+		OnEndAbilityCallback();
 	}
 }
 
 void UAT_MoveToLocationByVelocity::OnCancelAbilityCallback()
 {
 	bIsFinished = true;
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		CharMoveComp->bOrientRotationToMovement = true;
+	}
+
+	EndTask();
+}
+
+void UAT_MoveToLocationByVelocity::OnEndAbilityCallback()
+{
+	bIsFinished = true;
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		CharMoveComp->bOrientRotationToMovement = true;
+	}
+
 	EndTask();
 }
 
