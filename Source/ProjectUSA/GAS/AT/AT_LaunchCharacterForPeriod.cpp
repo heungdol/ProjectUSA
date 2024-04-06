@@ -27,8 +27,6 @@ void UAT_LaunchCharacterForPeriod::Activate()
 {
 	Super::Activate();
 
-	//bIsSettingVelocity = true;
-
 	StartTime = GetWorld()->GetTimeSeconds();
 	EndTime = StartTime + Period;
 	
@@ -41,11 +39,6 @@ void UAT_LaunchCharacterForPeriod::Activate()
 void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
-
-	//if (bIsSettingVelocity == false)
-	//{
-	//	return;
-	//}
 
 	if (Ability->GetCurrentActorInfo() == nullptr)
 	{
@@ -62,8 +55,6 @@ void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 
 	if (EndTime < GetWorld()->GetTimeSeconds())
 	{
-		//bIsSettingVelocity = false;
-		
 		OnFinished.Broadcast();
 		EndTask();
 	}
@@ -71,8 +62,6 @@ void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 
 void UAT_LaunchCharacterForPeriod::OnCancelCallback()
 {
-	//bIsSettingVelocity = false;
-	
 	OnFinished.Broadcast();
 	EndTask();
 }

@@ -26,10 +26,8 @@ public:
 	/** Tick function for this task, if bTickingTask == true */
 	virtual void TickTask(float DeltaTime) override;
 
-	//UFUNCTION()
-	//void HitCallback(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	//void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	UFUNCTION()
+	void OnCancelAbilityCallback ();
 
 protected:
 	UPROPERTY(Replicated)

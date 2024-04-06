@@ -14,6 +14,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 
+#include "AbilitySystemComponent.h"
 
 
 UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask(UGameplayAbility* OwningAbility, FName TaskInstanceName, FVector Location, float Duration, UCurveFloat* OptionalInterpolationCurve, UCurveVector* OptionalVectorInterpolationCurve)
@@ -54,17 +55,10 @@ void UAT_MoveToLocationByVelocity::Activate()
 
 	PrevLocation = StartLocation;
 
-	//AActor* MyActor = GetAvatarActor();
-	//if (MyActor)
+	//if (AbilitySystemComponent.IsValid())
 	//{
-	//	ACharacter* MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter && MyCharacter->GetCapsuleComponent())
-	//	{
-	//		MyCharacter->GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &UAbilityTask_MoveSweepToLocation::HitCallback);
-	//	}
+	//	AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelAbilityCallback);
 	//}
-
-
 }
 
 void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
@@ -146,26 +140,11 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 	}
 }
 
-//void UAT_MoveToLocationByVelocity::HitCallback(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-//{
-//
-//	bIsFinished = true;
-//
-//	if (ShouldBroadcastAbilityTaskDelegates())
-//	{
-//		OnTargetLocationReached.Broadcast();
-//	}
-//
-//	AActor* MyActor = GetAvatarActor();
-//	if (MyActor != nullptr && MyActor->GetLocalRole() == ROLE_Authority)
-//	{
-//		MyActor->ForceNetUpdate();
-//	}
-//
-//	EndTask();
-//}
-//
-
+void UAT_MoveToLocationByVelocity::OnCancelAbilityCallback()
+{
+	bIsFinished = true;
+	EndTask();
+}
 
 void UAT_MoveToLocationByVelocity::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {

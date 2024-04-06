@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "GA_CharacterStomp.generated.h"
+#include "GA_CharacterDash.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UGA_CharacterStomp : public UGameplayAbility
+class PROJECTUSA_API UGA_CharacterDash : public UGameplayAbility
 {
 	GENERATED_BODY()
-
+	
 public:
-	UGA_CharacterStomp();
-
+	UGA_CharacterDash();
+	
 
 	/** Input binding stub. */
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
@@ -40,17 +40,32 @@ public:
 
 
 	UFUNCTION()
+	void OnEndAbilityCallback();
+	
+	UFUNCTION()
 	void OnCancelAbilityCallback();
 
-	UFUNCTION()
-	void OnEndAbilityCallback();
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
-	float StompMoveSpeed = 1000;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = GAS)
+	//float DashDistance = 500.0f;
+	FVector DashOffsetLocation = FVector::ZeroVector;
 
-	//UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = GAS)
+	float DashDuration = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = GAS)
+	UCurveFloat* DashCurveFloat;
+
+	UPROPERTY(EditDefaultsOnly, Category = GAS)
+	class UCurveVector* DashCurveVector;
+
 	int8 bIsActivaed : 1;
 
+	//UPROPERTY()
+	//FVector ForwardDirection = FVector::ForwardVector;
+	//
+	//UPROPERTY()
+	//FVector RightDirection = FVector::RightVector;
 };

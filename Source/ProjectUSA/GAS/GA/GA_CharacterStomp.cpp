@@ -3,7 +3,6 @@
 
 #include "GAS/GA/GA_CharacterStomp.h"
 
-
 #include "GAS/AT/AT_MoveToGround.h"
 
 #include "GameFramework/Character.h"
@@ -30,6 +29,7 @@ void UGA_CharacterStomp::InputReleased(const FGameplayAbilitySpecHandle Handle, 
 {
 	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
 }
+
 
 bool UGA_CharacterStomp::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
 {
@@ -61,19 +61,17 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		UAT_MoveToGround* AbilityTask = UAT_MoveToGround::GetNewAbilityTask
 		(this, TEXT("Stomp"), StompMoveSpeed);
 
-		AbilityTask->OnGrounded.AddUObject(this, &UGA_CharacterStomp::EndAbilityCallback);
+		AbilityTask->OnGroundReached.AddUObject(this, &UGA_CharacterStomp::OnEndAbilityCallback);
 		AbilityTask->ReadyForActivation();
 
-		//MyCharacterMovementComponent->SetMovementMode(EMovementMode::MOVE_None);
-		//MyCharacterMovementComponent->Velocity = FVector::ZeroVector;
 		bIsActivaed = true;
 	}
 	else
 	{
-		// Can not activate this ability 
-		EndAbilityCallback();
+		OnEndAbilityCallback();
 	}
 }
+
 
 void UGA_CharacterStomp::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
@@ -83,40 +81,15 @@ void UGA_CharacterStomp::CancelAbility(const FGameplayAbilitySpecHandle Handle, 
 void UGA_CharacterStomp::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-
-	if (bIsActivaed == (int8)true)
-	{
-		bIsActivaed = false;
-
-		ACharacter* MyCharacter = nullptr;
-		UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-
-		if (ActorInfo != nullptr)
-		{
-			MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
-		}
-
-		if (MyCharacter != nullptr)
-		{
-			MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-		}
-
-		if (MyCharacterMovementComponent != nullptr)
-		{
-			MyCharacterMovementComponent->SetMovementMode(EMovementMode::MOVE_Falling);
-
-			// 땅에 닿을 시 튀어오르도록
-			MyCharacter->LaunchCharacter(FVector(0, 0, StompBouncePower), false, true);
-		}
-	}	
 }
 
-void UGA_CharacterStomp::EndAbilityCallback()
-{
-	// 네트워크 관련 인자
-	bool bReplicatedEndAbility = true;
-	// 취소된 경우
-	bool bWasCancelled = false;
 
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bReplicatedEndAbility, bWasCancelled);
+void UGA_CharacterStomp::OnCancelAbilityCallback()
+{
+	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+}
+
+void UGA_CharacterStomp::OnEndAbilityCallback()
+{
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

@@ -44,17 +44,9 @@ protected:
 	float Period;
 
 
-
-	//UPROPERTY()
-	//bool bIsSettingVelocity = false;
-
 	UPROPERTY()
 	float StartTime;
 
 	UPROPERTY()
 	float EndTime;
-
-
-
-
 };

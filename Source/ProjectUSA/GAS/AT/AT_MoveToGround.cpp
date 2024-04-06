@@ -7,8 +7,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-
-// TODO: Cancel 된 경우도 처리할 것
+#include "AbilitySystemComponent.h"
 
 
 UAT_MoveToGround* UAT_MoveToGround::GetNewAbilityTask(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InputMoveSpeed)
@@ -16,11 +15,11 @@ UAT_MoveToGround* UAT_MoveToGround::GetNewAbilityTask(UGameplayAbility* OwningAb
 	UAT_MoveToGround* MyObj = NewAbilityTask<UAT_MoveToGround>(OwningAbility, TaskInstanceName);
 
 	MyObj->MoveSpeed = InputMoveSpeed;
-	//MyObj->BouncePower = InputBouncePower;
+	
+	MyObj->bIsFinished = false;
 
 	MyObj->bTickingTask = true;
-	MyObj->bSimulatedTask = true;
-	MyObj->bIsFinished = false;
+	//MyObj->bSimulatedTask = true;
 
 	return MyObj;
 }
@@ -35,12 +34,14 @@ void UAT_MoveToGround::Activate()
 {
 	Super::Activate();
 
+	//if (AbilitySystemComponent.IsValid())
+	//{
+	//	AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToGround::OnCancelAbilityCallback);
+	//}
 }
 
 void UAT_MoveToGround::TickTask(float DeltaTime)
 {
-	//UE_LOG(LogTemp, Log, TEXT("Move to Ground Task Tick... Pre"));
-
 	if (bIsFinished)
 	{
 		return;
@@ -51,8 +52,6 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 	AActor* MyActor = GetAvatarActor();
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-
-	//UE_LOG(LogTemp, Log, TEXT("Move to Ground Task Tick..."));
 
 	if (MyActor)
 	{
@@ -70,7 +69,7 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
-			OnGrounded.Broadcast();
+			OnGroundReached.Broadcast();
 		}
 
 		EndTask();
@@ -81,4 +80,9 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 		MyCharacterMovementComponent->UpdateComponentVelocity();
 	}
 
+}
+
+void UAT_MoveToGround::OnCancelAbilityCallback()
+{
+	EndTask();
 }

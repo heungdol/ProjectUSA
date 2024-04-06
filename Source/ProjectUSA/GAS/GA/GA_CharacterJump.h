@@ -24,12 +24,19 @@ public:
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility) override;
-	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
+	
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
 	UFUNCTION()
-	void OnEndCallback ();
+	void OnCancelAbilityCallback();
+
+	UFUNCTION()
+	void OnEndAbilityCallback ();
+
+public:
+	UPROPERTY (EditDefaultsOnly, BlueprintReadOnly, Category = "Character Jump")
+	float JumpPowerRatio = 1.0f;
 
 //protected:
 //	UPROPERTY ()
