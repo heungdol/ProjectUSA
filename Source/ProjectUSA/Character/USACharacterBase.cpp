@@ -127,6 +127,7 @@ void AUSACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	AdjustVelocityWithVelocityZero();
 }
 
 // Called to bind functionality to input
@@ -303,43 +304,64 @@ void AUSACharacterBase::GameplayTagIgnoreMoveInputCallback(const FGameplayTag Ca
 	}
 }
 
-void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::GameplayTagVelocityZeroCallback(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if (GetController() == nullptr)
+	if (GetCharacterMovement() == nullptr)
 	{
 		return;
 	}
 
 	if (NewCount > 0)
 	{
-
+		bIsVelocityZero = true;
+		GetCharacterMovement()->bApplyGravityWhileJumping = false;
 	}
 	else
 	{
-
+		bIsVelocityZero = false;
+		GetCharacterMovement()->bApplyGravityWhileJumping = true;
 	}
 }
 
-//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas()
-//{
-//	UE_LOG(LogTemp, Log, TEXT("Gameplay Tag Added or Removed"));
-//}
-//
-//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas(UGameplayAbility* GameplayAbility)
-//{
-//	AdjustCharacterInfoByGameplayTagThatASCHas();
-//}
-//
-//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas(const FGameplayAbilitySpec& GameplayAbilitySpec)
-//{
-//	AdjustCharacterInfoByGameplayTagThatASCHas();
-//}
-//
-//void AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas
-//(UAbilitySystemComponent* InASC, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
-//{
-//	AdjustCharacterInfoByGameplayTagThatASCHas();
-//}
+void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetCharacterMovement() == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	}
+	else
+	{
+		CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	}
+}
+
+// TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
+void AUSACharacterBase::AdjustVelocityWithVelocityZero()
+{
+	if (bIsVelocityZero)
+	{
+		FVector NewVelocity = GetCharacterMovement()->Velocity;
+		NewVelocity.X = 0;
+		NewVelocity.Y = 0;
+
+		if (NewVelocity.Z > 0)
+		{
+			NewVelocity.Z = 0;
+		}
+		else
+		{
+			NewVelocity.Z = -NewVelocity.Z;
+		}
+
+		GetCharacterMovement()->Velocity = NewVelocity;
+		GetCharacterMovement()->UpdateComponentVelocity();
+	}
+}
 
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 {
@@ -382,24 +404,32 @@ void AUSACharacterBase::SetupGAS()
 		}
 	}
 
-	//ASC->GenericLocalConfirmCallbacks.AddDynamic(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-	//ASC->GenericLocalCancelCallbacks.AddDynamic(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-
-	//ASC->AbilityEndedCallbacks.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-
-
-	//ASC->OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-	//ASC->OnGameplayEffectAppliedDelegateToTarget.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-	//ASC->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-	//ASC->OnPeriodicGameplayEffectExecuteDelegateOnSelf.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-	//ASC->OnPeriodicGameplayEffectExecuteDelegateOnTarget.AddUObject(this, &AUSACharacterBase::AdjustCharacterInfoByGameplayTagThatASCHas);
-
-
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FIXROTATION, EGameplayTagEventType::NewOrRemoved)
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_IGNOREMOVEINPUT, EGameplayTagEventType::NewOrRemoved)
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREMOVEINPUT, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreMoveInputCallback);
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_VELOCITYZERO, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::GameplayTagVelocityZeroCallback);
+
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_SLIDE, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::GameplayTagSlideCallback);
 }
 
 
+
+
+void FCharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovementComponent* InMovementComponet)
+{
+	if (InMovementComponet == nullptr)
+	{
+		return;
+	}
+
+	InMovementComponet->MaxWalkSpeed = FCharacterMovementWalkInfo::MaxWalkSpeed;
+	InMovementComponet->RotationRate = FCharacterMovementWalkInfo::RotationRate;
+	InMovementComponet->GroundFriction = FCharacterMovementWalkInfo::GroundFriction;
+	InMovementComponet->BrakingDecelerationWalking = FCharacterMovementWalkInfo::BrakingDecelerationWalking;
+}

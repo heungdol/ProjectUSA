@@ -4,18 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GAS/GA/USAGameplayAbility.h"
-#include "GA_CharacterStomp.generated.h"
+#include "GA_CharacterSlide.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UGA_CharacterStomp : public UUSAGameplayAbility
+class PROJECTUSA_API UGA_CharacterSlide : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	UGA_CharacterStomp();
 
 
 	/** Input binding stub. */
@@ -45,47 +44,5 @@ public:
 	UFUNCTION()
 	void OnEndAbilityCallback();
 
-
-
-	UFUNCTION()
-	void OnPreEffectsCallback ();
-
-	UFUNCTION()
-	void OnActiveEffectsCallback();
-
-	UFUNCTION()
-	void OnEndEffectsCallback();
-
-	UFUNCTION()
-	void OnPostEffectsCallback();
-
-
-
-public:
-	UPROPERTY(EditAnywhere, Category = "Stomp Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> PreGameplayEffects;
-
-	UPROPERTY(EditAnywhere, Category = "Stomp Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> ActiveGameplayEffects;
-
-	UPROPERTY(EditAnywhere, Category = "Stomp Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> EndGameplayEffects;
-
-	UPROPERTY(EditAnywhere, Category = "Stomp Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> PostGameplayEffects;
-
-protected:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
-	float StompMoveSpeed = 1000;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
-	float StompPreDelay = 0.3f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stomp)
-	float StompPostDelay = 0.5f;
-
-	//UPROPERTY()
-	int8 bIsActivaed : 1;
 
 };

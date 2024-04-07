@@ -12,13 +12,13 @@
 #include "GameFramework/Controller.h"
 
 UAT_MoveToGround* UAT_MoveToGround::GetNewAbilityTask
-(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InputMoveSpeed, float InPreDelay, float InPostDelay)
+(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InputMoveSpeed/*, float InPreDelay, float InPostDela*/)
 {
 	UAT_MoveToGround* MyObj = NewAbilityTask<UAT_MoveToGround>(OwningAbility, TaskInstanceName);
 
 	MyObj->MoveSpeed = InputMoveSpeed;
-	MyObj->PreDelay = InPreDelay;
-	MyObj->PostDelay = InPostDelay;
+	//MyObj->PreDelay = InPreDelay;
+	//MyObj->PostDelay = InPostDelay;
 
 	MyObj->bIsFinished = false;
 
@@ -42,50 +42,9 @@ void UAT_MoveToGround::Activate()
 		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToGround::OnCancelAbilityCallback);
 	}
 
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* CharMoveComp = nullptr;
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-	//	}
-	//}
+	OnBeginMovement.Broadcast();
 
-	//if (CharMoveComp != nullptr)
-	//{
-	//	CharMoveComp->bOrientRotationToMovement = false;
-	//}
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-	//AController* MyController = nullptr;
-
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast <ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-	//		MyController = MyCharacter->GetController();
-	//	}
-	//}
-
-	//if (MyActor == nullptr
-	//	|| MyCharacter == nullptr
-	//	|| MyCharacterMovementComponent == nullptr)
-	//{
-	//	OnCancelAbilityCallback();
-
-	//	return;
-	//}
-
-	//MyController->SetIgnoreMoveInput(true);
-
-	CurrentStep = -1;
+	//CurrentStep = -1;
 }
 
 void UAT_MoveToGround::TickTask(float DeltaTime)
@@ -119,103 +78,79 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 		return;
 	}
 
-	MyCharacterMovementComponent->Velocity = FVector(0, 0, 0.0f);
-	MyCharacterMovementComponent->UpdateComponentVelocity();
-
-	switch (CurrentStep)
+	if (IsValid(MyCharacterMovementComponent)
+		&& MyCharacterMovementComponent->IsFalling() == false)
 	{
-	case -1:
-		StepPreTime = GetWorld()->GetTimeSeconds();
-		StepActiveTime = StepPreTime + PreDelay;
-		
-		CurrentStep = 0;
+		OnGroundReached.Broadcast();
 
-		break;
+		OnEndAbilityCallback();
+	}
+	else
+	{
+		MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
+		MyCharacterMovementComponent->UpdateComponentVelocity();
+	}
 
-	case 0:
-		if (GetWorld()->GetTimeSeconds() >= StepActiveTime)
-		{
-			OnBeginMovement.Broadcast();
+	//MyCharacterMovementComponent->Velocity = FVector(0, 0, 0.0f);
+	//MyCharacterMovementComponent->UpdateComponentVelocity();
 
-			CurrentStep = 1;
-		}
+	//switch (CurrentStep)
+	//{
+	//case -1:
+	//	StepPreTime = GetWorld()->GetTimeSeconds();
+	//	StepActiveTime = StepPreTime + PreDelay;
+	//	
+	//	CurrentStep = 0;
 
-		break;
-	case 1:
+	//	break;
 
-		if (IsValid(MyCharacterMovementComponent)
-			&& MyCharacterMovementComponent->IsFalling() == false)
-		{
-			OnGroundReached.Broadcast();
-			
-			StepEndTime = GetWorld()->GetTimeSeconds();
-			StepPostTime = StepEndTime + PostDelay;
+	//case 0:
+	//	if (GetWorld()->GetTimeSeconds() >= StepActiveTime)
+	//	{
+	//		OnBeginMovement.Broadcast();
 
-			CurrentStep = 2;
-		}
-		else
-		{
-			MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
-			MyCharacterMovementComponent->UpdateComponentVelocity();
-		}
+	//		CurrentStep = 1;
+	//	}
 
-		break;
+	//	break;
+	//case 1:
 
-	case 2:
+	//	if (IsValid(MyCharacterMovementComponent)
+	//		&& MyCharacterMovementComponent->IsFalling() == false)
+	//	{
+	//		OnGroundReached.Broadcast();
+	//		
+	//		StepEndTime = GetWorld()->GetTimeSeconds();
+	//		StepPostTime = StepEndTime + PostDelay;
 
-		if (GetWorld()->GetTimeSeconds() > StepPostTime)
-		{
-			OnEndTask.Broadcast();
+	//		CurrentStep = 2;
+	//	}
+	//	else
+	//	{
+	//		MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
+	//		MyCharacterMovementComponent->UpdateComponentVelocity();
+	//	}
 
-			OnEndAbilityCallback();
+	//	break;
 
-			CurrentStep = 3;
-		}
+	//case 2:
 
-		break;
-	}	
+	//	if (GetWorld()->GetTimeSeconds() > StepPostTime)
+	//	{
+	//		OnEndTask.Broadcast();
+
+	//		OnEndAbilityCallback();
+
+	//		CurrentStep = 3;
+	//	}
+
+	//	break;
+	//}	
 }
 
 void UAT_MoveToGround::OnCancelAbilityCallback()
 {
 	bIsFinished = true;
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* CharMoveComp = nullptr;
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-	//	}
-	//}
-
-	//if (CharMoveComp != nullptr)
-	//{
-	//	CharMoveComp->bOrientRotationToMovement = true;
-	//}
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-	//AController* MyController = nullptr;
-
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast <ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-	//		MyController = MyCharacter->GetController();
-	//	}
-	//}
-
-	//if (MyController != nullptr)
-	//{
-	//	MyController->ResetIgnoreMoveInput();
-	//}
 
 	EndTask();
 }
@@ -223,43 +158,6 @@ void UAT_MoveToGround::OnCancelAbilityCallback()
 void UAT_MoveToGround::OnEndAbilityCallback()
 {
 	bIsFinished = true;
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* CharMoveComp = nullptr;
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-	//	}
-	//}
-
-	//if (CharMoveComp != nullptr)
-	//{
-	//	CharMoveComp->bOrientRotationToMovement = true;
-	//}
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-	//AController* MyController = nullptr;
-
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast <ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-	//		MyController = MyCharacter->GetController();
-	//	}
-	//}
-
-	//if (MyController != nullptr)
-	//{
-	//	MyController->ResetIgnoreMoveInput();
-	//}
 
 	EndTask();
 }

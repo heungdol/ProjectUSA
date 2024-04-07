@@ -4,6 +4,8 @@
 #include "GAS/GA/GA_CharacterStomp.h"
 
 #include "GAS/AT/AT_MoveToGround.h"
+#include "GAS/AT/AT_WaitDelay.h"
+//#include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -58,11 +60,22 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
-		UAT_MoveToGround* AbilityTask = UAT_MoveToGround::GetNewAbilityTask
-		(this, TEXT("Stomp"), StompMoveSpeed, StompPreDelay, StompPostDelay);
+		UAT_WaitDelay* AbilityTask0 = UAT_WaitDelay::GetNewAbilityTask(this, StompPreDelay);
+		UAT_MoveToGround* AbilityTask1 = UAT_MoveToGround::GetNewAbilityTask(this, TEXT("Stomp"), StompMoveSpeed);
+		UAT_WaitDelay* AbilityTask2 = UAT_WaitDelay::GetNewAbilityTask(this, StompPostDelay);
 
-		AbilityTask->OnEndTask.AddUObject(this, &UGA_CharacterStomp::OnEndAbilityCallback);
-		AbilityTask->ReadyForActivation();
+		OnPreEffectsCallback();
+
+		AbilityTask0->OnFinish.AddDynamic(AbilityTask1, &UAT_MoveToGround::ReadyForActivation);
+		AbilityTask0->OnFinish.AddDynamic(this, &UGA_CharacterStomp::OnActiveEffectsCallback);
+
+		AbilityTask1->OnGroundReached.AddUObject(AbilityTask2, &UAT_WaitDelay::ReadyForActivation);
+		AbilityTask1->OnGroundReached.AddUObject(this, &UGA_CharacterStomp::OnEndEffectsCallback);
+
+		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::OnEndAbilityCallback);
+		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::OnPostEffectsCallback);
+
+		AbilityTask0->ReadyForActivation();
 
 		bIsActivaed = true;
 	}
@@ -92,4 +105,25 @@ void UGA_CharacterStomp::OnCancelAbilityCallback()
 void UGA_CharacterStomp::OnEndAbilityCallback()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+
+void UGA_CharacterStomp::OnPreEffectsCallback()
+{
+	ApplyEffectsByArray(PreGameplayEffects);
+}
+
+void UGA_CharacterStomp::OnActiveEffectsCallback()
+{
+	ApplyEffectsByArray(ActiveGameplayEffects);
+}
+
+void UGA_CharacterStomp::OnEndEffectsCallback()
+{
+	ApplyEffectsByArray(EndGameplayEffects);
+}
+
+void UGA_CharacterStomp::OnPostEffectsCallback()
+{
+	ApplyEffectsByArray(PostGameplayEffects);
 }

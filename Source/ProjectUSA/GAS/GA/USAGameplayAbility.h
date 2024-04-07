@@ -20,10 +20,10 @@ public:
 	TArray <TSubclassOf<class UGameplayEffect>> ActivateAbilityEffects;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
-	TArray < TSubclassOf<class UGameplayEffect>> CancelAbilityEffects;
+	TArray <TSubclassOf<class UGameplayEffect>> CancelAbilityEffects;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
-	TArray < TSubclassOf<class UGameplayEffect>> EndAbilityEffects;
+	TArray <TSubclassOf<class UGameplayEffect>> EndAbilityEffects;
 	
 
 public:
@@ -37,4 +37,6 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	
+protected:
+	void ApplyEffectsByArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 };

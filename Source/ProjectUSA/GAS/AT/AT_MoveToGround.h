@@ -9,7 +9,7 @@
 // 땅에 닿을 시 호출할 델리게이트
 DECLARE_MULTICAST_DELEGATE(FOnBeginMovement);
 DECLARE_MULTICAST_DELEGATE(FOnGroundReached);
-DECLARE_MULTICAST_DELEGATE(FOnEndTask);
+//DECLARE_MULTICAST_DELEGATE(FOnEndTask);
 
 /**
  * 
@@ -21,7 +21,7 @@ class PROJECTUSA_API UAT_MoveToGround : public UAbilityTask
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_MoveToGround* GetNewAbilityTask(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InputMoveSpeed, float InPreDelay, float InPostDelay);
+	static UAT_MoveToGround* GetNewAbilityTask(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InputMoveSpeed/*, float InPreDelay, float InPostDelay*/);
 
 
 	virtual void InitSimulatedTask(UGameplayTasksComponent& InGameplayTasksComponent) override;
@@ -38,24 +38,24 @@ public:
 	
 	FOnBeginMovement OnBeginMovement;
 	FOnGroundReached OnGroundReached;
-	FOnEndTask OnEndTask;
+	//FOnEndTask OnEndTask;
 
 protected:
 	UPROPERTY ()
 	float MoveSpeed;
 
-	UPROPERTY()
-	float PreDelay;
+	//UPROPERTY()
+	//float PreDelay;
 
-	UPROPERTY()
-	float PostDelay;
+	//UPROPERTY()
+	//float PostDelay;
 
 	int8 bIsFinished : 1;
 
-	float StepPreTime;
-	float StepActiveTime;
-	float StepEndTime;
-	float StepPostTime;
-	
-	int CurrentStep = -1;
+	//float StepPreTime;
+	//float StepActiveTime;
+	//float StepEndTime;
+	//float StepPostTime;
+	//
+	//int CurrentStep = -1;
 };
