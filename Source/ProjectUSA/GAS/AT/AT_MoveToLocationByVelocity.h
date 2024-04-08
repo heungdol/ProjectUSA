@@ -27,10 +27,10 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 
 	UFUNCTION()
-	void OnCancelAbilityCallback ();
+	void OnCancelTaskCallback ();
 
 	UFUNCTION()
-	void OnEndAbilityCallback();
+	void OnEndTaskCallback();
 
 protected:
 	UPROPERTY(Replicated)

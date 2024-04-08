@@ -17,15 +17,15 @@ class PROJECTUSA_API UGA_CharacterSlide : public UUSAGameplayAbility
 public:
 
 
-	/** Input binding stub. */
-	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	///** Input binding stub. */
+	//virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
-	/** Input binding stub. */
-	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)  override;
+	///** Input binding stub. */
+	//virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)  override;
 
 
-	/** Returns true if this ability can be activated right now. Has no side effects */
-	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+	///** Returns true if this ability can be activated right now. Has no side effects */
+	//virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
@@ -44,5 +44,63 @@ public:
 	UFUNCTION()
 	void OnEndAbilityCallback();
 
+
+	UFUNCTION()
+	void OnSlopeTrue();
+
+	UFUNCTION()
+	void OnSlopeFalse();
+
+
+	UFUNCTION()
+	void OnCeilingTrue ();
+
+	UFUNCTION()
+	void OnCeilingFalse();
+
+
+	UFUNCTION()
+	void OnInputPressed();
+
+	UFUNCTION()
+	void OnInputReleased();
+
+
+	UFUNCTION()
+	void OnGroundOut ();
+
+
+	//UFUNCTION()
+	//void OnTimeEnd();
+
+
+	void CheckAndRenewEndTimerHandle();
+
+
+	FTimerHandle EndTimerHandle;
+
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
+	float SlideStartPower = 1000;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
+	float SlidePeriod = 0.5;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
+	float SlideStartAngle = 30;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
+	FGameplayTag SlideInputPressedTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
+	FGameplayTag SlideInputReleasedTag;
+
+
+protected:
+	bool bIsSlope = false;
+	bool bIsCeiling = false;
+	bool bIsReleased = false;
+	bool bIsGrounded = true;
 
 };

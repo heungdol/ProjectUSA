@@ -35,8 +35,10 @@ public:
 	virtual void StopJellyEffect();
 
 	void TickJellyEffect();
-
 	void TickJellyEffectByGravity();
+	void TickJellyEffectByCapsuleOffset();
+
+	void TickJellyEffectFinal();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jelly Effect")
@@ -60,6 +62,8 @@ public:
 	FRotator CurrentJellyEffectRotation;
 	FVector CurrentJellyEffectScale;
 
+	FVector CurrentJellyEffectCapsuleOffsetLocation;
+	FVector CurrentJellyEffectGravityScale;
 
 public:
 

@@ -53,7 +53,8 @@ void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 
 	MyCharacter->LaunchCharacter(LaunchVelocity, bXYOverride, bZOverride);
 
-	if (EndTime < GetWorld()->GetTimeSeconds())
+	if (Period > SMALL_NUMBER
+		&& EndTime < GetWorld()->GetTimeSeconds())
 	{
 		OnFinished.Broadcast();
 		EndTask();

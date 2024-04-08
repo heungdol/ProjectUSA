@@ -39,7 +39,7 @@ void UAT_MoveToGround::Activate()
 
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToGround::OnCancelAbilityCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToGround::OnCancelTaskCallback);
 	}
 
 	OnBeginMovement.Broadcast();
@@ -73,7 +73,7 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 		|| MyCharacter == nullptr
 		|| MyCharacterMovementComponent == nullptr)
 	{
-		OnCancelAbilityCallback();
+		OnCancelTaskCallback();
 
 		return;
 	}
@@ -83,7 +83,7 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 	{
 		OnGroundReached.Broadcast();
 
-		OnEndAbilityCallback();
+		OnEndTaskCallback();
 	}
 	else
 	{
@@ -148,14 +148,14 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 	//}	
 }
 
-void UAT_MoveToGround::OnCancelAbilityCallback()
+void UAT_MoveToGround::OnCancelTaskCallback()
 {
 	bIsFinished = true;
 
 	EndTask();
 }
 
-void UAT_MoveToGround::OnEndAbilityCallback()
+void UAT_MoveToGround::OnEndTaskCallback()
 {
 	bIsFinished = true;
 

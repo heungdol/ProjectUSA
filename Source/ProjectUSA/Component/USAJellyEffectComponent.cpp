@@ -4,6 +4,8 @@
 #include "Component/USAJellyEffectComponent.h"
 
 #include "Components/MeshComponent.h"
+#include "Components/CapsuleComponent.h"
+
 #include "Data/USAJellyEffectData.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
@@ -46,7 +48,7 @@ void UUSAJellyEffectComponent::BeginPlay()
 		StartMeshRotation = FRotator::ZeroRotator;
 		StartMeshScale = FVector::OneVector;
 	}
-	
+
 }
 
 
@@ -55,12 +57,15 @@ void UUSAJellyEffectComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-	GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-	GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
+	//GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
+	//GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
+	//GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
 
 	TickJellyEffect();
 	TickJellyEffectByGravity();
+	TickJellyEffectByCapsuleOffset();
+
+	TickJellyEffectFinal();
 }
 
 void UUSAJellyEffectComponent::SetMeshComponent(UMeshComponent* InMeshComponent)
@@ -95,9 +100,7 @@ void UUSAJellyEffectComponent::PlayJellyEffect(UUSAJellyEffectData* InJellyEffec
 	CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(0.0f));
 	CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(0.0f);
 
-	GetMeshComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation);
-	GetMeshComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
-	GetMeshComponent()->SetRelativeScale3D(StartMeshScale * CurrentJellyEffectScale);
+	
 }
 
 void UUSAJellyEffectComponent::StopJellyEffect()
@@ -120,9 +123,9 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 		if (CurrentJellyEffectData == nullptr)
 		{
 			bIsPlayingJellyEffect = false;
-			GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-			GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-			GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
+			//GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
+			//GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
+			//GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
 			//PrimaryComponentTick.bCanEverTick = false;
 
 			//UE_LOG(LogTemp, Log, TEXT("Jelly Effect End... -> No Data"));
@@ -134,9 +137,9 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 		if (CurrentJellyEffectTime > EndJellyEffectTime)
 		{
 			bIsPlayingJellyEffect = false;
-			GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-			GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-			GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
+			//GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
+			//GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
+			//GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
 			//PrimaryComponentTick.bCanEverTick = false;
 
 			//UE_LOG(LogTemp, Log, TEXT("Jelly Effect End... -> Time"));
@@ -150,9 +153,9 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 		CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(CurrentJellyEffectRatio));
 		CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(CurrentJellyEffectRatio);
 
-		GetMeshComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation);
-		GetMeshComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
-		GetMeshComponent()->SetRelativeScale3D(StartMeshScale * CurrentJellyEffectScale);
+		//GetMeshComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation);
+		//GetMeshComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
+		//GetMeshComponent()->SetRelativeScale3D(StartMeshScale * CurrentJellyEffectScale);
 
 		//UE_LOG(LogTemp, Log, TEXT("Jelly Effect ... Vector -> %s"), *CurrentJellyEffectScale.ToCompactString());
 	}
@@ -190,11 +193,34 @@ void UUSAJellyEffectComponent::TickJellyEffectByGravity()
 	float CurrentRatio = Character->GetCharacterMovement()->Velocity.Z / MaxGravityForScale;
 	CurrentRatio = FMath::Abs(CurrentRatio);
 	CurrentRatio = FMath::Clamp(CurrentRatio, 0.0f, 1.0f);
+	
+	CurrentJellyEffectGravityScale = ScaleByGravityRatio->GetVectorValue(CurrentRatio);
 
-	FVector NewScaleByGravity = GetMeshComponent()->GetRelativeScale3D();
-	NewScaleByGravity *= ScaleByGravityRatio->GetVectorValue(CurrentRatio);
-	GetMeshComponent()->SetRelativeScale3D(NewScaleByGravity);
+	//FVector NewScaleByGravity = GetMeshComponent()->GetRelativeScale3D();
+	//NewScaleByGravity *= ScaleByGravityRatio->GetVectorValue(CurrentRatio);
+	//GetMeshComponent()->SetRelativeScale3D(NewScaleByGravity);
 }
 
+void UUSAJellyEffectComponent::TickJellyEffectByCapsuleOffset()
+{
+	ACharacter* Character = Cast <ACharacter>(GetOwner());
+	if (Character == nullptr)
+	{
+		CurrentJellyEffectCapsuleOffsetLocation = FVector::ZeroVector;
+		return;
+	}
 
+	CurrentJellyEffectCapsuleOffsetLocation.Z = -1.0f * Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	CurrentJellyEffectCapsuleOffsetLocation -= StartMeshLocation;
+}
 
+void UUSAJellyEffectComponent::TickJellyEffectFinal()
+{
+	GetMeshComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation + CurrentJellyEffectCapsuleOffsetLocation);
+	GetMeshComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
+	GetMeshComponent()->SetRelativeScale3D(StartMeshScale * CurrentJellyEffectScale * CurrentJellyEffectGravityScale);
+
+	CurrentJellyEffectLocation = FVector::ZeroVector;
+	CurrentJellyEffectRotation = FRotator::ZeroRotator;
+	CurrentJellyEffectScale = FVector::OneVector;
+}

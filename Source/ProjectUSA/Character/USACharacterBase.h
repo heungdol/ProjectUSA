@@ -9,6 +9,8 @@
 
 #include "USACharacterBase.generated.h"
 
+// ========================================================================================
+
 // InputID와 InputAction, GameplayAbility를 관리하기 위한 Struct
 USTRUCT(BlueprintType)
 struct FUSAGameplayAbilityHandle
@@ -31,9 +33,11 @@ public:
 	//FORCEINLINE TObjectPtr <class UInputAction> GetInputAction() { return InputAction;}
 };
 
+// ========================================================================================
+
 
 USTRUCT(BlueprintType)
-struct FCharacterMovementWalkInfo
+struct FUSACharacterMovementWalkInfo
 {
 	GENERATED_BODY()
 
@@ -42,7 +46,10 @@ public:
 	float MaxWalkSpeed = 500;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	FRotator RotationRate;
+	FRotator RotationRate = FRotator (0, 500, 0);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
+	float MaxAcceleration = 2000;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
 	float GroundFriction = 8;
@@ -55,6 +62,30 @@ public:
 	void RenewCharacterMovementInfo(class UCharacterMovementComponent* InMovementComponent);
 };
 
+// ========================================================================================
+
+USTRUCT(BlueprintType)
+struct FUSACharacterCapsuleInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+	float CapsuleHeight = 180.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+	float CapsuleRadius = 20.0f;
+
+public:
+
+	void RenewCharacterCapsule(class ACharacter* InCharacter);
+	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
+};
+
+// ========================================================================================
+// 
+// 
+// ========================================================================================
 
 UCLASS()
 class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface
@@ -68,13 +99,6 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Info")
-	float CapsuleHeight = 180.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Info")
-	float CapsuleRadius = 20.0f;
-
-
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	TObjectPtr <class UCameraComponent> CameraComponent;
@@ -103,11 +127,21 @@ protected:
 
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
-	FCharacterMovementWalkInfo CharacterMovementWalkInfo;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
+
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
-	FCharacterMovementWalkInfo CharacterMovementSlideInfo;
+	FUSACharacterMovementWalkInfo CharacterMovementWalkInfo;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
+	FUSACharacterMovementWalkInfo CharacterMovementSlideInfo;
+
+
 
 	UPROPERTY()
 	bool bIsVelocityZero = false;
@@ -142,6 +176,7 @@ protected:
 	void GameplayTagIgnoreRotateToMoveCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void GameplayTagIgnoreMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void GameplayTagVelocityZeroCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	//void GameplayTagRotateToMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	void GameplayTagSlideCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 

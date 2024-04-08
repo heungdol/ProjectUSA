@@ -38,7 +38,7 @@ void UAT_CheckCharacterIsFalling::Activate()
 
 		if (bIsFalling)
 		{
-			if (MyCharacterMovementComponent->Velocity.Z > 0)
+			if (MyCharacterMovementComponent->Velocity.Z > 1)
 			{
 				OnPositiveFalling.Broadcast();
 			}

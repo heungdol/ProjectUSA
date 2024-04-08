@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Components/CapsuleComponent.h"
+#include "Components/MeshComponent.h"
+
 
 void UUSASpringArmComponent::BeginPlay()
 {
@@ -41,14 +44,19 @@ void UUSASpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLoc
 	bIsCharacterFalling = Character->GetMovementComponent()->IsFalling();
 	if (bIsCharacterFalling == false)
 	{
-		DesiredCameraZLocation = Character->GetActorLocation().Z;
+		//DesiredCameraZLocation = Character->GetActorLocation().Z;
+		DesiredCameraZLocation = Character->GetMesh()->GetComponentLocation().Z;;
 	}
 
-	DesiredCameraLocation = Character->GetActorLocation();
+	DesiredCameraLocation = Character->GetMesh()->GetComponentLocation();
 	DesiredCameraLocation.Z = DesiredCameraZLocation;
 
 	CurrentCameraLocation = FMath::VInterpTo(PrevCameraLocation, DesiredCameraLocation, DeltaTime, CameraInterpSpeed);
-	CurrentCameraLocation.Z = FMath::Clamp(CurrentCameraLocation.Z, Character->GetActorLocation().Z - CameraZUpOffset, Character->GetActorLocation().Z - CameraZDownOffset);
+	CurrentCameraLocation.Z = FMath::Clamp(CurrentCameraLocation.Z
+		, Character->GetMesh()->GetComponentLocation().Z - CameraZUpOffset
+		, Character->GetMesh()->GetComponentLocation().Z - CameraZDownOffset);
+
+	//UE_LOG(LogTemp, Log, TEXT("Z: %f"), CurrentCameraLocation.Z);
 	
 	SetWorldLocation(CurrentCameraLocation + OffsetLocation);
 	PrevCameraLocation = CurrentCameraLocation;

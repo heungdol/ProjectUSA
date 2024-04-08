@@ -30,34 +30,7 @@ void UGA_CharacterDash::InputReleased(const FGameplayAbilitySpecHandle Handle, c
 
 bool UGA_CharacterDash::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
 {
-	if (Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags) == false)
-	{
-		return false;
-	}
-
-	bool ActivateResult = true;
-
-	ACharacter* MyCharacter = nullptr;
-	if (ActorInfo != nullptr)
-	{
-		MyCharacter = Cast <ACharacter>(GetAvatarActorFromActorInfo());
-	}
-	APlayerController* MyPlayerController = nullptr;
-	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-	FVector InputVector = FVector::ZeroVector;
-
-	MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
-	if (MyCharacter != nullptr)
-	{
-		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-	}
-
-	if (MyCharacterMovementComponent != nullptr)
-	{
-		InputVector = MyCharacter->GetPendingMovementInputVector();
-	}
-
-	return ActivateResult;
+	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
 }
 
 void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

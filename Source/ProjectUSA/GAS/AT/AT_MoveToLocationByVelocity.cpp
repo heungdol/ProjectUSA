@@ -58,7 +58,7 @@ void UAT_MoveToLocationByVelocity::Activate()
 
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelAbilityCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelTaskCallback);
 	}
 
 	//AActor* MyActor = GetAvatarActor();
@@ -123,7 +123,7 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 				MyActor->ForceNetUpdate();
 			}
 
-			OnEndAbilityCallback();
+			OnEndTaskCallback();
 		}
 		else
 		{
@@ -154,11 +154,11 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 	}
 	else
 	{
-		OnEndAbilityCallback();
+		OnEndTaskCallback();
 	}
 }
 
-void UAT_MoveToLocationByVelocity::OnCancelAbilityCallback()
+void UAT_MoveToLocationByVelocity::OnCancelTaskCallback()
 {
 	bIsFinished = true;
 
@@ -182,7 +182,7 @@ void UAT_MoveToLocationByVelocity::OnCancelAbilityCallback()
 	EndTask();
 }
 
-void UAT_MoveToLocationByVelocity::OnEndAbilityCallback()
+void UAT_MoveToLocationByVelocity::OnEndTaskCallback()
 {
 	bIsFinished = true;
 

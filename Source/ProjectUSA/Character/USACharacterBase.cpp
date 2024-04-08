@@ -28,6 +28,92 @@
 
 #include "Tag/USAGameplayTags.h"
 
+// ====================================================================================
+
+void FUSACharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovementComponent* InMovementComponet)
+{
+	if (InMovementComponet == nullptr)
+	{
+		return;
+	}
+
+	InMovementComponet->MaxWalkSpeed = FUSACharacterMovementWalkInfo::MaxWalkSpeed;
+	InMovementComponet->RotationRate = FUSACharacterMovementWalkInfo::RotationRate;
+	InMovementComponet->MaxAcceleration = FUSACharacterMovementWalkInfo::MaxAcceleration;
+	InMovementComponet->GroundFriction = FUSACharacterMovementWalkInfo::GroundFriction;
+	InMovementComponet->BrakingDecelerationWalking = FUSACharacterMovementWalkInfo::BrakingDecelerationWalking;
+}
+
+void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
+{
+	if (InCharacter == nullptr)
+	{
+		return;
+	}
+
+	//bool bIsGrounded = false;
+	//FVector RenewLocation = FVector::ZeroVector;
+
+	//if (InCharacter->GetCharacterMovement() != nullptr
+	//	&& InCharacter->GetCharacterMovement()->IsFalling() == false)
+	//{
+	//	//bIsGrounded = true;
+
+	//	//RenewLocation = InCharacter->GetCharacterMovement()->CurrentFloor.HitResult.Location;
+	//	//RenewLocation += FVector::UpVector * CapsuleHeight * 0.5f;
+
+	//	FVector NewLocation = InCharacter->GetActorLocation();
+	//	NewLocation.Z += (CapsuleHeight * 0.5f - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+
+	//	InCharacter->SetActorLocation(NewLocation);
+	//}
+
+	if (InCharacter->GetCharacterMovement() != nullptr
+		&& InCharacter->GetCharacterMovement()->IsFalling() == false
+		&& InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() > CapsuleHeight * 0.5f)
+	{
+		FVector NewLocation = InCharacter->GetActorLocation();
+		NewLocation.Z += (CapsuleHeight * 0.5f - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+
+		InCharacter->SetActorLocation(NewLocation);
+	}
+
+	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHeight * 0.5f);
+	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+
+	InCharacter->GetCapsuleComponent()->UpdateBodySetup();
+}
+
+
+//void FUSACharacterCapsuleInfo::RenewCharacterCapsuleIncludeLocation(ACharacter* InCharacter)
+//{
+//	if (InCharacter == nullptr)
+//	{
+//		return;
+//	}
+//
+//	float PrevCharacterCapsuleHalfHeight = InCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+//	FVector PrevCharacterLocation = InCharacter->GetActorLocation();
+//
+//	
+//	float RenewCharacterCapsuleHalfHeight = CapsuleHeight * 0.5f;
+//	FVector RenewCharacterLocaiton = PrevCharacterLocation + FVector::UpVector
+//		* (RenewCharacterCapsuleHalfHeight - PrevCharacterCapsuleHalfHeight);
+//
+//	//UE_LOG(LogTemp, Log, TEXT("Prev %f, New %f"), PrevCharacterCapsuleHalfHeight, RenewCharacterCapsuleHalfHeight);
+//
+//
+//	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHeight * 0.5f);
+//	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+//
+//	InCharacter->GetMesh()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * -0.5f));
+//	
+//	InCharacter->SetActorLocation(RenewCharacterLocaiton);
+//}
+
+// ====================================================================================
+// ====================================================================================
+
 
 // Sets default values
 AUSACharacterBase::AUSACharacterBase()
@@ -60,15 +146,15 @@ AUSACharacterBase::AUSACharacterBase()
 	CameraComponent->bUsePawnControlRotation = false;
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetCapsuleComponent()->InitCapsuleSize(CapsuleRadius, CapsuleHeight * 0.5f);
-	//GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * 0.5f));
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
-	GetMesh()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * -0.5f));
 
 	JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
 	JellyEffectComponent->SetMeshComponent(GetMesh());
+
+	CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 
 	ASC = nullptr;
 }
@@ -77,9 +163,8 @@ void AUSACharacterBase::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	GetCapsuleComponent()->InitCapsuleSize(CapsuleRadius, CapsuleHeight*0.5f);
-
-	GetMesh()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * -0.5f));
+	CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 }
 
 // Called when the game starts or when spawned
@@ -98,18 +183,12 @@ void AUSACharacterBase::BeginPlay()
 	// 게임 시작 어빌리티
 	for (const auto& GameplayStartAbility : GameplayStartAbilities)
 	{
-		//FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
-		//ASC->TryActivateAbility
-
-
 		FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
 
 		if (GameplayAbilitySpec == nullptr)
 		{
 			return;
 		}
-
-		//UE_LOG(LogTemp, Log, TEXT("%s"), *GameplayStartAbility->GetName());
 
 		if (GameplayAbilitySpec->IsActive())
 		{
@@ -120,12 +199,17 @@ void AUSACharacterBase::BeginPlay()
 			ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 		}
 	}
+
+	CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 }
 
 // Called every frame
 void AUSACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//UE_LOG(LogTemp, Log, TEXT("Z: %f"), GetActorLocation().Z);
 
 	AdjustVelocityWithVelocityZero();
 }
@@ -137,12 +221,8 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
-		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
-
 
 		for (const auto& GameplayActiveAbility : GameplayActiveAbilities)
 		{
@@ -150,8 +230,6 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			{
 				continue;
 			}
-
-			//UE_LOG(LogTemp, Log, TEXT("GameplayActiveAbility Binding... %s"), *GameplayActiveAbility.InputAction->GetName());
 
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Triggered,
 				this, &AUSACharacterBase::InputPressGameplayAbilityByInputID, GameplayActiveAbility.InputID);
@@ -205,15 +283,10 @@ void AUSACharacterBase::Look(const FInputActionValue& Value)
 
 void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 {
-
-	//UE_LOG(LogTemp, Log, TEXT("Input Action %i : ASC is null?"), InputID);
-
 	if (ASC == nullptr)
 	{
 		return;
 	}
-
-	//UE_LOG(LogTemp, Log, TEXT("Input Action %i : Spec is null?"), InputID);
 
 	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
 
@@ -221,8 +294,6 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 	{
 		return;
 	}
-
-	//UE_LOG(LogTemp, Log, TEXT("Input Action %i"), InputID);
 
 	if (GameplayAbilitySpec->IsActive())
 	{
@@ -332,10 +403,25 @@ void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag,
 
 	if (NewCount > 0)
 	{
+		CharacterCapsuleSlideInfo.RenewCharacterCapsule(this);
 		CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+
+		////FVector VelocityDirection = GetCharacterMovement()->Velocity;
+		//FVector VelocityDirection = GetActorForwardVector();
+		////if (VelocityDirection.Length() <= SMALL_NUMBER)
+		////{
+		////	VelocityDirection = GetActorForwardVector();
+		////}
+		//VelocityDirection.Normalize();
+
+		//SetActorRotation(VelocityDirection.Rotation());
+
+		//GetCharacterMovement()->Velocity = VelocityDirection * GetCharacterMovement()->GetMaxSpeed();
+		//GetCharacterMovement()->UpdateComponentVelocity();
 	}
 	else
 	{
+		CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 		CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 	}
 }
@@ -414,22 +500,7 @@ void AUSACharacterBase::SetupGAS()
 		.AddUObject(this, &AUSACharacterBase::GameplayTagVelocityZeroCallback);
 
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_SLIDE, EGameplayTagEventType::NewOrRemoved)
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::GameplayTagSlideCallback);
 }
 
-
-
-
-void FCharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovementComponent* InMovementComponet)
-{
-	if (InMovementComponet == nullptr)
-	{
-		return;
-	}
-
-	InMovementComponet->MaxWalkSpeed = FCharacterMovementWalkInfo::MaxWalkSpeed;
-	InMovementComponet->RotationRate = FCharacterMovementWalkInfo::RotationRate;
-	InMovementComponet->GroundFriction = FCharacterMovementWalkInfo::GroundFriction;
-	InMovementComponet->BrakingDecelerationWalking = FCharacterMovementWalkInfo::BrakingDecelerationWalking;
-}

@@ -31,10 +31,10 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 
 	UFUNCTION()
-	void OnCancelAbilityCallback();
+	void OnCancelTaskCallback();
 
 	UFUNCTION()
-	void OnEndAbilityCallback();
+	void OnEndTaskCallback();
 	
 	FOnBeginMovement OnBeginMovement;
 	FOnGroundReached OnGroundReached;

@@ -42,38 +42,44 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 
 void UGA_CheckCharacterIsFalling::OnPositiveFallingCallback()
 {
-	for (const auto& PositiveFallingEffect : PositiveFallingEffects)
-	{
-		FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(PositiveFallingEffect);
-		if (GameplayEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-		}
-	}
+	ApplyEffectsByArray(PositiveFallingEffects);
+
+	//for (const auto& PositiveFallingEffect : PositiveFallingEffects)
+	//{
+	//	FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(PositiveFallingEffect);
+	//	if (GameplayEffectSpecHandle.IsValid())
+	//	{
+	//		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
+	//	}
+	//}
 }
 
 void UGA_CheckCharacterIsFalling::OnNegativeFallingCallback()
 {
-	for (const auto& NegativeFallingEffect : NegativeFallingEffects)
-	{
-		FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(NegativeFallingEffect);
-		if (GameplayEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-		}
-	}
+	ApplyEffectsByArray(NegativeFallingEffects);
+
+	//for (const auto& NegativeFallingEffect : NegativeFallingEffects)
+	//{
+	//	FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(NegativeFallingEffect);
+	//	if (GameplayEffectSpecHandle.IsValid())
+	//	{
+	//		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
+	//	}
+	//}
 }
 
 void UGA_CheckCharacterIsFalling::OnGroundedCallback()
 {
-	for (const auto& GroundedEffect : GroundedEffects)
-	{
-		FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(GroundedEffect);
-		if (GameplayEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-		}
-	}
+	ApplyEffectsByArray(GroundedEffects);
+
+	//for (const auto& GroundedEffect : GroundedEffects)
+	//{
+	//	FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(GroundedEffect);
+	//	if (GameplayEffectSpecHandle.IsValid())
+	//	{
+	//		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
+	//	}
+	//}
 }
 
 void UGA_CheckCharacterIsFalling::OnFinishedCallback()
