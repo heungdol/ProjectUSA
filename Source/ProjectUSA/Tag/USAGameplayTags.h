@@ -9,6 +9,6 @@
 #define USA_CHARACTER_ADJUST_VELOCITYZERO FGameplayTag::RequestGameplayTag(FName("Character.Adjust.VelocityZero"))
 #define USA_CHARACTER_ADJUST_ROTATETOMOVEINPUT FGameplayTag::RequestGameplayTag(FName("Character.Adjust.RotateToMoveInput"))
 
-
+#define USA_CHARACTER_STATE_CROUCH FGameplayTag::RequestGameplayTag(FName("Character.State.Crouch"))
 
 #define USA_CHARACTER_ACTION_SLIDE FGameplayTag::RequestGameplayTag(FName("Character.Action.Slide"))

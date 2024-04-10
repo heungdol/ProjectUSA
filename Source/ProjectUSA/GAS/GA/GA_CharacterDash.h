@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GAS/GA/USAGameplayAbility.h"
+#include "GAS/AT/AT_PlayAnimMontages.h"
+
 #include "GA_CharacterDash.generated.h"
+
+DECLARE_MULTICAST_DELEGATE(FOnSimpleDeletage)
 
 /**
  * 
@@ -38,6 +42,8 @@ public:
 	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	FOnSimpleDeletage OnCancelAbility;
+	FOnSimpleDeletage OnEndAbility;
 
 	UFUNCTION()
 	void OnEndAbilityCallback();
@@ -60,6 +66,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = GAS)
 	class UCurveVector* DashCurveVector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = GAS)
+	struct FPlayAnimMontageData DashAnimMontageData;
 
 	int8 bIsActivaed : 1;
 

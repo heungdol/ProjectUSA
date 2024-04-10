@@ -64,23 +64,23 @@ public:
 
 // ========================================================================================
 
-USTRUCT(BlueprintType)
-struct FUSACharacterCapsuleInfo
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleHeight = 180.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleRadius = 20.0f;
-
-public:
-
-	void RenewCharacterCapsule(class ACharacter* InCharacter);
-	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
-};
+//USTRUCT(BlueprintType)
+//struct FUSACharacterCapsuleInfo
+//{
+//	GENERATED_BODY()
+//
+//public:
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+//	float CapsuleHaflHeight = 90.f;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+//	float CapsuleRadius = 20.0f;
+//
+//public:
+//
+//	void RenewCharacterCapsule(class ACharacter* InCharacter);
+//	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
+//};
 
 // ========================================================================================
 // 
@@ -127,11 +127,11 @@ protected:
 
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	//FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	//FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
 
 
 
@@ -179,6 +179,7 @@ protected:
 	//void GameplayTagRotateToMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	void GameplayTagSlideCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagCrouchCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;

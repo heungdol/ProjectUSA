@@ -11,6 +11,7 @@
 #include "GAS/AT/AT_CheckCharacterCeiling.h"
 #include "GAS/AT/AT_CheckCharacterSlope.h"
 #include "GAS/AT/AT_InputCharacterMoveForPeriod.h"
+#include "GAS/AT/AT_PlayAnimMontages.h"
 //#include "GAS/AT/AT_WaitDelay.h"
 
 #include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
@@ -49,6 +50,8 @@
 void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	//
 	
 	ACharacter* Character = Cast <ACharacter> (ActorInfo->AvatarActor);
 	if (Character == nullptr)
@@ -70,10 +73,13 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	Character->GetCharacterMovement()->Velocity = VelocityDirection * SlideStartPower;
 	Character->GetCharacterMovement()->UpdateComponentVelocity();
 
+	//
+
 	bIsSlope = false;
 	bIsCeiling = false;
 	bIsReleased = false;
 	bIsGrounded = true;
+	bIsOnceAcitved = false;
 	CheckAndRenewEndTimerHandle();
 
 	UAT_InputCharacterMoveForPeriod* AbilityTaskMove = UAT_InputCharacterMoveForPeriod::GetNewAbilityTask(this, Character, FVector::ForwardVector, -1);
@@ -86,9 +92,7 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	AbilityTaskSlope->ReadyForActivation();
 
 	UAT_CheckCharacterCeiling* AbilityTaskCeiling = UAT_CheckCharacterCeiling::GetNewAbilityTask
-	(this, Character
-		, Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.0f
-		, Character->GetCapsuleComponent()->GetScaledCapsuleRadius());
+	(this, Character, SlideDetectCeilingHeight, SlideDetectCeilingRadius);
 	AbilityTaskCeiling->OnCeilingFalse.AddUObject(this, &UGA_CharacterSlide::OnCeilingFalse);
 	AbilityTaskCeiling->OnCeilingTrue.AddUObject(this, &UGA_CharacterSlide::OnCeilingTrue);
 	AbilityTaskCeiling->ReadyForActivation();
@@ -100,6 +104,11 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	UAbilityTask_WaitGameplayTagAdded* AbilityTaskReleased = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, SlideInputReleasedTag, GetAvatarActorFromActorInfo(), false);
 	AbilityTaskReleased->Added.AddDynamic(this, &UGA_CharacterSlide::OnInputReleased);
 	AbilityTaskReleased->ReadyForActivation();
+
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, SlideAnimMontageData);
+	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
+	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
+	AbilityTaskMontage->ReadyForActivation();
 
 	//UAT_WaitDelay* AbilityTaskWait = UAT_WaitDelay::GetNewAbilityTask(this, SlidePeriod);
 	//AbilityTaskWait->OnFinish.AddDynamic(this, &UGA_CharacterSlide::OnEndAbilityCallback);
@@ -120,12 +129,22 @@ void UGA_CharacterSlide::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 
 void UGA_CharacterSlide::OnCancelAbilityCallback()
 {
+	OnCancelAbility.Broadcast();
 	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
 }
 
 void UGA_CharacterSlide::OnEndAbilityCallback()
 {
+	OnEndAbility.Broadcast();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+void UGA_CharacterSlide::OnPreEndAbilityCallback()
+{
+	if (!(bIsSlope == true && bIsReleased == false))
+	{
+		OnEndAbilityCallback();
+	}
 }
 
 void UGA_CharacterSlide::OnSlopeTrue()
@@ -133,7 +152,7 @@ void UGA_CharacterSlide::OnSlopeTrue()
 	bIsSlope = true;
 	CheckAndRenewEndTimerHandle();
 
-	UE_LOG(LogTemp, Log, TEXT("Slope True"));
+	//UE_LOG(LogTemp, Log, TEXT("Slope True"));
 }
 
 void UGA_CharacterSlide::OnSlopeFalse()
@@ -141,7 +160,7 @@ void UGA_CharacterSlide::OnSlopeFalse()
 	bIsSlope = false;
 	CheckAndRenewEndTimerHandle();
 
-	UE_LOG(LogTemp, Log, TEXT("Slope False"));
+	//UE_LOG(LogTemp, Log, TEXT("Slope False"));
 }
 
 void UGA_CharacterSlide::OnCeilingTrue()
@@ -149,7 +168,7 @@ void UGA_CharacterSlide::OnCeilingTrue()
 	bIsCeiling = true;
 	CheckAndRenewEndTimerHandle();
 
-	UE_LOG(LogTemp, Log, TEXT("Ceiling True"));
+	//UE_LOG(LogTemp, Log, TEXT("Ceiling True"));
 }
 
 void UGA_CharacterSlide::OnCeilingFalse()
@@ -157,7 +176,7 @@ void UGA_CharacterSlide::OnCeilingFalse()
 	bIsCeiling = false;
 	CheckAndRenewEndTimerHandle();
 
-	UE_LOG(LogTemp, Log, TEXT("Ceiling False"));
+	//UE_LOG(LogTemp, Log, TEXT("Ceiling False"));
 }
 
 void UGA_CharacterSlide::OnInputPressed()
@@ -165,7 +184,7 @@ void UGA_CharacterSlide::OnInputPressed()
 	bIsReleased = false;
 	CheckAndRenewEndTimerHandle();
 
-	UE_LOG(LogTemp, Log, TEXT("Input Pressed"));
+	//UE_LOG(LogTemp, Log, TEXT("Input Pressed"));
 }
 
 void UGA_CharacterSlide::OnInputReleased()
@@ -173,7 +192,7 @@ void UGA_CharacterSlide::OnInputReleased()
 	bIsReleased = true;
 	CheckAndRenewEndTimerHandle();
 
-	UE_LOG(LogTemp, Log, TEXT("Input Released"));
+	//UE_LOG(LogTemp, Log, TEXT("Input Released"));
 }
 
 void UGA_CharacterSlide::OnGroundOut()
@@ -190,16 +209,26 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 		GetWorld()->GetTimerManager().ClearTimer(EndTimerHandle);
 		//EndTimerHandle.Invalidate();
 	}
-	else if (bIsSlope == true && bIsReleased == false)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(EndTimerHandle);
-		//EndTimerHandle.Invalidate();
-	}
+	//else if (bIsSlope == true && bIsReleased == false)
+	//{
+	//	GetWorld()->GetTimerManager().ClearTimer(EndTimerHandle);
+	//	//EndTimerHandle.Invalidate();
+	//}
 	else
 	{
 		if (GetWorld()->GetTimerManager().IsTimerActive (EndTimerHandle) == false)
 		{
-			GetWorld()->GetTimerManager().SetTimer(EndTimerHandle, this, &UGA_CharacterSlide::OnEndAbilityCallback, SlidePeriod, false);
+			if (bIsOnceAcitved)
+			{
+				GetWorld()->GetTimerManager().SetTimer
+				(EndTimerHandle, this, &UGA_CharacterSlide::OnPreEndAbilityCallback, SlidePostPeriod, false);
+			}
+			else
+			{
+				bIsOnceAcitved = true;
+				GetWorld()->GetTimerManager().SetTimer
+				(EndTimerHandle, this, &UGA_CharacterSlide::OnPreEndAbilityCallback, SlidePeriod, false);
+			}
 		}
 	}
 

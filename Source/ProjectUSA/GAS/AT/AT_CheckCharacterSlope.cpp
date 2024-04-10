@@ -83,7 +83,7 @@ void UAT_CheckCharacterSlope::TickTask(float DeltaTime)
 	float Dot = FVector::DotProduct(GroundFowardVector, FVector::DownVector);
 	float MinDot = FMath::Cos(StartSlopeAngle);
 	
-	UE_LOG(LogTemp, Log, TEXT("%f"), MinDot);
+	//UE_LOG(LogTemp, Log, TEXT("%f"), MinDot);
 	
 	if (Dot > MinDot)
 	{

@@ -37,8 +37,8 @@ public:
 
 public:
 	TObjectPtr <class ACharacter> MyCharacter;
-	float CharacterHeight;
-	float CharacterRadius;
+	float DetectCharacterHeight;
+	float DetectCharacterRadius;
 
 public:
 	bool bIsCharacterCeilingDetected;

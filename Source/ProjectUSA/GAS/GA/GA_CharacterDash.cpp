@@ -82,6 +82,12 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::OnEndAbilityCallback);
 		AbilityTask->ReadyForActivation();
 
+		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, DashAnimMontageData);
+		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
+		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
+		AbilityTaskMontage->ReadyForActivation();
+
+
 		bIsActivaed = true;
 	}
 	else
@@ -121,11 +127,13 @@ void UGA_CharacterDash::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 void UGA_CharacterDash::OnEndAbilityCallback()
 {
+	OnEndAbility.Broadcast();
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
 void UGA_CharacterDash::OnCancelAbilityCallback()
 {
+	OnCancelAbility.Broadcast();
 	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
 }
 

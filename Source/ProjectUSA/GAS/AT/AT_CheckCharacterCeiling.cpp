@@ -19,8 +19,8 @@ UAT_CheckCharacterCeiling* UAT_CheckCharacterCeiling::GetNewAbilityTask
 	UAT_CheckCharacterCeiling* MyObj = NewAbilityTask<UAT_CheckCharacterCeiling>(OwningAbility);
 
 	MyObj->MyCharacter = InCharacter;
-	MyObj->CharacterHeight = InCharacterHeight;
-	MyObj->CharacterRadius = InCharacterRadius;
+	MyObj->DetectCharacterHeight = InCharacterHeight;
+	MyObj->DetectCharacterRadius = InCharacterRadius;
 
 	MyObj->bTickingTask = true;
 
@@ -58,9 +58,13 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 		return;
 	}
 
-	float TraceLength = CharacterHeight - MyCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	float MyCharacterHalfHeight = MyCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	float MyCharacterRadius = MyCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
 
-	FVector StartTracePoint = MyCharacter->GetActorLocation();
+	float TraceLength = DetectCharacterHeight - (MyCharacterHalfHeight * 2.0f) - MyCharacterRadius;
+	TraceLength = FMath::Clamp(TraceLength, 0, TraceLength);
+
+	FVector StartTracePoint = MyCharacter->GetActorLocation()  + FVector::UpVector * MyCharacterHalfHeight;
 	FVector EndTracePoint = StartTracePoint + FVector::UpVector * TraceLength;
 
 
@@ -71,7 +75,7 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 	UKismetSystemLibrary::SphereTraceSingle(GetWorld()
 		, StartTracePoint
 		, EndTracePoint
-		, CharacterRadius
+		, DetectCharacterRadius
 		, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility)
 		, false
 		, IgnoreActors
