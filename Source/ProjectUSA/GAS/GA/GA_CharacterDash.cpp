@@ -79,7 +79,7 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		UAT_MoveToLocationByVelocity* AbilityTask = UAT_MoveToLocationByVelocity::GetNewAbilityTask
 		(this, TEXT("Dash"), EndLocation, DashDuration, DashCurveFloat, nullptr);
 
-		AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::OnEndAbilityCallback);
+		AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::SimpleEndAbility);
 		AbilityTask->ReadyForActivation();
 
 		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, DashAnimMontageData);
@@ -93,7 +93,7 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	else
 	{
 		// Can not activate this ability 
-		OnEndAbilityCallback();
+		SimpleCancelAbility();
 	}
 }
 
@@ -110,33 +110,33 @@ void UGA_CharacterDash::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 	{
 		bIsActivaed = false;
 
-		ACharacter* MyCharacter = nullptr;
-		UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
+		//ACharacter* MyCharacter = nullptr;
+		//UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
 
-		if (ActorInfo != nullptr)
-		{
-			MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
-		}
+		//if (ActorInfo != nullptr)
+		//{
+		//	MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
+		//}
 
-		if (MyCharacter != nullptr)
-		{
-			MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-		}
+		//if (MyCharacter != nullptr)
+		//{
+		//	MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
+		//}
 	}
 }
 
-void UGA_CharacterDash::OnEndAbilityCallback()
-{
-	OnEndAbility.Broadcast();
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-}
-
-void UGA_CharacterDash::OnCancelAbilityCallback()
-{
-	OnCancelAbility.Broadcast();
-	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-}
-
+//void UGA_CharacterDash::OnEndAbilityCallback()
+//{
+//	//OnEndAbility.Broadcast();
+//	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+//}
+//
+//void UGA_CharacterDash::OnCancelAbilityCallback()
+//{
+//	//OnCancelAbility.Broadcast();
+//	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+//}
+//
 
 
 

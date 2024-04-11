@@ -12,40 +12,12 @@
 #include "GAS/AT/AT_CheckCharacterSlope.h"
 #include "GAS/AT/AT_InputCharacterMoveForPeriod.h"
 #include "GAS/AT/AT_PlayAnimMontages.h"
-//#include "GAS/AT/AT_WaitDelay.h"
 
 #include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
 #include "TimerManager.h"
 #include "Engine/World.h"
 
-//void UGA_CharacterSlide::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-//{
-//	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
-//
-//	bIsReleased = false;
-//	CheckAndRenewEndTimerHandle();
-//
-//	UE_LOG(LogTemp, Log, TEXT("Input Pressed"));
-//}
-//
-//void UGA_CharacterSlide::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-//{
-//	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
-//
-//	bIsReleased = true;
-//	CheckAndRenewEndTimerHandle();
-//
-//	UE_LOG(LogTemp, Log, TEXT("Input Released"));
-//}
-
-
-//bool UGA_CharacterSlide::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
-//{
-//	bool ActivateResult = Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
-//
-//	return ActivateResult;
-//}
 
 void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -56,7 +28,7 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	ACharacter* Character = Cast <ACharacter> (ActorInfo->AvatarActor);
 	if (Character == nullptr)
 	{
-		OnCancelAbilityCallback();
+		SimpleCancelAbility();
 		return;
 	}
 	FVector VelocityDirection = Character->GetCharacterMovement()->Velocity;
@@ -127,23 +99,11 @@ void UGA_CharacterSlide::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 }
 
 
-void UGA_CharacterSlide::OnCancelAbilityCallback()
-{
-	OnCancelAbility.Broadcast();
-	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-}
-
-void UGA_CharacterSlide::OnEndAbilityCallback()
-{
-	OnEndAbility.Broadcast();
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-}
-
 void UGA_CharacterSlide::OnPreEndAbilityCallback()
 {
 	if (!(bIsSlope == true && bIsReleased == false))
 	{
-		OnEndAbilityCallback();
+		SimpleEndAbility();
 	}
 }
 
@@ -168,6 +128,8 @@ void UGA_CharacterSlide::OnCeilingTrue()
 	bIsCeiling = true;
 	CheckAndRenewEndTimerHandle();
 
+	//ApplyEffectsByArray(InCeilingEffects);
+
 	//UE_LOG(LogTemp, Log, TEXT("Ceiling True"));
 }
 
@@ -175,6 +137,8 @@ void UGA_CharacterSlide::OnCeilingFalse()
 {
 	bIsCeiling = false;
 	CheckAndRenewEndTimerHandle();
+
+	//ApplyEffectsByArray(OutCeilingEffects);
 
 	//UE_LOG(LogTemp, Log, TEXT("Ceiling False"));
 }
@@ -199,6 +163,8 @@ void UGA_CharacterSlide::OnGroundOut()
 {
 	bIsGrounded = false;
 	CheckAndRenewEndTimerHandle();
+
+	//ApplyEffectsByArray(OutCeilingEffects);
 }
 
 
@@ -236,7 +202,7 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 	
 	if (bIsGrounded == false)
 	{
-		OnEndAbilityCallback();
+		SimpleEndAbility();
 	}
 }
 

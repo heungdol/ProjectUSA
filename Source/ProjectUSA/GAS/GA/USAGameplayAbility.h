@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "USAGameplayAbility.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnSimpleDeletage)
+
 /**
  * 
  */
@@ -13,8 +15,7 @@ UCLASS()
 class PROJECTUSA_API UUSAGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
-	
-	
+
 public:
 	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
 	TArray <TSubclassOf<class UGameplayEffect>> ActivateAbilityEffects;
@@ -36,8 +37,20 @@ public:
 	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+
+	FOnSimpleDeletage OnActivateAbility;
+	FOnSimpleDeletage OnCancelAbility;
+	FOnSimpleDeletage OnEndAbility;
 	
+
+	UFUNCTION()
+	void SimpleCancelAbility ();
+
+	UFUNCTION()
+	void SimpleEndAbility();
+
+
 protected:
 	UFUNCTION(BlueprintCallable)
-	void ApplyEffectsByArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
+	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 };

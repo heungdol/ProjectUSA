@@ -6,8 +6,11 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AT_CheckCharacterCeiling.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnCeilingTrue)
-DECLARE_MULTICAST_DELEGATE(FOnCeilingFalse)
+//DECLARE_MULTICAST_DELEGATE(FOnCeilingTrue)
+//DECLARE_MULTICAST_DELEGATE(FOnCeilingFalse)
+
+DECLARE_MULTICAST_DELEGATE(FOnSimpleDelegate)
+
 
 /**
  * 
@@ -25,8 +28,8 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 
-	FOnCeilingTrue OnCeilingTrue;
-	FOnCeilingFalse OnCeilingFalse;
+	FOnSimpleDelegate OnCeilingTrue;
+	FOnSimpleDelegate OnCeilingFalse;
 
 public:
 	UFUNCTION()

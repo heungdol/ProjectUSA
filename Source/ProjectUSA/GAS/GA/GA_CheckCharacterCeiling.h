@@ -4,42 +4,35 @@
 
 #include "CoreMinimal.h"
 #include "GAS/GA/USAGameplayAbility.h"
-#include "GA_CheckCharacterIsFalling.generated.h"
+#include "GA_CheckCharacterCeiling.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UGA_CheckCharacterIsFalling : public UUSAGameplayAbility
+class PROJECTUSA_API UGA_CheckCharacterCeiling : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
 	
 public:
-	UGA_CheckCharacterIsFalling();
+	UGA_CheckCharacterCeiling();
 
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 
-	UPROPERTY(EditAnywhere, Category = "GAS")
-	TArray <TSubclassOf<class UGameplayEffect>> PositiveFallingEffects;
 
 	UPROPERTY(EditAnywhere, Category = "GAS")
-	TArray < TSubclassOf<class UGameplayEffect>> NegativeFallingEffects;
+	TArray <TSubclassOf<class UGameplayEffect>> InCeilingEffects;
 
 	UPROPERTY(EditAnywhere, Category = "GAS")
-	TArray < TSubclassOf<class UGameplayEffect>> GroundedEffects;
+	TArray < TSubclassOf<class UGameplayEffect>> OutCeilingEffects;
 
-
-	UFUNCTION ()
-	void OnPositiveFallingCallback();
+	UFUNCTION()
+	void ApplayInCeilingEffects ();
 	
 	UFUNCTION()
-	void OnNegativeFallingCallback();
-	
-	UFUNCTION()
-	void OnGroundedCallback();
+	void ApplayOutCeilingEffects();
 
-	UFUNCTION()
-	void OnFinishedCallback();
+
 };

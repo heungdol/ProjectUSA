@@ -21,13 +21,13 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 	ACharacter* MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
 	if (MyCharacter == nullptr)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		SimpleCancelAbility();
 	}
 
 	UCharacterMovementComponent* MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
 	if (MyCharacterMovementComponent == nullptr)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		SimpleCancelAbility();
 	}
 
 	UAT_CheckCharacterIsFalling* AbilityTask = UAT_CheckCharacterIsFalling::GetNewAbilityTask(this, MyCharacterMovementComponent);
@@ -42,47 +42,20 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 
 void UGA_CheckCharacterIsFalling::OnPositiveFallingCallback()
 {
-	ApplyEffectsByArray(PositiveFallingEffects);
-
-	//for (const auto& PositiveFallingEffect : PositiveFallingEffects)
-	//{
-	//	FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(PositiveFallingEffect);
-	//	if (GameplayEffectSpecHandle.IsValid())
-	//	{
-	//		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-	//	}
-	//}
+	ApplyEffectsViaArray(PositiveFallingEffects);
 }
 
 void UGA_CheckCharacterIsFalling::OnNegativeFallingCallback()
 {
-	ApplyEffectsByArray(NegativeFallingEffects);
-
-	//for (const auto& NegativeFallingEffect : NegativeFallingEffects)
-	//{
-	//	FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(NegativeFallingEffect);
-	//	if (GameplayEffectSpecHandle.IsValid())
-	//	{
-	//		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-	//	}
-	//}
+	ApplyEffectsViaArray(NegativeFallingEffects);
 }
 
 void UGA_CheckCharacterIsFalling::OnGroundedCallback()
 {
-	ApplyEffectsByArray(GroundedEffects);
-
-	//for (const auto& GroundedEffect : GroundedEffects)
-	//{
-	//	FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(GroundedEffect);
-	//	if (GameplayEffectSpecHandle.IsValid())
-	//	{
-	//		ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-	//	}
-	//}
+	ApplyEffectsViaArray(GroundedEffects);
 }
 
 void UGA_CheckCharacterIsFalling::OnFinishedCallback()
 {
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+	SimpleEndAbility();
 }

@@ -33,12 +33,12 @@ void UGA_CharacterStomp::InputReleased(const FGameplayAbilitySpecHandle Handle, 
 }
 
 
-bool UGA_CharacterStomp::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
-{
-	bool ActivateResult = Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
-
-	return ActivateResult;
-}
+//bool UGA_CharacterStomp::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
+//{
+//	bool ActivateResult = Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+//
+//	return ActivateResult;
+//}
 
 void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -64,16 +64,16 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		UAT_MoveToGround* AbilityTask1 = UAT_MoveToGround::GetNewAbilityTask(this, TEXT("Stomp"), StompMoveSpeed);
 		UAT_WaitDelay* AbilityTask2 = UAT_WaitDelay::GetNewAbilityTask(this, StompPostDelay);
 
-		OnPreEffectsCallback();
+		ApplyPreEffects();
 
 		AbilityTask0->OnFinish.AddDynamic(AbilityTask1, &UAT_MoveToGround::ReadyForActivation);
-		AbilityTask0->OnFinish.AddDynamic(this, &UGA_CharacterStomp::OnActiveEffectsCallback);
+		AbilityTask0->OnFinish.AddDynamic(this, &UGA_CharacterStomp::ApplyActiveEffects);
 
 		AbilityTask1->OnGroundReached.AddUObject(AbilityTask2, &UAT_WaitDelay::ReadyForActivation);
-		AbilityTask1->OnGroundReached.AddUObject(this, &UGA_CharacterStomp::OnEndEffectsCallback);
+		AbilityTask1->OnGroundReached.AddUObject(this, &UGA_CharacterStomp::ApplyEndEffects);
 
-		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::OnEndAbilityCallback);
-		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::OnPostEffectsCallback);
+		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::SimpleEndAbility);
+		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::ApplyPostEffects);
 
 		AbilityTask0->ReadyForActivation();
 
@@ -81,7 +81,7 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	}
 	else
 	{
-		OnEndAbilityCallback();
+		SimpleEndAbility();
 	}
 }
 
@@ -97,33 +97,23 @@ void UGA_CharacterStomp::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 }
 
 
-void UGA_CharacterStomp::OnCancelAbilityCallback()
+
+void UGA_CharacterStomp::ApplyPreEffects()
 {
-	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+	ApplyEffectsViaArray(PreGameplayEffects);
 }
 
-void UGA_CharacterStomp::OnEndAbilityCallback()
+void UGA_CharacterStomp::ApplyActiveEffects()
 {
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+	ApplyEffectsViaArray(ActiveGameplayEffects);
 }
 
-
-void UGA_CharacterStomp::OnPreEffectsCallback()
+void UGA_CharacterStomp::ApplyEndEffects()
 {
-	ApplyEffectsByArray(PreGameplayEffects);
+	ApplyEffectsViaArray(EndGameplayEffects);
 }
 
-void UGA_CharacterStomp::OnActiveEffectsCallback()
+void UGA_CharacterStomp::ApplyPostEffects()
 {
-	ApplyEffectsByArray(ActiveGameplayEffects);
-}
-
-void UGA_CharacterStomp::OnEndEffectsCallback()
-{
-	ApplyEffectsByArray(EndGameplayEffects);
-}
-
-void UGA_CharacterStomp::OnPostEffectsCallback()
-{
-	ApplyEffectsByArray(PostGameplayEffects);
+	ApplyEffectsViaArray(PostGameplayEffects);
 }

@@ -8,9 +8,6 @@
 
 #include "GA_CharacterSlide.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnSimpleDeletage)
-
-
 /**
  * 
  */
@@ -42,14 +39,6 @@ public:
 	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	FOnSimpleDeletage OnCancelAbility;
-	FOnSimpleDeletage OnEndAbility;
-
-	UFUNCTION()
-	void OnCancelAbilityCallback();
-
-	UFUNCTION()
-	void OnEndAbilityCallback();
 
 	UFUNCTION()
 	void OnPreEndAbilityCallback();
@@ -114,6 +103,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
 	FGameplayTag SlideInputReleasedTag;
+
+
+	//UPROPERTY(EditAnywhere, Category = Slide)
+	//TArray <TSubclassOf<class UGameplayEffect>> InCeilingEffects;
+	//
+	//UPROPERTY(EditAnywhere, Category = Slide)
+	//TArray <TSubclassOf<class UGameplayEffect>> OutCeilingEffects;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
 	struct FPlayAnimMontageData SlideAnimMontageData ;

@@ -28,11 +28,11 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
-	UFUNCTION()
-	void OnCancelAbilityCallback();
+	//UFUNCTION()
+	//void OnCancelAbilityCallback();
 
-	UFUNCTION()
-	void OnEndAbilityCallback ();
+	//UFUNCTION()
+	//void OnEndAbilityCallback ();
 
 public:
 	UPROPERTY (EditDefaultsOnly, BlueprintReadOnly, Category = "Character Jump")

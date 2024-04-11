@@ -28,7 +28,7 @@ void UGA_CharacterLaunch::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		MyCharacter->LaunchCharacter(FinalLaunchVector, bXYOverride, bZOverride);
 	}
 
-	OnEndAbilityCallback();
+	SimpleEndAbility();
 }
 
 
@@ -45,12 +45,12 @@ void UGA_CharacterLaunch::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 
 
 
-void UGA_CharacterLaunch::OnCancelAbilityCallback()
-{
-	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-}
-
-void UGA_CharacterLaunch::OnEndAbilityCallback()
-{
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-}
+//void UGA_CharacterLaunch::OnCancelAbilityCallback()
+//{
+//	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+//}
+//
+//void UGA_CharacterLaunch::OnEndAbilityCallback()
+//{
+//	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+//}

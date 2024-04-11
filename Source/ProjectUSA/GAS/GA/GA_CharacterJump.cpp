@@ -40,7 +40,7 @@ void UGA_CharacterJump::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	UAT_LaunchCharacterForPeriod* AbilityTask = UAT_LaunchCharacterForPeriod::GetNewAbilityTask
 	(this, JumpVelocity, false, true, JumpMaxHoldTime);
 
-	AbilityTask->OnFinished.AddUObject(this, &UGA_CharacterJump::OnEndAbilityCallback);
+	AbilityTask->OnFinished.AddUObject(this, &UGA_CharacterJump::SimpleEndAbility);
 
 	AbilityTask->ReadyForActivation();
 }
@@ -70,13 +70,13 @@ void UGA_CharacterJump::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 }
 
 
-void UGA_CharacterJump::OnCancelAbilityCallback()
-{
-	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-}
-
-void UGA_CharacterJump::OnEndAbilityCallback()
-{
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-}
+//void UGA_CharacterJump::OnCancelAbilityCallback()
+//{
+//	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+//}
+//
+//void UGA_CharacterJump::OnEndAbilityCallback()
+//{
+//	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+//}
 
