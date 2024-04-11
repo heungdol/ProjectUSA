@@ -31,6 +31,9 @@
 
 #include "Components/SkeletalMeshComponent.h"
 
+
+#include "ProjectUSA.h"
+
 // ====================================================================================
 
 void FUSACharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovementComponent* InMovementComponet)
@@ -188,28 +191,35 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	// 게임 시작 어빌리티
-	for (const auto& GameplayStartAbility : GameplayStartAbilities)
-	{
-		FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
-
-		if (GameplayAbilitySpec == nullptr)
-		{
-			return;
-		}
-
-		if (GameplayAbilitySpec->IsActive())
-		{
-			ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
-		}
-		else
-		{
-			ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
-		}
-	}
-
 	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+
+
+	// 게임 시작 어빌리티
+	if (HasAuthority() == true)
+	{
+		if (ASC != nullptr)
+		{
+			for (const auto& GameplayStartAbility : GameplayStartAbilities)
+			{
+				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
+
+				if (GameplayAbilitySpec == nullptr)
+				{
+					return;
+				}
+
+				if (GameplayAbilitySpec->IsActive())
+				{
+					ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+				}
+				else
+				{
+					ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+				}
+			}
+		}
+	}
 }
 
 // Called every frame
@@ -239,6 +249,8 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 				continue;
 			}
 
+			//USA_LOG(LogTemp, Log, TEXT("Binding Functions related with GAS"));
+
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Triggered,
 				this, &AUSACharacterBase::InputPressGameplayAbilityByInputID, GameplayActiveAbility.InputID);
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Completed,
@@ -251,13 +263,22 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	// 일반 클라에서는 수행되지 않음
 	SetupGAS();
+
+	// 시작할 때 자동으로 콘솔 입력
+	APlayerController* PlayerController = Cast <APlayerController>(NewController);
+	if (PlayerController != nullptr)
+	{
+		PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
+	}
 }
 
 void AUSACharacterBase::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
+	// 일반 클라에서 수행
 	SetupGAS();
 }
 
@@ -293,6 +314,7 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 {
 	if (ASC == nullptr)
 	{
+		//USA_LOG(LogTemp, Log, TEXT("ASC nullptr"));
 		return;
 	}
 
@@ -300,8 +322,21 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 
 	if (GameplayAbilitySpec == nullptr)
 	{
+		//USA_LOG(LogTemp, Log, TEXT("No Ability Spec"));
 		return;
 	}
+
+
+	//USA_LOG(LogTemp, Log, TEXT("Lets Ability"));
+
+	//if (ASC->GetAvatarActor() != Cast<AActor>(this))
+	//{
+	//	USA_LOG(LogTemp, Log, TEXT("Diff Avatar Actor!!!"));
+	//}
+	//else
+	//{
+	//	USA_LOG(LogTemp, Log, TEXT("Same Avatar Actor..., %s"), *ASC->GetAvatarActor()->GetName());
+	//}
 
 	if (GameplayAbilitySpec->IsActive())
 	{
@@ -508,6 +543,7 @@ void AUSACharacterBase::SetupGAS()
 
 			ASC->GiveAbility(GameplayAbilityActionSpec);
 		}
+
 	}
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)

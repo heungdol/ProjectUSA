@@ -8,6 +8,8 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
+#include "Player/USAPlayerState.h"
+
 AUSACharacterPlayer::AUSACharacterPlayer()
 {
 	ASC = nullptr;
@@ -17,26 +19,22 @@ void AUSACharacterPlayer::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	// 시작할 때 자동으로 콘솔 입력
-	APlayerController* PlayerController = Cast <APlayerController>(NewController);
-	if (PlayerController != nullptr)
-	{
-		PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
-	}
+	
 }
 
 void AUSACharacterPlayer::SetupGAS()
 {
-	if (ASC != nullptr)
-	{
-		return;
-	}
+	//if (ASC == nullptr)
+	//{
+	//	return;
+	//}
 
-	IAbilitySystemInterface* AbilitySystemInterface = Cast <IAbilitySystemInterface>(GetPlayerState());
-	if (AbilitySystemInterface != nullptr)
+	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
+	//IAbilitySystemInterface* AbilitySystemInterface = Cast <IAbilitySystemInterface>(GetPlayerState());
+	if (USAPlayerState != nullptr)
 	{
-		ASC = AbilitySystemInterface->GetAbilitySystemComponent();
-		ASC->InitAbilityActorInfo(Cast<AActor>(GetPlayerState()), this);
+		ASC = USAPlayerState->GetAbilitySystemComponent();
+		ASC->InitAbilityActorInfo(USAPlayerState, this);
 	}
 
 	Super::SetupGAS();

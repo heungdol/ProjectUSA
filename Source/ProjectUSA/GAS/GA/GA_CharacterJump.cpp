@@ -8,6 +8,10 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+
+#include "ProjectUSA.h"
+
+
 UGA_CharacterJump::UGA_CharacterJump()
 {
 	//NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
@@ -43,6 +47,8 @@ void UGA_CharacterJump::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 void UGA_CharacterJump::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
+	//USA_LOG(LogTemp, Log, TEXT("Jump Released..."));
+
 	CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 }
 

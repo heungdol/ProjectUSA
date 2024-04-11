@@ -16,10 +16,8 @@ void AUSACharacterNonPlayer::SetupGAS()
 {
 	if (ASC != nullptr)
 	{
-		return;
+		ASC->InitAbilityActorInfo(this, this);
 	}
-
-	ASC->InitAbilityActorInfo(this, this);
 
 	Super::SetupGAS();
 }

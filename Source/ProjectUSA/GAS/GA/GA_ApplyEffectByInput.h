@@ -15,11 +15,11 @@ class PROJECTUSA_API UGA_ApplyEffectByInput : public UUSAGameplayAbility
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, Category = "GAS")
-	TSubclassOf<class UGameplayEffect> InputPressedEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TArray <TSubclassOf<class UGameplayEffect>> InputPressedEffects;
 
-	UPROPERTY(EditAnywhere, Category = "GAS")
-	TSubclassOf<class UGameplayEffect> InputReleasedEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TArray <TSubclassOf<class UGameplayEffect>> InputReleasedEffects;
 
 	UPROPERTY()
 	bool bIsInputPressedOnce = false;

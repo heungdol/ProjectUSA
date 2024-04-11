@@ -16,11 +16,13 @@ void UGA_ApplyEffectByInput::InputPressed(const FGameplayAbilitySpecHandle Handl
 
 	if (bIsInputPressedOnce == false)
 	{
-		FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(InputPressedEffect);
-		if (GameplayEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, GameplayEffectSpecHandle);
-		}
+		//FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(InputPressedEffect);
+		//if (GameplayEffectSpecHandle.IsValid())
+		//{
+		//	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, GameplayEffectSpecHandle);
+		//}
+
+		ApplyEffectsByArray(InputPressedEffects);
 
 		bIsInputPressedOnce = true;
 	}
@@ -32,11 +34,13 @@ void UGA_ApplyEffectByInput::InputReleased(const FGameplayAbilitySpecHandle Hand
 
 	if (bIsInputPressedOnce == true)
 	{
-		FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(InputReleasedEffect);
-		if (GameplayEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, GameplayEffectSpecHandle);
-		}
+		//FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(InputReleasedEffect);
+		//if (GameplayEffectSpecHandle.IsValid())
+		//{
+		//	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, GameplayEffectSpecHandle);
+		//}
+
+		ApplyEffectsByArray(InputReleasedEffects);
 
 		bIsInputPressedOnce = false;
 	}

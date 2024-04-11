@@ -38,5 +38,6 @@ public:
 
 	
 protected:
+	UFUNCTION(BlueprintCallable)
 	void ApplyEffectsByArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 };

@@ -3,6 +3,8 @@
 
 #include "GAS/GA/USAGameplayAbility.h"
 
+#include "AbilitySystemComponent.h"
+
 void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -51,14 +53,28 @@ void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	//}
 }
 
-void UUSAGameplayAbility::ApplyEffectsByArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects)
+void UUSAGameplayAbility::ApplyEffectsByArray(const TArray<TSubclassOf<UGameplayEffect>>& GameplayEffects)
 {
-	for (const auto& GameplayEffect : GameplayEffects)
+	for (const auto& GameplayEffectClass : GameplayEffects)
 	{
-		FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(GameplayEffect);
-		if (GameplayEffectSpecHandle.IsValid())
-		{
-			ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
-		}
+		//FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(GameplayEffect);
+		//if (GameplayEffectSpecHandle.IsValid())
+		//{
+			// ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffect, GameplayEffectLevel, Stacks);
+			//ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
+		//}
+
+		BP_ApplyGameplayEffectToOwner(GameplayEffectClass);
+		
+		//UGameplayEffect* GameplayEffect = GameplayEffectClass.GetDefaultObject();
+		//if (GameplayEffect != nullptr)
+		//{
+			//ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffect, 1.0f);
+			//FGameplayEffectSpecHandle GameplayEffectSpecHandle = MakeOutgoingGameplayEffectSpec(GameplayEffect);
+			//if (GameplayEffectSpecHandle.IsValid())
+			//{
+			//	ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffectSpecHandle);
+			//}
+		//}
 	}
 }
