@@ -3,28 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbility.h"
-#include "USAGameplayAbility.generated.h"
-
-DECLARE_MULTICAST_DELEGATE(FOnSimpleDeletage)
+#include "GAS/GA/USAGameplayAbility.h"
+#include "GA_CharacterAction.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UUSAGameplayAbility : public UGameplayAbility
+class PROJECTUSA_API UGA_CharacterAction : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
-
+	
 public:
-	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> ActivateAbilityEffects;
-
-	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> CancelAbilityEffects;
-
-	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
-	TArray <TSubclassOf<class UGameplayEffect>> EndAbilityEffects;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Character Action Info")
+	TArray <TSubclassOf<UGA_CharacterAction>> NextCharacterActions;
 	
 
 public:
@@ -38,19 +30,4 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
-	FOnSimpleDeletage OnActivateAbility;
-	FOnSimpleDeletage OnCancelAbility;
-	FOnSimpleDeletage OnEndAbility;
-	
-
-	UFUNCTION()
-	void SimpleCancelAbility ();
-
-	UFUNCTION()
-	void SimpleEndAbility();
-
-
-protected:
-	UFUNCTION(BlueprintCallable)
-	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects/*, float GameplayEffectLevel = 0.0f, int32 Stacks = 1*/);
 };

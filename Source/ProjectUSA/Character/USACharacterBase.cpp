@@ -194,15 +194,67 @@ void AUSACharacterBase::BeginPlay()
 	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 
-
-	// 게임 시작 어빌리티
+	// 게임 어빌리티 부여
+	// 캐릭터 파괴를 고려하여 BeginPlay 단에 옮겨 놓았다
 	if (HasAuthority() == true)
 	{
 		if (ASC != nullptr)
 		{
+			for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
+			{
+				FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
+				ASC->GiveAbility(GameplayAbilitySpec);
+			}
+
+			for (const auto& GameplayActionAbility : GameplayActiveAbilities)
+			{
+				FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
+
+				if (GameplayActionAbility.InputID >= 0)
+				{
+					GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
+				}
+
+				ASC->GiveAbility(GameplayAbilityActionSpec);
+			}
+
+			// 게임 시작 어빌리티
+			for (const auto& GameplayStartAbility : GameplayStartAbilities)
+			{
+				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
+				ASC->GiveAbility(GameplayStartAbility);
+			}
+		
 			for (const auto& GameplayStartAbility : GameplayStartAbilities)
 			{
 				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
+
+				if (GameplayAbilitySpec == nullptr)
+				{
+					return;
+				}
+
+				if (GameplayAbilitySpec->IsActive())
+				{
+					ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+				}
+				else
+				{
+					ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+				}
+			}
+
+			//
+
+			for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
+			{
+				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartActionAbility);
+				ASC->GiveAbility(GameplayStartActionAbility);
+			}
+
+			for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
+			{
+				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartActionAbility);
 
 				if (GameplayAbilitySpec == nullptr)
 				{
@@ -314,7 +366,6 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 {
 	if (ASC == nullptr)
 	{
-		//USA_LOG(LogTemp, Log, TEXT("ASC nullptr"));
 		return;
 	}
 
@@ -322,21 +373,8 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 
 	if (GameplayAbilitySpec == nullptr)
 	{
-		//USA_LOG(LogTemp, Log, TEXT("No Ability Spec"));
 		return;
 	}
-
-
-	//USA_LOG(LogTemp, Log, TEXT("Lets Ability"));
-
-	//if (ASC->GetAvatarActor() != Cast<AActor>(this))
-	//{
-	//	USA_LOG(LogTemp, Log, TEXT("Diff Avatar Actor!!!"));
-	//}
-	//else
-	//{
-	//	USA_LOG(LogTemp, Log, TEXT("Same Avatar Actor..., %s"), *ASC->GetAvatarActor()->GetName());
-	//}
 
 	if (GameplayAbilitySpec->IsActive())
 	{
@@ -437,6 +475,25 @@ void AUSACharacterBase::GameplayTagVelocityZeroCallback(const FGameplayTag Callb
 	}
 }
 
+void AUSACharacterBase::GameplayTagCanNotWalkOffLedgeCallback(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetCharacterMovement() == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		GetCharacterMovement()->bCanWalkOffLedges = false;
+		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
+	}
+	else
+	{
+		GetCharacterMovement()->bCanWalkOffLedges = true;
+		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
+	}
+}
+
 void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
@@ -448,19 +505,6 @@ void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag,
 	{
 		//CharacterCapsuleSlideInfo.RenewCharacterCapsule(this);
 		CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-
-		////FVector VelocityDirection = GetCharacterMovement()->Velocity;
-		//FVector VelocityDirection = GetActorForwardVector();
-		////if (VelocityDirection.Length() <= SMALL_NUMBER)
-		////{
-		////	VelocityDirection = GetActorForwardVector();
-		////}
-		//VelocityDirection.Normalize();
-
-		//SetActorRotation(VelocityDirection.Rotation());
-
-		//GetCharacterMovement()->Velocity = VelocityDirection * GetCharacterMovement()->GetMaxSpeed();
-		//GetCharacterMovement()->UpdateComponentVelocity();
 	}
 	else
 	{
@@ -516,36 +560,6 @@ void AUSACharacterBase::SetupGAS()
 		return;
 	}
 
-	// 서버에서만 수행
-	if (HasAuthority() == true)
-	{
-		// 게임 시작 어빌리티
-		for (const auto& GameplayStartAbility : GameplayStartAbilities)
-		{
-			FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
-			ASC->GiveAbility(GameplayStartAbility);
-		}
-
-		for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
-		{
-			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
-			ASC->GiveAbility(GameplayAbilitySpec);
-		}
-
-		for (const auto& GameplayActionAbility : GameplayActiveAbilities)
-		{
-			FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
-
-			if (GameplayActionAbility.InputID >= 0)
-			{
-				GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
-			}
-
-			ASC->GiveAbility(GameplayAbilityActionSpec);
-		}
-
-	}
-
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback);
 
@@ -554,6 +568,9 @@ void AUSACharacterBase::SetupGAS()
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_VELOCITYZERO, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::GameplayTagVelocityZeroCallback);
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::GameplayTagCanNotWalkOffLedgeCallback);
 
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)

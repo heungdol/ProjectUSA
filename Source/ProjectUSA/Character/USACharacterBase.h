@@ -176,6 +176,7 @@ protected:
 	void GameplayTagIgnoreRotateToMoveCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void GameplayTagIgnoreMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void GameplayTagVelocityZeroCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagCanNotWalkOffLedgeCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 	//void GameplayTagRotateToMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	void GameplayTagSlideCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
@@ -195,6 +196,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartActionAbilites;
+
 
 
 protected:

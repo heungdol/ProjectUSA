@@ -16,6 +16,7 @@ void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
+	// Activate 역순으로 Effect 및 델리게이트 호출
 	ApplyEffectsViaArray(CancelAbilityEffects);
 
 	OnCancelAbility.Broadcast();
@@ -25,6 +26,7 @@ void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 
 void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	// Activate 역순으로 Effect 및 델리게이트 호출
 	ApplyEffectsViaArray(EndAbilityEffects);
 	
 	OnEndAbility.Broadcast();
@@ -42,10 +44,16 @@ void UUSAGameplayAbility::SimpleEndAbility()
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-void UUSAGameplayAbility::ApplyEffectsViaArray(const TArray<TSubclassOf<UGameplayEffect>>& GameplayEffects)
+void UUSAGameplayAbility::ApplyEffectsViaArray(const TArray<TSubclassOf<UGameplayEffect>>& GameplayEffects/*, float GameplayEffectLevel = 0.0f, int32 Stacks = 1*/)
 {
 	for (const auto& GameplayEffectClass : GameplayEffects)
 	{
 		BP_ApplyGameplayEffectToOwner(GameplayEffectClass);
+	
+		//if (GameplayEffectClass)
+		//{
+		//	const UGameplayEffect* GameplayEffect = GameplayEffectClass->GetDefaultObject<UGameplayEffect>();
+		//	ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, GameplayEffect, GameplayEffectLevel, Stacks);
+		//}
 	}
 }

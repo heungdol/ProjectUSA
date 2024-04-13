@@ -14,4 +14,8 @@ class PROJECTUSA_API UUSACharacterActionData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Character Action Data")
+	TArray <TSubclassOf<class UGA_CharacterAction>> CharacterActionAbilities;
+
 };
