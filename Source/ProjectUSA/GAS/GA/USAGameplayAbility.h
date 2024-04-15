@@ -24,7 +24,13 @@ public:
 	TArray <TSubclassOf<class UGameplayEffect>> CancelAbilityEffects;
 
 	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
+	TArray <TSubclassOf<class UGameplayEffect>> PostCancelAbilityEffects;
+
+	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
 	TArray <TSubclassOf<class UGameplayEffect>> EndAbilityEffects;
+
+	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
+	TArray <TSubclassOf<class UGameplayEffect>> PostEndAbilityEffects;
 	
 
 public:

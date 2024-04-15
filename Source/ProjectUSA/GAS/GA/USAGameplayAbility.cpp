@@ -22,6 +22,8 @@ void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 	OnCancelAbility.Broadcast();
 	
 	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+
+	ApplyEffectsViaArray(PostCancelAbilityEffects);
 }
 
 void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
@@ -32,6 +34,8 @@ void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	OnEndAbility.Broadcast();
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	ApplyEffectsViaArray(PostEndAbilityEffects);
 }
 
 void UUSAGameplayAbility::SimpleCancelAbility()

@@ -35,6 +35,7 @@ public:
 
 // ========================================================================================
 
+
 USTRUCT(BlueprintType)
 struct FUSACharacterMovementWalkInfo
 {
@@ -63,38 +64,23 @@ public:
 
 // ========================================================================================
 
-UENUM(BlueprintType)
-enum class EUSACharacterCapsulePivot: uint8
-{
-	Top UMETA(DisplayName = "Top"),
-	Center UMETA(DisplayName = "Center"),
-	Bottom UMETA(DisplayName = "Bottom"),
-};
-
-
-USTRUCT(BlueprintType)
-struct FUSACharacterCapsuleInfo
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleOriginalHalfHeight = 90.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleHaflHeight = 90.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleRadius = 20.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	EUSACharacterCapsulePivot CapsulePivot = EUSACharacterCapsulePivot::Bottom;
-
-public:
-
-	void RenewCharacterCapsule(class ACharacter* InCharacter);
-	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
-};
+//USTRUCT(BlueprintType)
+//struct FUSACharacterCapsuleInfo
+//{
+//	GENERATED_BODY()
+//
+//public:
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+//	float CapsuleHaflHeight = 90.f;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+//	float CapsuleRadius = 20.0f;
+//
+//public:
+//
+//	void RenewCharacterCapsule(class ACharacter* InCharacter);
+//	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
+//};
 
 // ========================================================================================
 // 
@@ -141,12 +127,8 @@ protected:
 
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	FUSACharacterCapsuleInfo CharacterCapsuleFallInfo;
-
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	//FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
 	//FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
@@ -156,9 +138,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
 	FUSACharacterMovementWalkInfo CharacterMovementWalkInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
-	FUSACharacterMovementWalkInfo CharacterMovementRealWalkInfo;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
 	FUSACharacterMovementWalkInfo CharacterMovementSlideInfo;
 
@@ -194,19 +173,14 @@ protected:
 
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
 
-	//void UpdateFallCapsuleHeight();
-	//void UpdateUnFallCapsuleHeight();
-
-	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_IgnoreMoveInput(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_VelocityZero(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_CanNotWalkOffLedge(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Walk(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagIgnoreRotateToMoveCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagIgnoreMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagVelocityZeroCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagCanNotWalkOffLedgeCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 	//void GameplayTagRotateToMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 
-	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagSlideCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void GameplayTagCrouchCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;

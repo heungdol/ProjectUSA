@@ -105,11 +105,21 @@ protected:
 	FGameplayTag SlideInputReleasedTag;
 
 
-	//UPROPERTY(EditAnywhere, Category = Slide)
-	//TArray <TSubclassOf<class UGameplayEffect>> InCeilingEffects;
-	//
-	//UPROPERTY(EditAnywhere, Category = Slide)
-	//TArray <TSubclassOf<class UGameplayEffect>> OutCeilingEffects;
+	UPROPERTY(EditAnywhere, Category = Slide)
+	TArray <TSubclassOf<class UGameplayEffect>> InCeilingEffects;
+	
+	UPROPERTY(EditAnywhere, Category = Slide)
+	TArray <TSubclassOf<class UGameplayEffect>> OutCeilingEffects;
+
+	UPROPERTY(EditAnywhere, Category = Slide)
+	TArray <TSubclassOf<class UGameplayEffect>> InSlopeEffects;
+
+	UPROPERTY(EditAnywhere, Category = Slide)
+	TArray <TSubclassOf<class UGameplayEffect>> OutSlopeEffects;
+
+	UPROPERTY(EditAnywhere, Category = Slide)
+	TArray <TSubclassOf<class UGameplayEffect>> OutGroundEffects;
+
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)

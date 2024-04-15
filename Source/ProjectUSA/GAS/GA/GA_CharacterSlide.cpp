@@ -112,6 +112,8 @@ void UGA_CharacterSlide::OnSlopeTrue()
 	bIsSlope = true;
 	CheckAndRenewEndTimerHandle();
 
+	ApplyEffectsViaArray(InSlopeEffects);
+
 	//UE_LOG(LogTemp, Log, TEXT("Slope True"));
 }
 
@@ -119,6 +121,8 @@ void UGA_CharacterSlide::OnSlopeFalse()
 {
 	bIsSlope = false;
 	CheckAndRenewEndTimerHandle();
+
+	ApplyEffectsViaArray(OutSlopeEffects);
 
 	//UE_LOG(LogTemp, Log, TEXT("Slope False"));
 }
@@ -128,7 +132,7 @@ void UGA_CharacterSlide::OnCeilingTrue()
 	bIsCeiling = true;
 	CheckAndRenewEndTimerHandle();
 
-	//ApplyEffectsByArray(InCeilingEffects);
+	ApplyEffectsViaArray(InCeilingEffects);
 
 	//UE_LOG(LogTemp, Log, TEXT("Ceiling True"));
 }
@@ -138,7 +142,7 @@ void UGA_CharacterSlide::OnCeilingFalse()
 	bIsCeiling = false;
 	CheckAndRenewEndTimerHandle();
 
-	//ApplyEffectsByArray(OutCeilingEffects);
+	ApplyEffectsViaArray(OutCeilingEffects);
 
 	//UE_LOG(LogTemp, Log, TEXT("Ceiling False"));
 }
@@ -164,7 +168,7 @@ void UGA_CharacterSlide::OnGroundOut()
 	bIsGrounded = false;
 	CheckAndRenewEndTimerHandle();
 
-	//ApplyEffectsByArray(OutCeilingEffects);
+	ApplyEffectsViaArray(OutGroundEffects);
 }
 
 
