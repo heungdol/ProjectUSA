@@ -13,6 +13,7 @@
 // 이동 (없음 / 단순 위치 이동 / 걷기 / Launch) -> 하나만 선택
 // 애니메이션 (몽타주 / 애님 블루프린트 / 둘 다) -> 모두 열어 놓기
 // 생성 (유 / 무) -> 하나만 선택
+// 방향 (없음 / 입력 방향 / 적)
 
 UENUM(BlueprintType)
 enum class ECharacterActionMoveType : uint8
@@ -21,6 +22,14 @@ enum class ECharacterActionMoveType : uint8
 	Move UMETA(DisplayName = "Move"),
 	Walk UMETA(DisplayName = "Walk"),
 	Launch UMETA(DisplayName = "Launch"),
+};
+
+UENUM(BlueprintType)
+enum class ECharacterActionDirectionType : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Input UMETA(DisplayName = "Input"),
+	Target UMETA(DisplayName = "Target"),
 };
 
 /**
@@ -32,6 +41,17 @@ class PROJECTUSA_API UGA_CharacterAction : public UUSAGameplayAbility
 	GENERATED_BODY()
 	
 public:
+
+	//
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: General")
+	float Period = 0.5f;
+
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Direction")
+	ECharacterActionDirectionType DirectionType = ECharacterActionDirectionType::None;
 
 	//
 
@@ -55,18 +75,21 @@ public:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
-	FVector LaunchVector;
+	FVector MoveLaunchVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
-	bool bLaunchXYOverride;
+	float MoveLaunchPeriod = -1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
-	bool bLaunchZOverride;
+	bool bMoveLaunchXYOverride;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	bool bMoveLaunchZOverride;
 
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Animation")
-	struct FPlayAnimMontageData DashAnimMontageData;
+	struct FPlayAnimMontageData ActionAnimMontageData;
 
 	//
 

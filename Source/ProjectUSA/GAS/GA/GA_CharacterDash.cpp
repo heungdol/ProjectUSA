@@ -56,7 +56,7 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		FVector ForwardDirection = MyCharacter->GetActorForwardVector();
 		FVector RightDirection = MyCharacter->GetActorRightVector();
 
-		// TODO: 만약 멀티로 개조한다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
+		// TODO: 만약 멀티를 본격적으로 들어간다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
 		if (MyCharacter->GetPendingMovementInputVector().Length() > SMALL_NUMBER/* != FVector::ZeroVector*/)
 		{
 			FVector InputVector = MyCharacter->GetPendingMovementInputVector();
