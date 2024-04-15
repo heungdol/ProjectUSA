@@ -3,9 +3,34 @@
 
 #include "GAS/GA/GA_CharacterAction.h"
 
+//void UGA_CharacterAction::SetAnimBlueprintProperties()
+//{
+//
+//}
+
 void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	switch (MoveType)
+	{
+	case ECharacterActionMoveType::Move:
+
+		break;
+
+	case ECharacterActionMoveType::Walk:
+
+		break;
+
+	case ECharacterActionMoveType::Launch:
+
+		break;
+
+	default:
+	case ECharacterActionMoveType::None:
+	
+		break;
+	}
 }
 
 void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)

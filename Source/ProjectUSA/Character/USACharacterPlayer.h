@@ -16,6 +16,9 @@ class PROJECTUSA_API AUSACharacterPlayer : public AUSACharacterBase
 	
 public:
 	AUSACharacterPlayer();
+
+	UPROPERTY (EditDefaultsOnly, BlueprintReadOnly, Category="Character Movement (General Settings)")
+	float FallHaltHeight = 70;
 	
 public:
 	virtual void PossessedBy(class AController* NewController) override;
