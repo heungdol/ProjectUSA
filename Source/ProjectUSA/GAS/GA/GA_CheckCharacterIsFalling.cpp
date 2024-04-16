@@ -32,10 +32,10 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 
 	UAT_CheckCharacterIsFalling* AbilityTask = UAT_CheckCharacterIsFalling::GetNewAbilityTask(this, MyCharacterMovementComponent);
 	
-	AbilityTask->OnPositiveFalling.AddUObject(this, &UGA_CheckCharacterIsFalling::OnPositiveFallingCallback);
-	AbilityTask->OnNegativeFalling.AddUObject(this, &UGA_CheckCharacterIsFalling::OnNegativeFallingCallback);
-	AbilityTask->OnGrounded.AddUObject(this, &UGA_CheckCharacterIsFalling::OnGroundedCallback);
-	AbilityTask->OnFinished.AddUObject(this, &UGA_CheckCharacterIsFalling::OnFinishedCallback);
+	AbilityTask->OnPositiveFalling.AddDynamic(this, &UGA_CheckCharacterIsFalling::OnPositiveFallingCallback);
+	AbilityTask->OnNegativeFalling.AddDynamic(this, &UGA_CheckCharacterIsFalling::OnNegativeFallingCallback);
+	AbilityTask->OnGrounded.AddDynamic(this, &UGA_CheckCharacterIsFalling::OnGroundedCallback);
+	AbilityTask->OnFinished.AddDynamic(this, &UGA_CheckCharacterIsFalling::OnFinishedCallback);
 
 	AbilityTask->ReadyForActivation();
 }

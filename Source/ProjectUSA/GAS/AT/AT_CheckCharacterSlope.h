@@ -3,19 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_CheckCharacterSlope.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnSlopeTrue)
-DECLARE_MULTICAST_DELEGATE(FOnSlopeFalse)
-DECLARE_MULTICAST_DELEGATE(FOnGroundOut)
-
+//DECLARE_MULTICAST_DELEGATE(FOnSlopeTrue)
+//DECLARE_MULTICAST_DELEGATE(FOnSlopeFalse)
+//DECLARE_MULTICAST_DELEGATE(FOnGroundOut)
+//
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_CheckCharacterSlope : public UAbilityTask
+class PROJECTUSA_API UAT_CheckCharacterSlope : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 	
@@ -27,16 +27,12 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 
-	FOnSlopeTrue OnSlopeTrue;
-	FOnSlopeFalse OnSlopeFalse;
-	FOnGroundOut OnGroundOut;
+	FOnSimpleDelegate OnSlopeTrue;
+	FOnSimpleDelegate OnSlopeFalse;
+	FOnSimpleDelegate OnGroundOut;
 	
 public:
-	UFUNCTION()
-	void OnCancelTaskCallback();
-
-	UFUNCTION()
-	void OnEndTaskCallback();
+	virtual void SimpleEndAbilityTask() override;
 
 public:
 	TObjectPtr <class ACharacter> MyCharacter;

@@ -3,16 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_LaunchCharacterForPeriod.generated.h"
-
-DECLARE_MULTICAST_DELEGATE (FOnFinished)
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_LaunchCharacterForPeriod : public UAbilityTask
+class PROJECTUSA_API UAT_LaunchCharacterForPeriod : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 public:
@@ -24,11 +22,10 @@ public:
 
 	virtual void TickTask(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnCancelCallback();
+	virtual void SimpleCancelAbilityTask() override;
 
+	FOnSimpleDelegate OnFinished;
 
-	FOnFinished OnFinished;
 
 protected:
 	UPROPERTY ()

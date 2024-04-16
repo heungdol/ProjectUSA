@@ -3,19 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_MoveToGround.generated.h"
 
-// 땅에 닿을 시 호출할 델리게이트
-DECLARE_MULTICAST_DELEGATE(FOnBeginMovement);
-DECLARE_MULTICAST_DELEGATE(FOnGroundReached);
-//DECLARE_MULTICAST_DELEGATE(FOnEndTask);
+//// 땅에 닿을 시 호출할 델리게이트
+//DECLARE_MULTICAST_DELEGATE(FOnBeginMovement);
+//DECLARE_MULTICAST_DELEGATE(FOnGroundReached);
+////DECLARE_MULTICAST_DELEGATE(FOnEndTask);
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_MoveToGround : public UAbilityTask
+class PROJECTUSA_API UAT_MoveToGround : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 	
@@ -30,32 +30,17 @@ public:
 
 	virtual void TickTask(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnCancelTaskCallback();
-
-	UFUNCTION()
-	void OnEndTaskCallback();
+	virtual void SimpleCancelAbilityTask() override;
+	virtual void SimpleEndAbilityTask() override;
 	
-	FOnBeginMovement OnBeginMovement;
-	FOnGroundReached OnGroundReached;
-	//FOnEndTask OnEndTask;
+	FOnSimpleDelegate OnBeginMovement;
+	FOnSimpleDelegate OnGroundReached;
+
 
 protected:
 	UPROPERTY ()
 	float MoveSpeed;
 
-	//UPROPERTY()
-	//float PreDelay;
-
-	//UPROPERTY()
-	//float PostDelay;
-
 	int8 bIsFinished : 1;
 
-	//float StepPreTime;
-	//float StepActiveTime;
-	//float StepEndTime;
-	//float StepPostTime;
-	//
-	//int CurrentStep = -1;
 };

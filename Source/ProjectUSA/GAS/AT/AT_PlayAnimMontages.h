@@ -3,12 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_PlayAnimMontages.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSimpleDeletage);
-
-// ========================================================================================
 
 USTRUCT(BlueprintType)
 struct FPlayAnimMontageSectionDetail
@@ -58,7 +55,7 @@ struct FPlayAnimMontageData
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_PlayAnimMontages : public UAbilityTask
+class PROJECTUSA_API UAT_PlayAnimMontages : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 	
@@ -66,16 +63,16 @@ public:
 	//UAT_PlayAnimMontages(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(BlueprintAssignable)
-	FSimpleDeletage	OnCompleted;
+	FOnSimpleDelegate	OnCompleted;
 
 	UPROPERTY(BlueprintAssignable)
-	FSimpleDeletage	OnBlendOut;
+	FOnSimpleDelegate	OnBlendOut;
 
 	UPROPERTY(BlueprintAssignable)
-	FSimpleDeletage	OnInterrupted;
+	FOnSimpleDelegate	OnInterrupted;
 
 	UPROPERTY(BlueprintAssignable)
-	FSimpleDeletage	OnCancelled;
+	FOnSimpleDelegate	OnCancelled;
 
 	//UFUNCTION()
 	//void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
@@ -97,15 +94,12 @@ public:
 	virtual void Activate() override;
 
 	/** Called when the ability is asked to cancel from an outside node. What this means depends on the individual task. By default, this does nothing other than ending the task. */
-	virtual void ExternalCancel() override;
+	//virtual void ExternalCancel() override;
 
 	//virtual FString GetDebugString() const override;
 
-	UFUNCTION()
-	void OnEndTaskCallback();
-
-	UFUNCTION()
-	void OnCancelTaskCallback ();
+	virtual void SimpleEndAbilityTask() override;
+	virtual void SimpleCancelAbilityTask() override;
 
 	FTimerHandle CallSectionTimerHandle;
 	void OnSectionTimerHandleEnd();

@@ -28,18 +28,18 @@ void UAT_InputCharacterMoveForPeriod::Activate()
 
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_InputCharacterMoveForPeriod::OnCancelTaskCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_InputCharacterMoveForPeriod::SimpleCancelAbilityTask);
 	}
 
 	if (MyCharacter == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (MyCharacter->GetCharacterMovement() == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
@@ -52,13 +52,13 @@ void UAT_InputCharacterMoveForPeriod::TickTask(float DeltaTime)
 
 	if (MyCharacter == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (MyCharacter->GetCharacterMovement() == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
@@ -66,24 +66,9 @@ void UAT_InputCharacterMoveForPeriod::TickTask(float DeltaTime)
 		+ Direction.Y * MyCharacter->GetActorRightVector();
 
 	MyCharacter->AddMovementInput(InputVector);
-	//MyCharacter->GetCharacterMovement()->Velocity
-
-	//UE_LOG(LogTemp, Log, TEXT("Input AbilityTask Tick"));
 
 	if (Period > 0 && EndTime < GetWorld()->GetTimeSeconds())
 	{
-		OnEndTaskCallback();
+		SimpleEndAbilityTask();
 	}
 }
-
-void UAT_InputCharacterMoveForPeriod::OnCancelTaskCallback()
-{
-	EndTask();
-}
-
-void UAT_InputCharacterMoveForPeriod::OnEndTaskCallback()
-{
-	EndTask();
-}
-
-

@@ -69,8 +69,8 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		AbilityTask0->OnFinish.AddDynamic(AbilityTask1, &UAT_MoveToGround::ReadyForActivation);
 		AbilityTask0->OnFinish.AddDynamic(this, &UGA_CharacterStomp::ApplyActiveEffects);
 
-		AbilityTask1->OnGroundReached.AddUObject(AbilityTask2, &UAT_WaitDelay::ReadyForActivation);
-		AbilityTask1->OnGroundReached.AddUObject(this, &UGA_CharacterStomp::ApplyEndEffects);
+		AbilityTask1->OnGroundReached.AddDynamic(AbilityTask2, &UAT_WaitDelay::ReadyForActivation);
+		AbilityTask1->OnGroundReached.AddDynamic(this, &UGA_CharacterStomp::ApplyEndEffects);
 
 		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::SimpleEndAbility);
 		AbilityTask2->OnFinish.AddDynamic(this, &UGA_CharacterStomp::ApplyPostEffects);

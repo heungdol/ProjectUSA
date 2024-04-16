@@ -35,8 +35,8 @@ void UGA_CheckCharacterCeiling::ActivateAbility(const FGameplayAbilitySpecHandle
 	(this, MyCharacter, MyCharacterCapsuleComponent->GetScaledCapsuleHalfHeight()*2.0f
 		, MyCharacterCapsuleComponent->GetScaledCapsuleRadius());
 
-	AbilityTask->OnCeilingTrue.AddUObject(this, &UGA_CheckCharacterCeiling::ApplayInCeilingEffects);
-	AbilityTask->OnCeilingFalse.AddUObject(this, &UGA_CheckCharacterCeiling::ApplayOutCeilingEffects);
+	AbilityTask->OnCeilingTrue.AddDynamic(this, &UGA_CheckCharacterCeiling::ApplayInCeilingEffects);
+	AbilityTask->OnCeilingFalse.AddDynamic(this, &UGA_CheckCharacterCeiling::ApplayOutCeilingEffects);
 
 	AbilityTask->ReadyForActivation();
 }

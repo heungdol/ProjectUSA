@@ -30,18 +30,18 @@ void UAT_CheckCharacterSlope::Activate()
 	
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_CheckCharacterSlope::OnCancelTaskCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_CheckCharacterSlope::SimpleCancelAbilityTask);
 	}
 
 	if (MyCharacter == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (MyCharacter->GetCharacterMovement() == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 }
@@ -52,19 +52,19 @@ void UAT_CheckCharacterSlope::TickTask(float DeltaTime)
 
 	if (MyCharacter == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (MyCharacter->GetCharacterMovement() == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (MyCharacter->GetCharacterMovement()->CurrentFloor.bBlockingHit == false)
 	{
-		OnEndTaskCallback();
+		SimpleEndAbilityTask();
 		return;
 	}
 
@@ -72,7 +72,6 @@ void UAT_CheckCharacterSlope::TickTask(float DeltaTime)
 	FVector GroundRightVector = FVector::CrossProduct(GroundNormal, MyCharacter->GetActorForwardVector());
 	FVector GroundFowardVector = FVector::CrossProduct(GroundRightVector, GroundNormal);
 	GroundFowardVector.Normalize();
-	
 
 
 	FVector CharacterLocation = MyCharacter->GetActorLocation();
@@ -90,7 +89,8 @@ void UAT_CheckCharacterSlope::TickTask(float DeltaTime)
 		if (bIsCharacterOnSlopeWithForwardDirection == false)
 		{
 			bIsCharacterOnSlopeWithForwardDirection = true;
-			OnSlopeTrue.Broadcast();
+			
+			BroadcastSimpleDelegate(OnSlopeTrue);
 		}
 	}
 	else
@@ -98,20 +98,17 @@ void UAT_CheckCharacterSlope::TickTask(float DeltaTime)
 		if (bIsCharacterOnSlopeWithForwardDirection == true)
 		{
 			bIsCharacterOnSlopeWithForwardDirection = false;
-			OnSlopeFalse.Broadcast();
+
+			BroadcastSimpleDelegate (OnSlopeFalse);
 		}
 	}
 }
 
-void UAT_CheckCharacterSlope::OnCancelTaskCallback()
-{
-	EndTask();
-}
 
-void UAT_CheckCharacterSlope::OnEndTaskCallback()
+void UAT_CheckCharacterSlope::SimpleEndAbilityTask()
 {
-	OnGroundOut.Broadcast();
-
-	EndTask();
+	BroadcastSimpleDelegate(OnGroundOut);
+	
+	Super::SimpleEndAbilityTask();
 }
 

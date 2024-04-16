@@ -40,7 +40,7 @@ void UGA_CharacterJump::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	UAT_LaunchCharacterForPeriod* AbilityTask = UAT_LaunchCharacterForPeriod::GetNewAbilityTask
 	(this, JumpVelocity, false, true, JumpMaxHoldTime);
 
-	AbilityTask->OnFinished.AddUObject(this, &UGA_CharacterJump::SimpleEndAbility);
+	AbilityTask->OnFinished.AddDynamic(this, &UGA_CharacterJump::SimpleEndAbility);
 
 	AbilityTask->ReadyForActivation();
 }

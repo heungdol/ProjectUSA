@@ -83,8 +83,8 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		AbilityTask->ReadyForActivation();
 
 		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, DashAnimMontageData);
-		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
-		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
+		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 		AbilityTaskMontage->ReadyForActivation();
 
 

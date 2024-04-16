@@ -33,12 +33,12 @@ void UAT_CheckCharacterCeiling::Activate()
 
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_CheckCharacterCeiling::OnCancelTaskCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_CheckCharacterCeiling::SimpleCancelAbilityTask);
 	}
 
 	if (MyCharacter == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 	}
 }
 
@@ -48,13 +48,13 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 
 	if (MyCharacter == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (MyCharacter->GetCharacterMovement() == nullptr)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
@@ -91,7 +91,7 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 		if (bIsCharacterCeilingDetected == false)
 		{
 			bIsCharacterCeilingDetected = true;
-			OnCeilingTrue.Broadcast();
+			BroadcastSimpleDelegate(OnCeilingTrue);
 		}
 	}
 	else
@@ -99,17 +99,7 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 		if (bIsCharacterCeilingDetected == true)
 		{
 			bIsCharacterCeilingDetected = false;
-			OnCeilingFalse.Broadcast();
+			BroadcastSimpleDelegate(OnCeilingFalse);
 		}
 	}
-}
-
-void UAT_CheckCharacterCeiling::OnCancelTaskCallback()
-{
-	EndTask();
-}
-
-void UAT_CheckCharacterCeiling::OnEndTaskCallback()
-{
-	EndTask();
 }

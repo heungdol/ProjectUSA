@@ -40,11 +40,9 @@ void UAT_WaitDelay::Activate()
 
 void UAT_WaitDelay::OnTimeFinish()
 {
-	if (ShouldBroadcastAbilityTaskDelegates())
-	{
-		OnFinish.Broadcast();
-	}
-	EndTask();
+	BroadcastSimpleDelegate(OnFinish);
+
+	SimpleEndAbilityTask();
 }
 
 FString UAT_WaitDelay::GetDebugString() const

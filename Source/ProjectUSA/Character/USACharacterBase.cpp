@@ -211,7 +211,7 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 				continue;
 			}
 
-			USA_LOG(LogTemp, Log, TEXT("Binding Functions related with GAS"));
+			//USA_LOG(LogTemp, Log, TEXT("Binding Functions related with GAS"));
 
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Triggered,
 				this, &AUSACharacterBase::InputPressGameplayAbilityByInputID, GameplayActiveAbility.InputID);
@@ -279,7 +279,7 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
-	USA_LOG(LogTemp, Log, TEXT("ASC is here"));
+	//USA_LOG(LogTemp, Log, TEXT("ASC is here"));
 
 	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
 
@@ -288,17 +288,17 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
-	USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec is here"));
+	//USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec is here"));
 
 	if (GameplayAbilitySpec->IsActive())
 	{
-		USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec AbilitySpecInputPressed"));
+		//USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec AbilitySpecInputPressed"));
 
 		ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
 	}
 	else
 	{
-		USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec TryActivateAbility"));
+		//USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec TryActivateAbility"));
 
 		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 	}
@@ -481,12 +481,12 @@ void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag
 {
 	if (NewCount > 0)
 	{
-		USA_LOG(LogTemp, Log, TEXT("First on Hand"));
+		//USA_LOG(LogTemp, Log, TEXT("First on Hand"));
 		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
 	}
 	else
 	{
-		USA_LOG(LogTemp, Log, TEXT("First on Spine"));
+		//USA_LOG(LogTemp, Log, TEXT("First on Spine"));
 		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
 	}
 }
@@ -632,7 +632,7 @@ void AUSACharacterBase::SetupGAS()
 	{
 		//if (ASC != nullptr)
 		//{
-		USA_LOG(LogTemp, Log, TEXT("ASC is here"));
+		//USA_LOG(LogTemp, Log, TEXT("ASC is here"));
 
 			for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
 			{
@@ -642,7 +642,7 @@ void AUSACharacterBase::SetupGAS()
 
 			for (const auto& GameplayActionAbility : GameplayActiveAbilities)
 			{
-				USA_LOG(LogTemp, Log, TEXT("Try to give GameplayActiveAbilities... "))
+				//USA_LOG(LogTemp, Log, TEXT("Try to give GameplayActiveAbilities... "))
 
 					FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
 
@@ -653,7 +653,7 @@ void AUSACharacterBase::SetupGAS()
 
 				ASC->GiveAbility(GameplayAbilityActionSpec);
 
-				USA_LOG(LogTemp, Log, TEXT("Gave GameplayActiveAbilities! "))
+				//USA_LOG(LogTemp, Log, TEXT("Gave GameplayActiveAbilities! "))
 			}
 
 			// 게임 시작 어빌리티

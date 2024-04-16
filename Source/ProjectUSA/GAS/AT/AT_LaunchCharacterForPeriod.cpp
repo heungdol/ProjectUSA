@@ -32,7 +32,7 @@ void UAT_LaunchCharacterForPeriod::Activate()
 	
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_LaunchCharacterForPeriod::OnCancelCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_LaunchCharacterForPeriod::SimpleCancelAbilityTask);
 	}
 }
 
@@ -55,20 +55,23 @@ void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 	
 	if (Period < 0)
 	{
-		OnFinished.Broadcast();
-		EndTask();
+		BroadcastSimpleDelegate (OnFinished);
+
+		SimpleEndAbilityTask();
 	}
 
 	if (Period > SMALL_NUMBER
 		&& EndTime < GetWorld()->GetTimeSeconds())
 	{
-		OnFinished.Broadcast();
-		EndTask();
+		BroadcastSimpleDelegate (OnFinished);
+
+		SimpleEndAbilityTask();
 	}
 }
 
-void UAT_LaunchCharacterForPeriod::OnCancelCallback()
+void UAT_LaunchCharacterForPeriod::SimpleCancelAbilityTask()
 {
-	OnFinished.Broadcast();
-	EndTask();
+	BroadcastSimpleDelegate (OnFinished);
+
+	Super::SimpleCancelAbilityTask();
 }

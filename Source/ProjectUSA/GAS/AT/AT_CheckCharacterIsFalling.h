@@ -3,19 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_CheckCharacterIsFalling.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnPositiveFalling);
-DECLARE_MULTICAST_DELEGATE(FOnNegativeFalling);
-DECLARE_MULTICAST_DELEGATE(FOnGrounded);
-DECLARE_MULTICAST_DELEGATE(FOnFinished);
+//DECLARE_MULTICAST_DELEGATE(FOnPositiveFalling);
+//DECLARE_MULTICAST_DELEGATE(FOnNegativeFalling);
+//DECLARE_MULTICAST_DELEGATE(FOnGrounded);
+//DECLARE_MULTICAST_DELEGATE(FOnFinished);
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_CheckCharacterIsFalling : public UAbilityTask
+class PROJECTUSA_API UAT_CheckCharacterIsFalling : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 	
@@ -29,10 +29,10 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 	
 
-	FOnPositiveFalling OnPositiveFalling;
-	FOnNegativeFalling OnNegativeFalling;
-	FOnGrounded OnGrounded;
-	FOnFinished OnFinished;
+	FOnSimpleDelegate OnPositiveFalling;
+	FOnSimpleDelegate OnNegativeFalling;
+	FOnSimpleDelegate OnGrounded;
+	FOnSimpleDelegate OnFinished;
 
 
 protected:

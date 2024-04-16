@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_WaitDelay.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUSAOnFinisheDelegate);
+
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_WaitDelay : public UAbilityTask
+class PROJECTUSA_API UAT_WaitDelay : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 
@@ -20,7 +20,7 @@ public:
 	UAT_WaitDelay(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(BlueprintAssignable)
-	FUSAOnFinisheDelegate	OnFinish;
+	FOnSimpleDelegate OnFinish;
 
 	virtual void Activate() override;
 

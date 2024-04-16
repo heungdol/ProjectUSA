@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_CheckCharacterCeiling.generated.h"
 
 //DECLARE_MULTICAST_DELEGATE(FOnCeilingTrue)
 //DECLARE_MULTICAST_DELEGATE(FOnCeilingFalse)
 
-DECLARE_MULTICAST_DELEGATE(FOnSimpleDelegate)
+//DECLARE_MULTICAST_DELEGATE(FOnSimpleDelegate)
 
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_CheckCharacterCeiling : public UAbilityTask
+class PROJECTUSA_API UAT_CheckCharacterCeiling : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 	
@@ -30,13 +30,6 @@ public:
 
 	FOnSimpleDelegate OnCeilingTrue;
 	FOnSimpleDelegate OnCeilingFalse;
-
-public:
-	UFUNCTION()
-	void OnCancelTaskCallback();
-
-	UFUNCTION()
-	void OnEndTaskCallback();
 
 public:
 	TObjectPtr <class ACharacter> MyCharacter;

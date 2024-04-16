@@ -38,8 +38,6 @@ UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask(UG
 	MyObj->bSimulatedTask = true;
 	MyObj->bIsFinished = false;
 
-	//MyObj->ForceNetUpdate();
-
 	return MyObj;
 }
 
@@ -60,24 +58,6 @@ void UAT_MoveToLocationByVelocity::Activate()
 	{
 		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelTaskCallback);
 	}
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* CharMoveComp = nullptr;
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-	//	}
-	//}
-
-	//if (CharMoveComp != nullptr)
-	//{
-	//	CharMoveComp->bOrientRotationToMovement = false;
-	//}
-
 }
 
 void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
@@ -162,46 +142,12 @@ void UAT_MoveToLocationByVelocity::OnCancelTaskCallback()
 {
 	bIsFinished = true;
 
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* CharMoveComp = nullptr;
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-	//	}
-	//}
-
-	//if (CharMoveComp != nullptr)
-	//{
-	//	CharMoveComp->bOrientRotationToMovement = true;
-	//}
-
-	EndTask();
+	ExternalCancel();
 }
 
 void UAT_MoveToLocationByVelocity::OnEndTaskCallback()
 {
 	bIsFinished = true;
-
-	//AActor* MyActor = GetAvatarActor();
-	//ACharacter* MyCharacter = nullptr;
-	//UCharacterMovementComponent* CharMoveComp = nullptr;
-	//if (MyActor)
-	//{
-	//	MyCharacter = Cast<ACharacter>(MyActor);
-	//	if (MyCharacter)
-	//	{
-	//		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-	//	}
-	//}
-
-	//if (CharMoveComp != nullptr)
-	//{
-	//	CharMoveComp->bOrientRotationToMovement = true;
-	//}
 
 	EndTask();
 }

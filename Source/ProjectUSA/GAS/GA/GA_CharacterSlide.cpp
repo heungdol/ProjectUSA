@@ -58,15 +58,15 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	AbilityTaskMove->ReadyForActivation();
 
 	UAT_CheckCharacterSlope* AbilityTaskSlope = UAT_CheckCharacterSlope::GetNewAbilityTask(this, Character, SlideStartAngle);
-	AbilityTaskSlope->OnSlopeFalse.AddUObject(this, &UGA_CharacterSlide::OnSlopeFalse);
-	AbilityTaskSlope->OnSlopeTrue.AddUObject(this, &UGA_CharacterSlide::OnSlopeTrue);
-	AbilityTaskSlope->OnGroundOut.AddUObject(this, &UGA_CharacterSlide::OnGroundOut);
+	AbilityTaskSlope->OnSlopeFalse.AddDynamic(this, &UGA_CharacterSlide::OnSlopeFalse);
+	AbilityTaskSlope->OnSlopeTrue.AddDynamic(this, &UGA_CharacterSlide::OnSlopeTrue);
+	AbilityTaskSlope->OnGroundOut.AddDynamic(this, &UGA_CharacterSlide::OnGroundOut);
 	AbilityTaskSlope->ReadyForActivation();
 
 	UAT_CheckCharacterCeiling* AbilityTaskCeiling = UAT_CheckCharacterCeiling::GetNewAbilityTask
 	(this, Character, SlideDetectCeilingHeight, SlideDetectCeilingRadius);
-	AbilityTaskCeiling->OnCeilingFalse.AddUObject(this, &UGA_CharacterSlide::OnCeilingFalse);
-	AbilityTaskCeiling->OnCeilingTrue.AddUObject(this, &UGA_CharacterSlide::OnCeilingTrue);
+	AbilityTaskCeiling->OnCeilingFalse.AddDynamic(this, &UGA_CharacterSlide::OnCeilingFalse);
+	AbilityTaskCeiling->OnCeilingTrue.AddDynamic(this, &UGA_CharacterSlide::OnCeilingTrue);
 	AbilityTaskCeiling->ReadyForActivation();
 
 	UAbilityTask_WaitGameplayTagAdded* AbilityTaskPressed = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, SlideInputPressedTag, GetAvatarActorFromActorInfo(), false);
@@ -78,13 +78,9 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	AbilityTaskReleased->ReadyForActivation();
 
 	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, SlideAnimMontageData);
-	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
-	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::OnEndTaskCallback);
+	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	AbilityTaskMontage->ReadyForActivation();
-
-	//UAT_WaitDelay* AbilityTaskWait = UAT_WaitDelay::GetNewAbilityTask(this, SlidePeriod);
-	//AbilityTaskWait->OnFinish.AddDynamic(this, &UGA_CharacterSlide::OnEndAbilityCallback);
-	//AbilityTaskWait->ReadyForActivation();
 }
 
 
@@ -113,8 +109,6 @@ void UGA_CharacterSlide::OnSlopeTrue()
 	CheckAndRenewEndTimerHandle();
 
 	ApplyEffectsViaArray(InSlopeEffects);
-
-	//UE_LOG(LogTemp, Log, TEXT("Slope True"));
 }
 
 void UGA_CharacterSlide::OnSlopeFalse()
@@ -123,8 +117,6 @@ void UGA_CharacterSlide::OnSlopeFalse()
 	CheckAndRenewEndTimerHandle();
 
 	ApplyEffectsViaArray(OutSlopeEffects);
-
-	//UE_LOG(LogTemp, Log, TEXT("Slope False"));
 }
 
 void UGA_CharacterSlide::OnCeilingTrue()
@@ -133,8 +125,6 @@ void UGA_CharacterSlide::OnCeilingTrue()
 	CheckAndRenewEndTimerHandle();
 
 	ApplyEffectsViaArray(InCeilingEffects);
-
-	//UE_LOG(LogTemp, Log, TEXT("Ceiling True"));
 }
 
 void UGA_CharacterSlide::OnCeilingFalse()
@@ -143,24 +133,18 @@ void UGA_CharacterSlide::OnCeilingFalse()
 	CheckAndRenewEndTimerHandle();
 
 	ApplyEffectsViaArray(OutCeilingEffects);
-
-	//UE_LOG(LogTemp, Log, TEXT("Ceiling False"));
 }
 
 void UGA_CharacterSlide::OnInputPressed()
 {
 	bIsReleased = false;
 	CheckAndRenewEndTimerHandle();
-
-	//UE_LOG(LogTemp, Log, TEXT("Input Pressed"));
 }
 
 void UGA_CharacterSlide::OnInputReleased()
 {
 	bIsReleased = true;
 	CheckAndRenewEndTimerHandle();
-
-	//UE_LOG(LogTemp, Log, TEXT("Input Released"));
 }
 
 void UGA_CharacterSlide::OnGroundOut()
@@ -177,13 +161,7 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 	if (bIsCeiling == true)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(EndTimerHandle);
-		//EndTimerHandle.Invalidate();
 	}
-	//else if (bIsSlope == true && bIsReleased == false)
-	//{
-	//	GetWorld()->GetTimerManager().ClearTimer(EndTimerHandle);
-	//	//EndTimerHandle.Invalidate();
-	//}
 	else
 	{
 		if (GetWorld()->GetTimerManager().IsTimerActive (EndTimerHandle) == false)
@@ -201,8 +179,6 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 			}
 		}
 	}
-
-	//UE_LOG(LogTemp, Log, TEXT("%i"), EndTimerHandle.IsValid());
 	
 	if (bIsGrounded == false)
 	{

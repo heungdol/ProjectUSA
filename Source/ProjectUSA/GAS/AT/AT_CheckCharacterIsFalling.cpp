@@ -25,45 +25,44 @@ void UAT_CheckCharacterIsFalling::Activate()
 {
 	Super::Activate();
 
-	//UE_LOG(LogTemp, Log, TEXT("Abiltiy Task Activate"));
 
 	if (MyCharacterMovementComponent == nullptr)
 	{
-		OnFinished.Broadcast();
+		BroadcastSimpleDelegate(OnFinished);
 
-		EndTask();
+		SimpleCancelAbilityTask();
+		return;
 	}
 
-		bIsFalling = MyCharacterMovementComponent->IsFalling();
+	bIsFalling = MyCharacterMovementComponent->IsFalling();
 
-		if (bIsFalling)
+	if (bIsFalling)
+	{
+		if (MyCharacterMovementComponent->Velocity.Z > 1)
 		{
-			if (MyCharacterMovementComponent->Velocity.Z > 1)
-			{
-				OnPositiveFalling.Broadcast();
-			}
-			else
-			{
-				OnNegativeFalling.Broadcast();
-			}
+			BroadcastSimpleDelegate(OnPositiveFalling);
 		}
 		else
 		{
-			OnGrounded.Broadcast();
+			BroadcastSimpleDelegate(OnNegativeFalling);
 		}
+	}
+	else
+	{
+		BroadcastSimpleDelegate(OnGrounded);
+	}
 }
 
 void UAT_CheckCharacterIsFalling::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 
-	//UE_LOG(LogTemp, Log, TEXT("Abiltiy Task Tick"));
-
 	if (MyCharacterMovementComponent == nullptr)
 	{
-		OnFinished.Broadcast();
+		BroadcastSimpleDelegate(OnFinished);
 
-		EndTask();
+		SimpleCancelAbilityTask();
+		return;
 	}
 
 	if (bIsFalling != MyCharacterMovementComponent->IsFalling())	
@@ -74,22 +73,16 @@ void UAT_CheckCharacterIsFalling::TickTask(float DeltaTime)
 		{
 			if (MyCharacterMovementComponent->Velocity.Z > SMALL_NUMBER)
 			{
-				//UE_LOG(LogTemp, Log, TEXT("Positive Falling"));
-
-				OnPositiveFalling.Broadcast();
+				BroadcastSimpleDelegate(OnPositiveFalling);
 			}
 			else
 			{
-				//UE_LOG(LogTemp, Log, TEXT("Negative Falling"));
-
-				OnNegativeFalling.Broadcast();
+				BroadcastSimpleDelegate(OnNegativeFalling);
 			}
 		}
 		else
 		{
-			//UE_LOG(LogTemp, Log, TEXT("Grounded"));
-
-			OnGrounded.Broadcast();
+			BroadcastSimpleDelegate(OnGrounded);
 		}
 	}
 }

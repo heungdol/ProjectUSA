@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/Tasks/AbilityTask.h"
+#include "GAS/AT/USAAbilityTask.h"
 #include "AT_InputCharacterMoveForPeriod.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTUSA_API UAT_InputCharacterMoveForPeriod : public UAbilityTask
+class PROJECTUSA_API UAT_InputCharacterMoveForPeriod : public UUSAAbilityTask
 {
 	GENERATED_BODY()
 
@@ -24,11 +24,11 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 
 public:
-	UFUNCTION()
-	void OnCancelTaskCallback();
+	//UFUNCTION()
+	//void OnCancelTaskCallback();
 
-	UFUNCTION()
-	void OnEndTaskCallback();
+	//UFUNCTION()
+	//void OnEndTaskCallback();
 
 public:
 	TObjectPtr <class ACharacter> MyCharacter;

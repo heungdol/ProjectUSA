@@ -34,7 +34,7 @@ void UAT_PlayAnimMontages::Activate()
 
 	if (AbilitySystemComponent.IsValid())
 	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_PlayAnimMontages::OnCancelTaskCallback);
+		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_PlayAnimMontages::SimpleCancelAbilityTask);
 	}
 
 	bool bPlayedMontage = false;
@@ -56,7 +56,7 @@ void UAT_PlayAnimMontages::Activate()
 
 	if (!bPlayedMontage)
 	{
-		OnCancelTaskCallback();
+		SimpleCancelAbilityTask();
 		return;
 	}
 
@@ -71,14 +71,14 @@ void UAT_PlayAnimMontages::Activate()
 	SetWaitingOnAvatar();
 }
 
-void UAT_PlayAnimMontages::ExternalCancel()
-{
-	OnCancelTaskCallback();
+//void UAT_PlayAnimMontages::ExternalCancel()
+//{
+//	Super::ExternalCancel();
+//	
+//	//SimpleCancelAbilityTask();
+//}
 
-	Super::ExternalCancel();
-}
-
-void UAT_PlayAnimMontages::OnEndTaskCallback()
+void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 {
 	if (PlayAnimMontageData == nullptr)
 	{
@@ -102,17 +102,15 @@ void UAT_PlayAnimMontages::OnEndTaskCallback()
 		}
 	}
 
-	EndTask();
+	Super::SimpleEndAbilityTask();
+
 }
 
-void UAT_PlayAnimMontages::OnCancelTaskCallback()
+void UAT_PlayAnimMontages::SimpleCancelAbilityTask()
 {
 	StopPlayingMontage();
-
-	if (ShouldBroadcastAbilityTaskDelegates())
-	{
-		OnCancelled.Broadcast();
-	}
+	
+	Super::SimpleCancelAbilityTask();
 }
 
 void UAT_PlayAnimMontages::OnSectionTimerHandleEnd()
