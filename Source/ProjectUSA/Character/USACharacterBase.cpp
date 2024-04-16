@@ -182,95 +182,6 @@ void AUSACharacterBase::BeginPlay()
 
 	CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-
-	// 게임 어빌리티 부여
-	// 캐릭터 파괴를 고려하여 BeginPlay 단에 옮겨 놓았다
-	if (HasAuthority() == true)
-	{
-		if (ASC != nullptr)
-		{
-			for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
-			{
-				FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
-				ASC->GiveAbility(GameplayAbilitySpec);
-			}
-
-			for (const auto& GameplayActionAbility : GameplayActiveAbilities)
-			{
-				FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
-
-				if (GameplayActionAbility.InputID >= 0)
-				{
-					GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
-				}
-
-				ASC->GiveAbility(GameplayAbilityActionSpec);
-			}
-
-			// 게임 시작 어빌리티
-			for (const auto& GameplayStartAbility : GameplayStartAbilities)
-			{
-				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
-				ASC->GiveAbility(GameplayStartAbility);
-			}
-		
-			for (const auto& GameplayStartAbility : GameplayStartAbilities)
-			{
-				if (GameplayStartAbility == nullptr)
-				{
-					continue;
-				}
-
-				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
-
-				if (GameplayAbilitySpec == nullptr)
-				{
-					continue;
-				}
-
-				if (GameplayAbilitySpec->IsActive())
-				{
-					ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
-				}
-				else
-				{
-					ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
-				}
-			}
-
-			//
-
-			for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
-			{
-				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartActionAbility);
-				ASC->GiveAbility(GameplayStartActionAbility);
-			}
-
-			for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
-			{
-				if (GameplayStartActionAbility == nullptr)
-				{
-					continue;
-				}
-
-				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartActionAbility);
-
-				if (GameplayAbilitySpec == nullptr)
-				{
-					continue;
-				}
-
-				if (GameplayAbilitySpec->IsActive())
-				{
-					ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
-				}
-				else
-				{
-					ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
-				}
-			}
-		}
-	}
 }
 
 // Called every frame
@@ -300,7 +211,7 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 				continue;
 			}
 
-			//USA_LOG(LogTemp, Log, TEXT("Binding Functions related with GAS"));
+			USA_LOG(LogTemp, Log, TEXT("Binding Functions related with GAS"));
 
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Triggered,
 				this, &AUSACharacterBase::InputPressGameplayAbilityByInputID, GameplayActiveAbility.InputID);
@@ -368,6 +279,8 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
+	USA_LOG(LogTemp, Log, TEXT("ASC is here"));
+
 	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
 
 	if (GameplayAbilitySpec == nullptr)
@@ -375,12 +288,18 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
+	USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec is here"));
+
 	if (GameplayAbilitySpec->IsActive())
 	{
+		USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec AbilitySpecInputPressed"));
+
 		ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
 	}
 	else
 	{
+		USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec TryActivateAbility"));
+
 		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 	}
 }
@@ -562,12 +481,12 @@ void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag
 {
 	if (NewCount > 0)
 	{
-		UE_LOG(LogTemp, Log, TEXT("First on Hand"));
+		USA_LOG(LogTemp, Log, TEXT("First on Hand"));
 		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("First on Spine"));
+		USA_LOG(LogTemp, Log, TEXT("First on Spine"));
 		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
 	}
 }
@@ -706,6 +625,100 @@ void AUSACharacterBase::SetupGAS()
 	if (ASC == nullptr)
 	{
 		return;
+	}
+
+	// 게임 어빌리티 부여
+	if (HasAuthority() == true)
+	{
+		//if (ASC != nullptr)
+		//{
+		USA_LOG(LogTemp, Log, TEXT("ASC is here"));
+
+			for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
+			{
+				FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
+				ASC->GiveAbility(GameplayAbilitySpec);
+			}
+
+			for (const auto& GameplayActionAbility : GameplayActiveAbilities)
+			{
+				USA_LOG(LogTemp, Log, TEXT("Try to give GameplayActiveAbilities... "))
+
+					FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
+
+				if (GameplayActionAbility.InputID >= 0)
+				{
+					GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
+				}
+
+				ASC->GiveAbility(GameplayAbilityActionSpec);
+
+				USA_LOG(LogTemp, Log, TEXT("Gave GameplayActiveAbilities! "))
+			}
+
+			// 게임 시작 어빌리티
+			for (const auto& GameplayStartAbility : GameplayStartAbilities)
+			{
+				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
+				ASC->GiveAbility(GameplayStartAbility);
+			}
+
+			for (const auto& GameplayStartAbility : GameplayStartAbilities)
+			{
+				if (GameplayStartAbility == nullptr)
+				{
+					continue;
+				}
+
+				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
+
+				if (GameplayAbilitySpec == nullptr)
+				{
+					continue;
+				}
+
+				if (GameplayAbilitySpec->IsActive())
+				{
+					ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+				}
+				else
+				{
+					ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+				}
+			}
+
+			//
+
+			//for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
+			//{
+			//	FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartActionAbility);
+			//	ASC->GiveAbility(GameplayStartActionAbility);
+			//}
+
+			//for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
+			//{
+			//	if (GameplayStartActionAbility == nullptr)
+			//	{
+			//		continue;
+			//	}
+
+			//	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartActionAbility);
+
+			//	if (GameplayAbilitySpec == nullptr)
+			//	{
+			//		continue;
+			//	}
+
+			//	if (GameplayAbilitySpec->IsActive())
+			//	{
+			//		ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+			//	}
+			//	else
+			//	{
+			//		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+			//	}
+			//}
+		//}
 	}
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)

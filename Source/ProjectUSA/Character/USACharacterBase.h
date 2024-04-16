@@ -247,8 +247,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartActionAbilites;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	//TArray <TSubclassOf<class UGameplayAbility>> GameplayStartActionAbilites;
 
 
 

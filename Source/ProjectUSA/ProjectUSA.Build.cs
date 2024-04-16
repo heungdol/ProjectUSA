@@ -12,7 +12,7 @@ public class ProjectUSA : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput" });
 
-        PrivateDependencyModuleNames.AddRange(new string[] {
+        PublicDependencyModuleNames.AddRange(new string[] {
             "GameFeatures",
             "GameplayAbilities",
             "GameplayTasks",

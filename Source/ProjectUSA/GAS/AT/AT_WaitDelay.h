@@ -6,7 +6,7 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AT_WaitDelay.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWaitDelayDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUSAOnFinisheDelegate);
 
 /**
  * 
@@ -20,7 +20,7 @@ public:
 	UAT_WaitDelay(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(BlueprintAssignable)
-	FWaitDelayDelegate	OnFinish;
+	FUSAOnFinisheDelegate	OnFinish;
 
 	virtual void Activate() override;
 

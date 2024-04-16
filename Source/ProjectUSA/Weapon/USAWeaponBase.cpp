@@ -51,6 +51,11 @@ void AUSAWeaponBase::Tick(float DeltaTime)
 
 void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(UAbilitySystemComponent* InASC)
 {
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+
 	if (InASC == nullptr)
 	{
 		return;
@@ -75,6 +80,11 @@ void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(UAbilitySystemComponent* In
 
 void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(UAbilitySystemComponent* InASC)
 {
+	if (HasAuthority() == false)
+	{
+		return;
+	}
+
 	if (InASC == nullptr)
 	{
 		return;
