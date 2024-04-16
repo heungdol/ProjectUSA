@@ -31,6 +31,8 @@
 
 #include "Components/SkeletalMeshComponent.h"
 
+#include "Weapon/USAWeaponBase.h"
+
 
 #include "ProjectUSA.h"
 
@@ -50,72 +52,59 @@ void FUSACharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovemen
 	InMovementComponet->BrakingDecelerationWalking = FUSACharacterMovementWalkInfo::BrakingDecelerationWalking;
 }
 
-//void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
-//{
-//	if (InCharacter == nullptr)
-//	{
-//		return;
-//	}
-//
-//	//bool bIsGrounded = false;
-//	//FVector RenewLocation = FVector::ZeroVector;
-//
-//	//if (InCharacter->GetCharacterMovement() != nullptr
-//	//	&& InCharacter->GetCharacterMovement()->IsFalling() == false)
-//	//{
-//	//	//bIsGrounded = true;
-//
-//	//	//RenewLocation = InCharacter->GetCharacterMovement()->CurrentFloor.HitResult.Location;
-//	//	//RenewLocation += FVector::UpVector * CapsuleHeight * 0.5f;
-//
-//	//	FVector NewLocation = InCharacter->GetActorLocation();
-//	//	NewLocation.Z += (CapsuleHeight * 0.5f - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-//
-//	//	InCharacter->SetActorLocation(NewLocation);
-//	//}
-//
-//	if (InCharacter->GetCharacterMovement() != nullptr
-//		&& InCharacter->GetCharacterMovement()->IsFalling() == false
-//		&& InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() > CapsuleHaflHeight)
-//	{
-//		FVector NewLocation = InCharacter->GetActorLocation();
-//		NewLocation.Z += (CapsuleHaflHeight + CapsuleRadius - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()) ;
-//
-//		InCharacter->SetActorLocation(NewLocation);
-//	}
-//
-//	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
-//	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
-//
-//	InCharacter->GetCapsuleComponent()->UpdateBodySetup();
-//}
+void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
+{
+	if (InCharacter == nullptr)
+	{
+		return;
+	}
 
+	if (InCharacter->GetCapsuleComponent() != nullptr
+		&& InCharacter->GetMovementComponent() != nullptr
+		/*&& InCharacter->GetCharacterMovement()->IsFalling() == false*/
+		/*&& InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() > CapsuleHaflHeight*/)
+	{
+		FVector NewLocation = InCharacter->GetActorLocation();
 
-//void FUSACharacterCapsuleInfo::RenewCharacterCapsuleIncludeLocation(ACharacter* InCharacter)
-//{
-//	if (InCharacter == nullptr)
-//	{
-//		return;
-//	}
-//
-//	float PrevCharacterCapsuleHalfHeight = InCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-//	FVector PrevCharacterLocation = InCharacter->GetActorLocation();
-//
-//	
-//	float RenewCharacterCapsuleHalfHeight = CapsuleHeight * 0.5f;
-//	FVector RenewCharacterLocaiton = PrevCharacterLocation + FVector::UpVector
-//		* (RenewCharacterCapsuleHalfHeight - PrevCharacterCapsuleHalfHeight);
-//
-//	//UE_LOG(LogTemp, Log, TEXT("Prev %f, New %f"), PrevCharacterCapsuleHalfHeight, RenewCharacterCapsuleHalfHeight);
-//
-//
-//	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHeight * 0.5f);
-//	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
-//
-//	InCharacter->GetMesh()->SetRelativeLocation(FVector(0, 0, CapsuleHeight * -0.5f));
-//	
-//	InCharacter->SetActorLocation(RenewCharacterLocaiton);
-//}
+		switch (CapsulePivot)
+		{
+		case EUSACharacterCapsulePivot::Top:
+			NewLocation.Z += -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+			break;
+
+		case EUSACharacterCapsulePivot::Center:
+			break;
+
+		case EUSACharacterCapsulePivot::Bottom:
+			NewLocation.Z += (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+			break;
+		}
+
+		InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+
+	if (InCharacter->GetMesh() != nullptr)
+	{
+		switch (CapsulePivot)
+		{
+		case EUSACharacterCapsulePivot::Top:
+			InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight));
+			break;
+
+		case EUSACharacterCapsulePivot::Center:
+			InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight));
+			break;
+
+		case EUSACharacterCapsulePivot::Bottom:
+			InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleHaflHeight));
+			break;
+		}
+	}
+
+	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
+	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+}
+
 
 // ====================================================================================
 // ====================================================================================
@@ -191,7 +180,7 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 
 	// 게임 어빌리티 부여
@@ -227,11 +216,16 @@ void AUSACharacterBase::BeginPlay()
 		
 			for (const auto& GameplayStartAbility : GameplayStartAbilities)
 			{
+				if (GameplayStartAbility == nullptr)
+				{
+					continue;
+				}
+
 				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
 
 				if (GameplayAbilitySpec == nullptr)
 				{
-					return;
+					continue;
 				}
 
 				if (GameplayAbilitySpec->IsActive())
@@ -254,11 +248,16 @@ void AUSACharacterBase::BeginPlay()
 
 			for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
 			{
+				if (GameplayStartActionAbility == nullptr)
+				{
+					continue;
+				}
+
 				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartActionAbility);
 
 				if (GameplayAbilitySpec == nullptr)
 				{
-					return;
+					continue;
 				}
 
 				if (GameplayAbilitySpec->IsActive())
@@ -421,7 +420,7 @@ void AUSACharacterBase::TryGameplayAbilityByGameplayTag(FName GameplayTag)
 	ASC->TryActivateAbilitiesByTag(TagContainer);
 }
 
-void AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
 	{
@@ -439,7 +438,7 @@ void AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback(const FGameplayTag
 
 }
 
-void AUSACharacterBase::GameplayTagIgnoreMoveInputCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetController () == nullptr)
 	{
@@ -456,7 +455,7 @@ void AUSACharacterBase::GameplayTagIgnoreMoveInputCallback(const FGameplayTag Ca
 	}
 }
 
-void AUSACharacterBase::GameplayTagVelocityZeroCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::OnGameplayTagCallback_VelocityZero(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
 	{
@@ -475,7 +474,7 @@ void AUSACharacterBase::GameplayTagVelocityZeroCallback(const FGameplayTag Callb
 	}
 }
 
-void AUSACharacterBase::GameplayTagCanNotWalkOffLedgeCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
 	{
@@ -494,7 +493,41 @@ void AUSACharacterBase::GameplayTagCanNotWalkOffLedgeCallback(const FGameplayTag
 	}
 }
 
-void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::OnGameplayTagCallback_Walk(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetCharacterMovement() == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		CharacterMovementRealWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	}
+	else
+	{
+		CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	}
+}
+
+void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (GetCapsuleComponent() == nullptr)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		CharacterCapsuleFallInfo.RenewCharacterCapsule(this);
+	}
+	else
+	{
+		CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	}
+}
+
+void AUSACharacterBase::OnGameplayTagCallback_Slide(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
 	{
@@ -513,7 +546,7 @@ void AUSACharacterBase::GameplayTagSlideCallback(const FGameplayTag CallbackTag,
 	}
 }
 
-void AUSACharacterBase::GameplayTagCrouchCallback(const FGameplayTag CallbackTag, int32 NewCount)
+void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (NewCount > 0)
 	{
@@ -523,6 +556,121 @@ void AUSACharacterBase::GameplayTagCrouchCallback(const FGameplayTag CallbackTag
 	{
 		UnCrouch();
 	}
+}
+
+void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("First on Hand"));
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("First on Spine"));
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
+	}
+}
+
+void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::Second]);
+	}
+	else
+	{
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::Second]);
+	}
+}
+
+void AUSACharacterBase::EquipWeapon(AUSAWeaponBase* InWeapon)
+{
+	if (InWeapon == nullptr)
+	{
+		return;
+	}
+	
+	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
+
+	//if (CurrentEquipedWeapons.)
+	//{
+	//	CurrentEquipedWeapons = new TMap <EUSAWeaponType, AUSAWeaponBase>();
+	//}
+
+	if (CurrentEquipedWeapons.Contains (InWeaponType)
+		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
+	{
+		CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+	}
+	else
+	{
+		CurrentEquipedWeapons.Add({ InWeaponType, nullptr });
+	}
+
+	InWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+
+	AttachWeaponToHolderSocket(InWeapon);
+
+	CurrentEquipedWeapons[InWeaponType] = InWeapon;
+}
+
+void AUSACharacterBase::UnequipWeapon(AUSAWeaponBase* InWeapon)
+{
+	if (InWeapon == nullptr)
+	{
+		return;
+	}
+
+	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
+
+	if (CurrentEquipedWeapons.Contains(InWeaponType)
+		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
+	{
+		if (InWeapon == CurrentEquipedWeapons[InWeaponType])
+		{
+			InWeapon->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+			CurrentEquipedWeapons[InWeaponType] = nullptr;
+		}
+	}
+
+	// TODO: 드롭 혹은 파괴 과정 수행할 것
+}
+
+void AUSACharacterBase::AttachWeaponToHandSocket(AUSAWeaponBase* InWeapon)
+{
+	if (InWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (GetMesh() == nullptr)
+	{
+		return;
+	}
+
+	FAttachmentTransformRules AttachmentTransformRules
+	(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+
+	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHandSocketName());
+}
+
+void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
+{
+	if (InWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (GetMesh() == nullptr)
+	{
+		return;
+	}
+
+	FAttachmentTransformRules AttachmentTransformRules
+	(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+
+	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHolderSocketName());
 }
 
 // TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
@@ -561,22 +709,36 @@ void AUSACharacterBase::SetupGAS()
 	}
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreRotateToMoveCallback);
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove);
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREMOVEINPUT, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::GameplayTagIgnoreMoveInputCallback);
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput);
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_VELOCITYZERO, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::GameplayTagVelocityZeroCallback);
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_VelocityZero);
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::GameplayTagCanNotWalkOffLedgeCallback);
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge);
+
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FALL, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Fall);
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_WALK, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Walk);
 
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::GameplayTagSlideCallback);
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Slide);
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH , EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::GameplayTagCrouchCallback);
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Crouch);
+
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_FIRSTWEAPON, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon);
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon);
 }
 

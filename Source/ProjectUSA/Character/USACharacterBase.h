@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 
 #include "AbilitySystemInterface.h"
+#include "Weapon/USAWeaponBase.h"
 
 #include "USACharacterBase.generated.h"
 
@@ -64,23 +65,38 @@ public:
 
 // ========================================================================================
 
-//USTRUCT(BlueprintType)
-//struct FUSACharacterCapsuleInfo
-//{
-//	GENERATED_BODY()
-//
-//public:
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-//	float CapsuleHaflHeight = 90.f;
-//
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-//	float CapsuleRadius = 20.0f;
-//
-//public:
-//
-//	void RenewCharacterCapsule(class ACharacter* InCharacter);
-//	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
-//};
+UENUM(BlueprintType)
+enum class EUSACharacterCapsulePivot : uint8
+{
+	Top UMETA(DisplayName = "Top"),
+	Center UMETA(DisplayName = "Center"),
+	Bottom UMETA(DisplayName = "Bottom"),
+};
+
+
+USTRUCT(BlueprintType)
+struct FUSACharacterCapsuleInfo
+{
+	GENERATED_BODY()
+
+	public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+	float CapsuleOriginalHalfHeight = 90.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+	float CapsuleHaflHeight = 90.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+	float CapsuleRadius = 20.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
+	EUSACharacterCapsulePivot CapsulePivot = EUSACharacterCapsulePivot::Bottom;
+
+public:
+
+	void RenewCharacterCapsule(class ACharacter* InCharacter);
+	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
+};
 
 // ========================================================================================
 // 
@@ -133,13 +149,30 @@ protected:
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
 	//FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	FUSACharacterCapsuleInfo CharacterCapsuleFallInfo;
+
+
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
 	FUSACharacterMovementWalkInfo CharacterMovementWalkInfo;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
+	FUSACharacterMovementWalkInfo CharacterMovementRealWalkInfo;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
 	FUSACharacterMovementWalkInfo CharacterMovementSlideInfo;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Weapon")
+	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Weapon")
+	//TObjectPtr <class AUSAWeaponBase> CurrentSecondWeapon;
 
 
 
@@ -173,14 +206,31 @@ protected:
 
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
 
-	void GameplayTagIgnoreRotateToMoveCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void GameplayTagIgnoreMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void GameplayTagVelocityZeroCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void GameplayTagCanNotWalkOffLedgeCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
-	//void GameplayTagRotateToMoveInputCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_IgnoreMoveInput(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_VelocityZero(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_CanNotWalkOffLedge(const struct FGameplayTag CallbackTag, int32 NewCount);
 
-	void GameplayTagSlideCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void GameplayTagCrouchCallback(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Walk(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
+
+	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
+
+	UFUNCTION(BlueprintCallable)
+	void EquipWeapon(class AUSAWeaponBase* InWeapon);
+	
+	UFUNCTION(BlueprintCallable)
+	void UnequipWeapon(class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHandSocket (class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;

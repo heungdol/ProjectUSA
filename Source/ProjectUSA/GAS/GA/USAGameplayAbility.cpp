@@ -52,6 +52,11 @@ void UUSAGameplayAbility::ApplyEffectsViaArray(const TArray<TSubclassOf<UGamepla
 {
 	for (const auto& GameplayEffectClass : GameplayEffects)
 	{
+		if (GameplayEffectClass == nullptr)
+		{
+			continue;
+		}
+
 		BP_ApplyGameplayEffectToOwner(GameplayEffectClass);
 	
 		//if (GameplayEffectClass)
