@@ -16,7 +16,8 @@ void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
-	// Activate 역순으로 Effect 및 델리게이트 호출
+	// CancelAbility 함수 전후로 알맞은 이펙트 호출할 것
+
 	ApplyEffectsViaArray(CancelAbilityEffects);
 
 	OnCancelAbility.Broadcast();
@@ -28,7 +29,8 @@ void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 
 void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// Activate 역순으로 Effect 및 델리게이트 호출
+	// EndAbility 함수 전후로 알맞은 이펙트 호출할 것
+
 	ApplyEffectsViaArray(EndAbilityEffects);
 	
 	OnEndAbility.Broadcast();

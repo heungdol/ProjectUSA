@@ -19,17 +19,14 @@ UAT_InputCharacterMoveForPeriod* UAT_InputCharacterMoveForPeriod::GetNewAbilityT
 
 	MyObj->bTickingTask = true;
 
+	MyObj->bIsCancelable = true;
+
 	return MyObj;
 }
 
 void UAT_InputCharacterMoveForPeriod::Activate()
 {
 	Super::Activate();
-
-	if (AbilitySystemComponent.IsValid())
-	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_InputCharacterMoveForPeriod::SimpleCancelAbilityTask);
-	}
 
 	if (MyCharacter == nullptr)
 	{

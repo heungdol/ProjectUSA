@@ -21,6 +21,8 @@ UAT_CheckCharacterSlope* UAT_CheckCharacterSlope::GetNewAbilityTask
 
 	MyObj->bTickingTask = true;
 
+	MyObj->bIsCancelable = true;
+
 	return MyObj;
 }
 
@@ -28,11 +30,6 @@ void UAT_CheckCharacterSlope::Activate()
 {
 	Super::Activate();
 	
-	if (AbilitySystemComponent.IsValid())
-	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_CheckCharacterSlope::SimpleCancelAbilityTask);
-	}
-
 	if (MyCharacter == nullptr)
 	{
 		SimpleCancelAbilityTask();

@@ -29,5 +29,9 @@ public:
 	virtual void SimpleEndAbilityTask();
 
 	void BroadcastSimpleDelegate(const FOnSimpleDelegate& InDelegate);
+
+	virtual void Activate() override;
+
+	bool bIsCancelable = true;
 	
 };

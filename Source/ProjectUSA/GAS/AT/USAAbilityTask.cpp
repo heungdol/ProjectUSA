@@ -3,6 +3,10 @@
 
 #include "GAS/AT/USAAbilityTask.h"
 
+#include "AbilitySystemGlobals.h"
+#include "AbilitySystemComponent.h"
+
+
 void UUSAAbilityTask::SimpleCancelAbilityTask()
 {
 	BroadcastSimpleDelegate(OnAbilityTaskCancel);
@@ -22,5 +26,18 @@ void UUSAAbilityTask::BroadcastSimpleDelegate(const FOnSimpleDelegate& InDelegat
 	if (ShouldBroadcastAbilityTaskDelegates() == true)
 	{
 		InDelegate.Broadcast();
+	}
+}
+
+void UUSAAbilityTask::Activate()
+{
+	Super::Activate();
+
+	if (bIsCancelable)
+	{
+		if (AbilitySystemComponent.IsValid())
+		{
+			AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UUSAAbilityTask::SimpleCancelAbilityTask);
+		}
 	}
 }

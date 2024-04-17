@@ -17,6 +17,8 @@ UAT_PlayAnimMontages* UAT_PlayAnimMontages::GetNewAbilityTask(UGameplayAbility* 
 
 	MyObj->PlayAnimMontageData = &AnimMontageData;
 
+	MyObj->bIsCancelable = true;
+
 	return MyObj;
 }
 
@@ -32,10 +34,10 @@ void UAT_PlayAnimMontages::Activate()
 		return;
 	}
 
-	if (AbilitySystemComponent.IsValid())
-	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_PlayAnimMontages::SimpleCancelAbilityTask);
-	}
+	//if (AbilitySystemComponent.IsValid())
+	//{
+	//	AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_PlayAnimMontages::SimpleCancelAbilityTask);
+	//}
 
 	bool bPlayedMontage = false;
 	CurrentPlayAnimMontageIndex = -1;

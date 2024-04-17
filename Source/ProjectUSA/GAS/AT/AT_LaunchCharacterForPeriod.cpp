@@ -20,6 +20,8 @@ UAT_LaunchCharacterForPeriod* UAT_LaunchCharacterForPeriod::GetNewAbilityTask(UG
 	
 	MyObj->bTickingTask = true;
 
+	MyObj->bIsCancelable = true;
+
 	return MyObj;
 }
 
@@ -29,11 +31,6 @@ void UAT_LaunchCharacterForPeriod::Activate()
 
 	StartTime = GetWorld()->GetTimeSeconds();
 	EndTime = StartTime + Period;
-	
-	if (AbilitySystemComponent.IsValid())
-	{
-		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_LaunchCharacterForPeriod::SimpleCancelAbilityTask);
-	}
 }
 
 void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)

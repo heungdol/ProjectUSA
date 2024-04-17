@@ -12,6 +12,7 @@
 #include "GAS/AT/AT_CheckCharacterSlope.h"
 #include "GAS/AT/AT_InputCharacterMoveForPeriod.h"
 #include "GAS/AT/AT_PlayAnimMontages.h"
+#include "GAS/AT/AT_MaintainCharacterVelocity.h"
 
 #include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
@@ -31,19 +32,19 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		SimpleCancelAbility();
 		return;
 	}
-	FVector VelocityDirection = Character->GetCharacterMovement()->Velocity;
+	//FVector VelocityDirection = Character->GetCharacterMovement()->Velocity;
 
-	if (Character->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
-	{
-		VelocityDirection = Character->GetPendingMovementInputVector();
-	}
+	//if (Character->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
+	//{
+	//	VelocityDirection = Character->GetPendingMovementInputVector();
+	//}
 
-	VelocityDirection.Normalize();
+	//VelocityDirection.Normalize();
 
-	Character->SetActorRotation(VelocityDirection.Rotation());
+	//Character->SetActorRotation(VelocityDirection.Rotation());
 
-	Character->GetCharacterMovement()->Velocity = VelocityDirection * SlideStartPower;
-	Character->GetCharacterMovement()->UpdateComponentVelocity();
+	//Character->GetCharacterMovement()->Velocity = VelocityDirection * SlideStartPower;
+	//Character->GetCharacterMovement()->UpdateComponentVelocity();
 
 	//
 
@@ -76,6 +77,10 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	UAbilityTask_WaitGameplayTagAdded* AbilityTaskReleased = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, SlideInputReleasedTag, GetAvatarActorFromActorInfo(), false);
 	AbilityTaskReleased->Added.AddDynamic(this, &UGA_CharacterSlide::OnInputReleased);
 	AbilityTaskReleased->ReadyForActivation();
+
+	UAT_MaintainCharacterVelocity* AbilityTaskVelocity = UAT_MaintainCharacterVelocity::GetNewAbilityTask
+	(this, TEXT("Slide Veloicty"), SlideStartPower, true);
+	AbilityTaskVelocity->ReadyForActivation();
 
 	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, SlideAnimMontageData);
 	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);

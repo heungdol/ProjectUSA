@@ -19,6 +19,9 @@ UAT_WaitDelay* UAT_WaitDelay::GetNewAbilityTask(UGameplayAbility* OwningAbility,
 
 	UAT_WaitDelay* MyObj = NewAbilityTask<UAT_WaitDelay>(OwningAbility);
 	MyObj->Time = Time;
+
+	MyObj->bIsCancelable = false;
+
 	return MyObj;
 }
 

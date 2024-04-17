@@ -18,13 +18,14 @@ UAT_CheckCharacterIsFalling* UAT_CheckCharacterIsFalling::GetNewAbilityTask(UGam
 
 	MyObj->bTickingTask = true;
 
+	MyObj->bIsCancelable = false;
+
 	return MyObj;
 }
 
 void UAT_CheckCharacterIsFalling::Activate()
 {
 	Super::Activate();
-
 
 	if (MyCharacterMovementComponent == nullptr)
 	{
