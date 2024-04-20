@@ -127,6 +127,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	TObjectPtr <class UUSAJellyEffectComponent> JellyEffectComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
+	TObjectPtr <class UUSACharacterPivotComponent> PivotComponent;
+
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
@@ -168,8 +171,20 @@ protected:
 	FUSACharacterMovementWalkInfo CharacterMovementSlideInfo;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
+
+	//UFUNCTION(BlueprintCallable)
+	//void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+
+	UFUNCTION()
+	void OnRep_NextWeapon();
+
+	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
+	TObjectPtr<class AUSAWeaponBase> NextWeapon;
+	
+	UPROPERTY()
+	bool bIsNextWeapon = false;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Weapon")
 	//TObjectPtr <class AUSAWeaponBase> CurrentSecondWeapon;
@@ -223,7 +238,7 @@ protected:
 	void EquipWeapon(class AUSAWeaponBase* InWeapon);
 	
 	UFUNCTION(BlueprintCallable)
-	void UnequipWeapon(class AUSAWeaponBase* InWeapon);
+	void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHandSocket (class AUSAWeaponBase* InWeapon);
@@ -231,11 +246,25 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
 
+	/**
+	 * Apply damage to this actor.
+	 * @see https://www.unrealengine.com/blog/damage-in-ue4
+	 * @param DamageAmount		How much damage to apply
+	 * @param DamageEvent		Data package that fully describes the damage received.
+	 * @param EventInstigator	The Controller responsible for the damage.
+	 * @param DamageCauser		The Actor that directly caused the damage (e.g. the projectile that exploded, the rock that landed on you)
+	 * @return					The amount of damage actually applied.
+	 */
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override; 
+
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	UFUNCTION()
+	void OnRep_ASC();
 
-	UPROPERTY(EditDefaultsOnly, Category = GAS)
+	UPROPERTY(ReplicatedUsing = OnRep_ASC, EditDefaultsOnly, Category = GAS)
 	TObjectPtr <class UAbilitySystemComponent> ASC;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
@@ -247,12 +276,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
 
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	//TArray <TSubclassOf<class UGameplayAbility>> GameplayStartActionAbilites;
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAbilities;
 
 
 protected:
 	virtual void SetupGAS();
+
+	void BeginStartAbilities();
 
 };

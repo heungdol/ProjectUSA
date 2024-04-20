@@ -27,9 +27,9 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 
-	FOnSimpleDelegate OnSlopeTrue;
-	FOnSimpleDelegate OnSlopeFalse;
-	FOnSimpleDelegate OnGroundOut;
+	FUSAATSimpleDelegate OnSlopeTrue;
+	FUSAATSimpleDelegate OnSlopeFalse;
+	FUSAATSimpleDelegate OnGroundOut;
 	
 public:
 	virtual void SimpleEndAbilityTask() override;

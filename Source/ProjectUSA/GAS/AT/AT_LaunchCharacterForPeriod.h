@@ -24,7 +24,7 @@ public:
 
 	virtual void SimpleCancelAbilityTask() override;
 
-	FOnSimpleDelegate OnFinished;
+	FUSAATSimpleDelegate OnFinished;
 
 
 protected:

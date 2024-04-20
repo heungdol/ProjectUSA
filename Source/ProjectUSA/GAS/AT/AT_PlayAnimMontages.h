@@ -63,16 +63,16 @@ public:
 	//UAT_PlayAnimMontages(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(BlueprintAssignable)
-	FOnSimpleDelegate	OnCompleted;
+	FUSAATSimpleDelegate	OnCompleted;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnSimpleDelegate	OnBlendOut;
+	FUSAATSimpleDelegate	OnBlendOut;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnSimpleDelegate	OnInterrupted;
+	FUSAATSimpleDelegate	OnInterrupted;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnSimpleDelegate	OnCancelled;
+	FUSAATSimpleDelegate	OnCancelled;
 
 	//UFUNCTION()
 	//void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);

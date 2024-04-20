@@ -20,7 +20,7 @@ public:
 	UAT_WaitDelay(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(BlueprintAssignable)
-	FOnSimpleDelegate OnFinish;
+	FUSAATSimpleDelegate OnFinish;
 
 	virtual void Activate() override;
 

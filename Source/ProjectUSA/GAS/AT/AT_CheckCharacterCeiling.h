@@ -28,8 +28,8 @@ public:
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;
 
-	FOnSimpleDelegate OnCeilingTrue;
-	FOnSimpleDelegate OnCeilingFalse;
+	FUSAATSimpleDelegate OnCeilingTrue;
+	FUSAATSimpleDelegate OnCeilingFalse;
 
 public:
 	TObjectPtr <class ACharacter> MyCharacter;

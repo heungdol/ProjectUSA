@@ -21,7 +21,7 @@ void UUSAAbilityTask::SimpleEndAbilityTask()
 	EndTask();
 }
 
-void UUSAAbilityTask::BroadcastSimpleDelegate(const FOnSimpleDelegate& InDelegate)
+void UUSAAbilityTask::BroadcastSimpleDelegate(const FUSAATSimpleDelegate& InDelegate)
 {
 	if (ShouldBroadcastAbilityTaskDelegates() == true)
 	{

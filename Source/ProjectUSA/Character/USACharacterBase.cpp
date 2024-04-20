@@ -34,6 +34,13 @@
 #include "Weapon/USAWeaponBase.h"
 
 
+#include "Engine/DamageEvents.h"
+#include "GameFramework/DamageType.h"
+
+#include "Component/USACharacterPivotComponent.h"
+
+#include "Net/UnrealNetwork.h"
+
 #include "ProjectUSA.h"
 
 // ====================================================================================
@@ -148,6 +155,9 @@ AUSACharacterBase::AUSACharacterBase()
 	JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
 	JellyEffectComponent->SetMeshComponent(GetMesh());
 
+	PivotComponent = CreateDefaultSubobject <UUSACharacterPivotComponent>(TEXT("Character Pivot Component"));
+	PivotComponent->SetupAttachment(RootComponent);
+
 	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 
@@ -157,6 +167,8 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
 	ASC = nullptr;
+
+	bIsNextWeapon = false;
 }
 
 void AUSACharacterBase::OnConstruction(const FTransform& Transform)
@@ -165,6 +177,47 @@ void AUSACharacterBase::OnConstruction(const FTransform& Transform)
 
 	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+}
+
+//void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
+//{
+//	if (InNextWeapon == nullptr)
+//	{
+//		return;
+//	}
+//
+//	if (bIsNextWeapon == true)
+//	{
+//		return;
+//	}
+//
+//	bIsNextWeapon = true;
+//	NextWeapon = InNextWeapon;
+//
+//	USA_LOG(LogTemp, Log, TEXT("Next Weapon Waiting..."));
+//}
+
+void AUSACharacterBase::OnRep_NextWeapon()
+{
+	USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
+
+	if (NextWeapon == nullptr)
+	{
+		return;
+	}
+
+	USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
+
+	EUSAWeaponType WeaponType = NextWeapon->GetWeaponType();
+
+	UnequipWeapon(WeaponType);
+
+	EquipWeapon(NextWeapon);
+
+	//bIsNextWeapon = false;
+
+	USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
+
 }
 
 // Called when the game starts or when spawned
@@ -227,6 +280,8 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 
 	// 일반 클라에서는 수행되지 않음
 	SetupGAS();
+
+	BeginStartAbilities();
 
 	// 시작할 때 자동으로 콘솔 입력
 	APlayerController* PlayerController = Cast <APlayerController>(NewController);
@@ -534,23 +589,13 @@ void AUSACharacterBase::EquipWeapon(AUSAWeaponBase* InWeapon)
 	CurrentEquipedWeapons[InWeaponType] = InWeapon;
 }
 
-void AUSACharacterBase::UnequipWeapon(AUSAWeaponBase* InWeapon)
+void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
 {
-	if (InWeapon == nullptr)
-	{
-		return;
-	}
-
-	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
-
 	if (CurrentEquipedWeapons.Contains(InWeaponType)
 		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
 	{
-		if (InWeapon == CurrentEquipedWeapons[InWeaponType])
-		{
-			InWeapon->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-			CurrentEquipedWeapons[InWeaponType] = nullptr;
-		}
+		CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+		CurrentEquipedWeapons[InWeaponType] = nullptr;
 	}
 
 	// TODO: 드롭 혹은 파괴 과정 수행할 것
@@ -615,9 +660,33 @@ void AUSACharacterBase::AdjustVelocityWithVelocityZero()
 	}
 }
 
+float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	// 뜯어보니
+	// Character의 ApplyDamageMomentum 함수도 적절히 참고해보면 좋을 듯..?
+
+	float Result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	for (const auto& GameplayDamageAbility : GameplayDamageAbilities)
+	{
+		if (GameplayDamageAbility.Key == DamageEvent.DamageTypeClass)
+		{
+			// TODO...
+		}
+	}
+
+
+	return Result;
+}
+
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 {
 	return ASC;
+}
+
+void AUSACharacterBase::OnRep_ASC()
+{
+	BeginStartAbilities();
 }
 
 void AUSACharacterBase::SetupGAS()
@@ -661,30 +730,6 @@ void AUSACharacterBase::SetupGAS()
 			{
 				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
 				ASC->GiveAbility(GameplayStartAbility);
-			}
-
-			for (const auto& GameplayStartAbility : GameplayStartAbilities)
-			{
-				if (GameplayStartAbility == nullptr)
-				{
-					continue;
-				}
-
-				FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
-
-				if (GameplayAbilitySpec == nullptr)
-				{
-					continue;
-				}
-
-				if (GameplayAbilitySpec->IsActive())
-				{
-					ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
-				}
-				else
-				{
-					ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
-				}
 			}
 
 			//
@@ -753,5 +798,46 @@ void AUSACharacterBase::SetupGAS()
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon);
+
+	USA_LOG(LogTemp, Log, TEXT("My ASC Name is %s %s"), *ASC->GetOwnerActor()->GetName(), *ASC->GetAvatarActor()->GetName());
+	//USA_LOG(LogTemp, Log, TEXT("... And My ASC Authority %i"), HasAuthorityOrPredictionKey ();
 }
 
+void AUSACharacterBase::BeginStartAbilities()
+{
+	if (ASC != nullptr)
+	{
+		for (const auto& GameplayStartAbility : GameplayStartAbilities)
+		{
+			if (GameplayStartAbility == nullptr)
+			{
+				continue;
+			}
+
+			FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
+
+			if (GameplayAbilitySpec == nullptr)
+			{
+				continue;
+			}
+
+			if (GameplayAbilitySpec->IsActive())
+			{
+				ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+			}
+			else
+			{
+				ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+			}
+		}
+	}
+}
+
+
+void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AUSACharacterBase, ASC);
+	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
+}

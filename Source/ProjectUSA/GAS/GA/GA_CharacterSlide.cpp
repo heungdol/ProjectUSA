@@ -32,16 +32,17 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		SimpleCancelAbility();
 		return;
 	}
-	//FVector VelocityDirection = Character->GetCharacterMovement()->Velocity;
 
-	//if (Character->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
-	//{
-	//	VelocityDirection = Character->GetPendingMovementInputVector();
-	//}
+	FVector NewDirection = Character->GetCharacterMovement()->Velocity;
 
-	//VelocityDirection.Normalize();
+	if (Character->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
+	{
+		NewDirection = Character->GetPendingMovementInputVector();
+	}
 
-	//Character->SetActorRotation(VelocityDirection.Rotation());
+	NewDirection.Normalize();
+
+	Character->SetActorRotation(NewDirection.Rotation());
 
 	//Character->GetCharacterMovement()->Velocity = VelocityDirection * SlideStartPower;
 	//Character->GetCharacterMovement()->UpdateComponentVelocity();

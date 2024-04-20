@@ -6,7 +6,9 @@
 #include "Abilities/GameplayAbility.h"
 #include "USAGameplayAbility.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnSimpleDeletage)
+DECLARE_MULTICAST_DELEGATE(FUSAGASimpleDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUSAGASimpleDynamicDelegate);
 
 /**
  * 
@@ -34,6 +36,9 @@ public:
 	
 
 public:
+	/** Does the commit atomically (consume resources, do cooldowns, etc) */
+	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
@@ -44,10 +49,10 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
-	FOnSimpleDeletage OnActivateAbility;
-	FOnSimpleDeletage OnCancelAbility;
-	FOnSimpleDeletage OnEndAbility;
-	
+	FUSAGASimpleDelegate OnActivateAbility;
+	FUSAGASimpleDelegate OnCancelAbility; //-> OnGameplayAbilityCancelled
+	FUSAGASimpleDelegate OnEndAbility; //-> OnGameplayAbilityEnded
+	//
 
 	UFUNCTION()
 	void SimpleCancelAbility ();
@@ -57,6 +62,15 @@ public:
 
 
 protected:
+	//UFUNCTION(BlueprintCallable)
+	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects
+		, const FGameplayAbilitySpecHandle Handle
+		, const FGameplayAbilityActorInfo* ActorInfo
+		, const FGameplayAbilityActivationInfo ActivationInfo
+		, float GameplayEffectLevel = 1.0f
+		, int32 Stacks = 1);
+
+
 	UFUNCTION(BlueprintCallable)
-	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects/*, float GameplayEffectLevel = 0.0f, int32 Stacks = 1*/);
+	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 };

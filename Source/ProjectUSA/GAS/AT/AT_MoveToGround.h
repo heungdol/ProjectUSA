@@ -33,8 +33,8 @@ public:
 	virtual void SimpleCancelAbilityTask() override;
 	virtual void SimpleEndAbilityTask() override;
 	
-	FOnSimpleDelegate OnBeginMovement;
-	FOnSimpleDelegate OnGroundReached;
+	FUSAATSimpleDelegate OnBeginMovement;
+	FUSAATSimpleDelegate OnGroundReached;
 
 
 protected:

@@ -6,7 +6,7 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "USAAbilityTask.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSimpleDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUSAATSimpleDelegate);
 
 /**
  * 
@@ -18,8 +18,8 @@ class PROJECTUSA_API UUSAAbilityTask : public UAbilityTask
 	
 public:
 
-	FOnSimpleDelegate OnAbilityTaskCancel;
-	FOnSimpleDelegate OnAbilityTaskEnd;
+	FUSAATSimpleDelegate OnAbilityTaskCancel;
+	FUSAATSimpleDelegate OnAbilityTaskEnd;
 
 
 	UFUNCTION()
@@ -28,7 +28,7 @@ public:
 	UFUNCTION()
 	virtual void SimpleEndAbilityTask();
 
-	void BroadcastSimpleDelegate(const FOnSimpleDelegate& InDelegate);
+	void BroadcastSimpleDelegate(const FUSAATSimpleDelegate& InDelegate);
 
 	virtual void Activate() override;
 

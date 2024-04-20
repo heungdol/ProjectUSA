@@ -29,10 +29,10 @@ public:
 	virtual void TickTask(float DeltaTime) override;
 	
 
-	FOnSimpleDelegate OnPositiveFalling;
-	FOnSimpleDelegate OnNegativeFalling;
-	FOnSimpleDelegate OnGrounded;
-	FOnSimpleDelegate OnFinished;
+	FUSAATSimpleDelegate OnPositiveFalling;
+	FUSAATSimpleDelegate OnNegativeFalling;
+	FUSAATSimpleDelegate OnGrounded;
+	FUSAATSimpleDelegate OnFinished;
 
 
 protected:
