@@ -30,6 +30,8 @@ UAT_MaintainCharacterVelocity* UAT_MaintainCharacterVelocity::GetNewAbilityTask
 void UAT_MaintainCharacterVelocity::Activate()
 {
     Super::Activate();
+
+	SetWaitingOnAvatar();
 }
 
 void UAT_MaintainCharacterVelocity::TickTask(float DeltaTime)

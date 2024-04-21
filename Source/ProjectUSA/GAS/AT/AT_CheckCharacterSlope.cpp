@@ -41,6 +41,8 @@ void UAT_CheckCharacterSlope::Activate()
 		SimpleCancelAbilityTask();
 		return;
 	}
+
+	SetWaitingOnAvatar();
 }
 
 void UAT_CheckCharacterSlope::TickTask(float DeltaTime)

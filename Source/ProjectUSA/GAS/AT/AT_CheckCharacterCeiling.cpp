@@ -36,7 +36,10 @@ void UAT_CheckCharacterCeiling::Activate()
 	if (MyCharacter == nullptr)
 	{
 		SimpleCancelAbilityTask();
+		return;
 	}
+
+	SetWaitingOnAvatar();
 }
 
 void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)

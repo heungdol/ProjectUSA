@@ -36,8 +36,8 @@ public:
 	
 
 public:
-	/** Does the commit atomically (consume resources, do cooldowns, etc) */
-	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	///** Does the commit atomically (consume resources, do cooldowns, etc) */
+	//virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
@@ -63,12 +63,12 @@ public:
 
 protected:
 	//UFUNCTION(BlueprintCallable)
-	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects
-		, const FGameplayAbilitySpecHandle Handle
-		, const FGameplayAbilityActorInfo* ActorInfo
-		, const FGameplayAbilityActivationInfo ActivationInfo
-		, float GameplayEffectLevel = 1.0f
-		, int32 Stacks = 1);
+	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects, 
+		const FGameplayAbilitySpecHandle Handle, 
+		const FGameplayAbilityActorInfo* ActorInfo, 
+		const FGameplayAbilityActivationInfo ActivationInfo, 
+		float GameplayEffectLevel = 1.0f, 
+		int32 Stacks = 1);
 
 
 	UFUNCTION(BlueprintCallable)

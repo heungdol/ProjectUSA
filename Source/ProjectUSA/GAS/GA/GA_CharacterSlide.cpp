@@ -186,9 +186,9 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 		}
 	}
 	
-	if (bIsGrounded == false)
-	{
-		SimpleEndAbility();
-	}
+	//if (bIsGrounded == false)
+	//{
+	//	SimpleEndAbility();
+	//}
 }
 

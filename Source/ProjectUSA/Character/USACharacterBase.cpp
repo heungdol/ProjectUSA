@@ -169,6 +169,8 @@ AUSACharacterBase::AUSACharacterBase()
 	ASC = nullptr;
 
 	bIsNextWeapon = false;
+
+	//NetUpdateFrequency = 200.0f;
 }
 
 void AUSACharacterBase::OnConstruction(const FTransform& Transform)

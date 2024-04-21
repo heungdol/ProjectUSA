@@ -41,6 +41,8 @@ void UAT_InputCharacterMoveForPeriod::Activate()
 	}
 
 	EndTime = GetWorld()->GetTimeSeconds() + Period;
+
+	SetWaitingOnAvatar();
 }
 
 void UAT_InputCharacterMoveForPeriod::TickTask(float DeltaTime)
