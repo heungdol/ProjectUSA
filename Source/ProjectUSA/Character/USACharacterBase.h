@@ -10,6 +10,9 @@
 
 #include "USACharacterBase.generated.h"
 
+#define KEYNAME_CAPSULEINFO_WALK TEXT("Walk")
+#define KEYNAME_CAPSULEINFO_FALL TEXT("Fall")
+
 // ========================================================================================
 
 // InputID와 InputAction, GameplayAbility를 관리하기 위한 Struct
@@ -93,9 +96,11 @@ struct FUSACharacterCapsuleInfo
 	EUSACharacterCapsulePivot CapsulePivot = EUSACharacterCapsulePivot::Bottom;
 
 public:
+	void RenewCharacterCapsuleSize(class ACharacter* InCharacter);
+	
+	void RenewCharacterCapsuleLocation(class ACharacter* InCharacter);
 
-	void RenewCharacterCapsule(class ACharacter* InCharacter);
-	//void RenewCharacterCapsuleIncludeLocation(class ACharacter* InCharacter);
+
 };
 
 // ========================================================================================
@@ -153,11 +158,40 @@ protected:
 	//FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
+	TMap<FName, FUSACharacterCapsuleInfo> CharacterCapsuleInfos;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	FUSACharacterCapsuleInfo CharacterCapsuleFallInfo;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
+	//FUSACharacterCapsuleInfo CharacterCapsuleFallInfo;
 
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
+
+
+	//UPROPERTY(ReplicatedUsing = OnRep_CurrentCapsuleInfoKey)
+	//FName CurrentCapsuleInfoKey = TEXT ("");
+
+	//UFUNCTION ()
+	//void OnRep_CurrentCapsuleInfoKey();
+
+
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerRPCSetCurrnetCapsuleInfoKey(const FName& InKey);
+
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPCSetCurrnetCapsuleInfoKey(const FName& InKey);
+
+
+
+	
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerRPC_TestFunction();
+
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_TestFunction();
 
 
 
@@ -186,13 +220,11 @@ protected:
 	UPROPERTY()
 	bool bIsNextWeapon = false;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Weapon")
-	//TObjectPtr <class AUSAWeaponBase> CurrentSecondWeapon;
-
-
-
 	UPROPERTY()
 	bool bIsVelocityZero = false;
+
+
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -284,5 +316,7 @@ protected:
 	virtual void SetupGAS();
 
 	void BeginStartAbilities();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; 
 
 };

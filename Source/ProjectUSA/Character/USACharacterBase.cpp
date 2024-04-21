@@ -59,7 +59,44 @@ void FUSACharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovemen
 	InMovementComponet->BrakingDecelerationWalking = FUSACharacterMovementWalkInfo::BrakingDecelerationWalking;
 }
 
-void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
+void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter)
+{
+	if (InCharacter == nullptr)
+	{
+		return;
+	}
+
+
+	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
+	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+
+	FVector NewLocation = FVector::ZeroVector;
+
+	if (InCharacter->GetMesh() != nullptr)
+	{
+		switch (CapsulePivot)
+		{
+		case EUSACharacterCapsulePivot::Top:
+			NewLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
+			//InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight));
+			break;
+
+		case EUSACharacterCapsulePivot::Center:
+			NewLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
+			//InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight));
+			break;
+
+		case EUSACharacterCapsulePivot::Bottom:
+			NewLocation = FVector::UpVector * -(CapsuleHaflHeight);
+			//InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleHaflHeight));
+			break;
+		}
+
+		InCharacter->GetMesh()->SetRelativeLocation(NewLocation);
+	}
+}
+
+void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InCharacter)
 {
 	if (InCharacter == nullptr)
 	{
@@ -67,9 +104,7 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
 	}
 
 	if (InCharacter->GetCapsuleComponent() != nullptr
-		&& InCharacter->GetMovementComponent() != nullptr
-		/*&& InCharacter->GetCharacterMovement()->IsFalling() == false*/
-		/*&& InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() > CapsuleHaflHeight*/)
+		&& InCharacter->GetMovementComponent() != nullptr)
 	{
 		FVector NewLocation = InCharacter->GetActorLocation();
 
@@ -90,27 +125,9 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
 		InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
 
-	if (InCharacter->GetMesh() != nullptr)
-	{
-		switch (CapsulePivot)
-		{
-		case EUSACharacterCapsulePivot::Top:
-			InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight));
-			break;
-
-		case EUSACharacterCapsulePivot::Center:
-			InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight));
-			break;
-
-		case EUSACharacterCapsulePivot::Bottom:
-			InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleHaflHeight));
-			break;
-		}
-	}
-
-	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
-	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+	
 }
+
 
 
 // ====================================================================================
@@ -170,7 +187,7 @@ AUSACharacterBase::AUSACharacterBase()
 
 	bIsNextWeapon = false;
 
-	//NetUpdateFrequency = 200.0f;
+	NetUpdateFrequency = 200.0f;
 }
 
 void AUSACharacterBase::OnConstruction(const FTransform& Transform)
@@ -197,6 +214,104 @@ void AUSACharacterBase::OnConstruction(const FTransform& Transform)
 //	NextWeapon = InNextWeapon;
 //
 //	USA_LOG(LogTemp, Log, TEXT("Next Weapon Waiting..."));
+//}
+
+bool AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Validate(ACharacter* InCharacter, const FName& InKeyName)
+{
+	//if (InCharacter == nullptr)
+	//{
+	//	return false;
+	//}
+
+	USA_LOG(LogTemp, Log, TEXT("Capsule Info Checking"));
+
+
+	return true;
+}
+
+void AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Implementation(ACharacter* InCharacter, const FName& InKeyName)
+{
+	USA_LOG(LogTemp, Log, TEXT("Capsule Info Start Changing...."));
+
+	MulticastRPC_RenewCharacterCapsule(InCharacter, InKeyName);
+}
+
+void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(ACharacter* InCharacter, const FName& InKeyName)
+{
+	if (CharacterCapsuleInfos.Num() <= 0)
+	{
+		return;
+	}
+
+	if (CharacterCapsuleInfos.Contains(InKeyName) == false)
+	{
+		return;
+	}
+
+	//if (HasAuthority())
+	//{
+	//	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
+	//}
+	//else
+	//{
+
+	//}
+
+	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
+	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleSize(InCharacter);
+
+	USA_LOG(LogTemp, Log, TEXT("Capsule Info Changed"));
+	USA_LOG(LogTemp, Log, TEXT("Mesh World Location in Updated Tick: %s"), *GetMesh()->GetComponentLocation().ToCompactString());
+	//if (HasAuthority())
+	//{
+	//}
+	//else
+	//{
+
+	//}
+}
+
+
+
+//void AUSACharacterBase::ServerRPC_TestFunction()
+//{
+//	MulticastRPC_TestFunction();
+//}
+//
+//void AUSACharacterBase::MulticastRPC_TestFunction()
+//{
+//}
+
+//bool AUSACharacterBase::ServerRPCSetCurrnetCapsuleInfoKey_Validate(const FName& InKey)
+//{
+//	return true;
+//}
+//
+//void AUSACharacterBase::ServerRPCSetCurrnetCapsuleInfoKey_Implementation(const FName& InKey)
+//{
+//	MulticastRPCSetCurrnetCapsuleInfoKey(InKey);
+//}
+//
+//
+//void AUSACharacterBase::MulticastRPCSetCurrnetCapsuleInfoKey_Implementation(const FName& InKey)
+//{
+//	if (HasAuthority())
+//	{ 
+//		CurrentCapsuleInfoKey = InKey;
+//		OnRep_CurrentCapsuleInfoKey();
+//	}
+//	else
+//	{
+//
+//	}
+//}
+//
+//void AUSACharacterBase::OnRep_CurrentCapsuleInfoKey()
+//{
+//	CharacterCapsuleInfos[CurrentCapsuleInfoKey].RenewCharacterCapsuleLocation(this);
+//	CharacterCapsuleInfos[CurrentCapsuleInfoKey].RenewCharacterCapsuleSize(this);
+//
+//	USA_LOG(LogTemp, Log, TEXT("Current Capsule Info Key Changed"));
 //}
 
 void AUSACharacterBase::OnRep_NextWeapon()
@@ -235,7 +350,8 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	//CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
+	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 }
 
@@ -495,11 +611,13 @@ void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTa
 
 	if (NewCount > 0)
 	{
-		CharacterCapsuleFallInfo.RenewCharacterCapsule(this);
+		//CharacterCapsuleFallInfo.RenewCharacterCapsule(this);
+		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
 	}
 	else
 	{
-		CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+		//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
 	}
 }
 
@@ -842,4 +960,7 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
+	//DOREPLIFETIME(AUSACharacterBase, CurrentCapsuleInfoKey);
+	
+	//DOREPLIFETIME(AUSACharacterBase, NextWeapon);
 }

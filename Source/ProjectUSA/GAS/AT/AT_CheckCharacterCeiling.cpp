@@ -71,6 +71,8 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 	TArray <AActor*> IgnoreActors;
 	IgnoreActors.Add(GetAvatarActor());
 
+	APawn* Pawn = Cast <APawn>(GetAvatarActor());
+
 	FHitResult HitResult;
 	UKismetSystemLibrary::SphereTraceSingle(GetWorld()
 		, StartTracePoint
@@ -81,7 +83,7 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 		, IgnoreActors
 		, EDrawDebugTrace::ForDuration
 		, HitResult
-		, true
+		, (Pawn && Pawn->IsLocallyControlled())
 		, FLinearColor::Red
 		, FLinearColor::Green
 		, 0.1f);

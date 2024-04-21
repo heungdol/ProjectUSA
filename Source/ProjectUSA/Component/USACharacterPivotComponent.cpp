@@ -51,6 +51,11 @@ void UUSACharacterPivotComponent::TickComponent(float DeltaTime, ELevelTick Tick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	DrawDebugSphere(GetWorld(), GetComponentLocation(), 20.0f, 16, FColor::Magenta);
+	APawn* Pawn = Cast <APawn>(GetOwner());
+
+	if (Pawn && Pawn->IsLocallyControlled())
+	{
+		DrawDebugSphere(GetWorld(), GetComponentLocation(), 20.0f, 16, FColor::Magenta);
+	}
 }
 
