@@ -151,17 +151,9 @@ protected:
 
 
 
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	//FUSACharacterCapsuleInfo CharacterCapsuleWalkInfo;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	//FUSACharacterCapsuleInfo CharacterCapsuleSlideInfo;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
 	TMap<FName, FUSACharacterCapsuleInfo> CharacterCapsuleInfos;
 
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
-	//FUSACharacterCapsuleInfo CharacterCapsuleFallInfo;
 
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -170,28 +162,6 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
 
-
-	//UPROPERTY(ReplicatedUsing = OnRep_CurrentCapsuleInfoKey)
-	//FName CurrentCapsuleInfoKey = TEXT ("");
-
-	//UFUNCTION ()
-	//void OnRep_CurrentCapsuleInfoKey();
-
-
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerRPCSetCurrnetCapsuleInfoKey(const FName& InKey);
-
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MulticastRPCSetCurrnetCapsuleInfoKey(const FName& InKey);
-
-
-
-	
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerRPC_TestFunction();
-
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MulticastRPC_TestFunction();
 
 
 
@@ -205,17 +175,27 @@ protected:
 	FUSACharacterMovementWalkInfo CharacterMovementSlideInfo;
 
 
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
-	//UFUNCTION(BlueprintCallable)
-	//void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+
+	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
+	TObjectPtr<class AUSAWeaponBase> NextWeapon;
+	
+	UFUNCTION(BlueprintCallable)
+	void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
 	UFUNCTION()
 	void OnRep_NextWeapon();
 
-	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
-	TObjectPtr<class AUSAWeaponBase> NextWeapon;
+
 	
 	UPROPERTY()
 	bool bIsNextWeapon = false;

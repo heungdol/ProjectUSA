@@ -314,15 +314,45 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 //	USA_LOG(LogTemp, Log, TEXT("Current Capsule Info Key Changed"));
 //}
 
-void AUSACharacterBase::OnRep_NextWeapon()
+void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
+{
+	ServerRPC_SetNextWeapon(InNextWeapon);
+}
+
+bool AUSACharacterBase::ServerRPC_SetNextWeapon_Validate(AUSAWeaponBase* InNextWeapon)
 {
 	USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
 
-	if (NextWeapon == nullptr)
+	if (InNextWeapon == nullptr)
 	{
-		return;
+		return false;
 	}
 
+	return true;
+}
+
+void AUSACharacterBase::ServerRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
+{
+	MulticastRPC_SetNextWeapon(InNextWeapon);
+}
+
+void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
+{
+	if (HasAuthority())
+	{
+		NextWeapon = InNextWeapon;
+		OnRep_NextWeapon ();
+	}
+	else
+	{
+
+	}
+}
+
+
+
+void AUSACharacterBase::OnRep_NextWeapon()
+{
 	USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
 
 	EUSAWeaponType WeaponType = NextWeapon->GetWeaponType();
