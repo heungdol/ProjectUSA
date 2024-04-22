@@ -308,7 +308,6 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	
 	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsuleSize(this);
 	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsuleLocation(this);
 

@@ -6,8 +6,6 @@
 #include "GAS/AT/USAAbilityTask.h"
 #include "AT_WaitDelay.generated.h"
 
-
-
 /**
  * 
  */
@@ -29,7 +27,7 @@ public:
 
 	/** Wait specified time. This is functionally the same as a standard Delay node. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_WaitDelay* GetNewAbilityTask(UGameplayAbility* OwningAbility, float Time);
+	static UAT_WaitDelay* GetNewAbilityTask_WaitDelay(UGameplayAbility* OwningAbility, float Time);
 
 protected:
 

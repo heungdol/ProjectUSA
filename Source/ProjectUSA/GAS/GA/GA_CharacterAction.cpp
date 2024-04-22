@@ -99,7 +99,7 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 				+ (RightDirection * MoveOffsetLocation.Y)
 				+ (FVector::UpVector * MoveOffsetLocation.Z);
 
-			AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask
+			AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
 			(this, TEXT("Move"), EndLocation, MoveDuration, MoveCurveFloat, nullptr);
 
 			AbilityTask_MoveToLocation->ReadyForActivation();
@@ -117,7 +117,7 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 				+ (RightDirection * MoveLaunchVector.Y)
 				+ (FVector::UpVector * MoveLaunchVector.Z);
 
-			AbilityTask_LaunchCharacter = UAT_LaunchCharacterForPeriod::GetNewAbilityTask
+			AbilityTask_LaunchCharacter = UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
 			(this, FinalLaunchVector, bMoveLaunchXYOverride, bMoveLaunchZOverride, MoveLaunchPeriod);
 
 			AbilityTask_LaunchCharacter->ReadyForActivation();
@@ -132,14 +132,14 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	}
 
 	// 애니메이션 설정
-	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, ActionAnimMontageData);
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, ActionAnimMontageData);
 	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	AbilityTaskMontage->ReadyForActivation();
 
 
 	// 시간 설정
-	UAT_WaitDelay* AbilityTaskDelay = UAT_WaitDelay::GetNewAbilityTask(this, Period);
+	UAT_WaitDelay* AbilityTaskDelay = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, Period);
 	AbilityTaskDelay->OnFinish.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
 	AbilityTaskDelay->ReadyForActivation();
 }

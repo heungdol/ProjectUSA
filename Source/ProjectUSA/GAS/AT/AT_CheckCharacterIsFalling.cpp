@@ -9,7 +9,7 @@
 
 
 
-UAT_CheckCharacterIsFalling* UAT_CheckCharacterIsFalling::GetNewAbilityTask(UGameplayAbility* OwningAbility, /*ACharacter* InCharacter,*/ UCharacterMovementComponent* InCharacterMovement)
+UAT_CheckCharacterIsFalling* UAT_CheckCharacterIsFalling::GetNewAbilityTask_CheckCharacterIsFalling(UGameplayAbility* OwningAbility, /*ACharacter* InCharacter,*/ UCharacterMovementComponent* InCharacterMovement)
 {
 	UAT_CheckCharacterIsFalling* MyObj = NewAbilityTask<UAT_CheckCharacterIsFalling>(OwningAbility);
 	

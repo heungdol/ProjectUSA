@@ -11,7 +11,7 @@
 #include "GameFramework/Controller.h"
 
 
-UAT_MaintainCharacterVelocity* UAT_MaintainCharacterVelocity::GetNewAbilityTask
+UAT_MaintainCharacterVelocity* UAT_MaintainCharacterVelocity::GetNewAbilityTask_MaintainCharacterVelocity
 (UGameplayAbility* OwningAbility, FName TaskInstanceName, float InVelocitySpeed, bool InIsConsiderZVelocity)
 {
     UAT_MaintainCharacterVelocity* MyObj = NewAbilityTask<UAT_MaintainCharacterVelocity>(OwningAbility, TaskInstanceName);

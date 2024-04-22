@@ -31,7 +31,7 @@ void UGA_CheckCharacterCeiling::ActivateAbility(const FGameplayAbilitySpecHandle
 		SimpleCancelAbility();
 	}
 
-	UAT_CheckCharacterCeiling* AbilityTask = UAT_CheckCharacterCeiling::GetNewAbilityTask
+	UAT_CheckCharacterCeiling* AbilityTask = UAT_CheckCharacterCeiling::GetNewAbilityTask_CheckCharacterCeiling
 	(this, MyCharacter, MyCharacterCapsuleComponent->GetScaledCapsuleHalfHeight()*2.0f
 		, MyCharacterCapsuleComponent->GetScaledCapsuleRadius());
 

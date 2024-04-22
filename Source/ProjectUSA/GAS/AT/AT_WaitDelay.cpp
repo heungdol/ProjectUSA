@@ -13,7 +13,7 @@ UAT_WaitDelay::UAT_WaitDelay(const FObjectInitializer& ObjectInitializer)
 	TimeStarted = 0.f;
 }
 
-UAT_WaitDelay* UAT_WaitDelay::GetNewAbilityTask(UGameplayAbility* OwningAbility, float Time)
+UAT_WaitDelay* UAT_WaitDelay::GetNewAbilityTask_WaitDelay(UGameplayAbility* OwningAbility, float Time)
 {
 	//UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Duration(Time);
 

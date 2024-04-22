@@ -17,43 +17,9 @@ UCLASS()
 class PROJECTUSA_API UGA_ApplyEffectByInput : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
-	
-//public:
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	//TArray <TSubclassOf<class UGameplayEffect>> InputPressedEffects;
-	//
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	//TArray <TSubclassOf<class UGameplayEffect>> InputReleasedEffects;
-
-
-	// =====================================================================
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	//FGameplayTagContainer InputPressedTags;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	//FGameplayTagContainer InputHoldingTags;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	//FGameplayTagContainer InputReleasedTags;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	//float RemoveTagDelay = 0.3f;
-
-	//
-	// =====================================================================
-
-	UPROPERTY()
-	bool bIsInputPressedOnce = false;
-
-	//FTimerHandle InputPressedTimerHandle;
-	//FTimerHandle InputReleasedTimerHandle;
-
-	//FUSAGASDynamicGameplayTagDelegate OnAddGameplayTagCallback;
-	//FUSAGASDynamicGameplayTagDelegate OnRemoveGameplayTagCallback;
-
 
 public:
+
 	UGA_ApplyEffectByInput();
 
 	/** Actually activate ability, do not call this directly */
@@ -66,10 +32,8 @@ public:
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 
-	//void AddAndRemoveReplicatedGameplayTagForPeriod(FTimerHandle& TimerHandle, const FGameplayTagContainer& InGameplayTag, float InPreiod);
+public:
 
-
-	//TObjectPtr <class UAbilitySystemComponent> MyASC;
-
-	//void SetupMyASC ();
+	UPROPERTY()
+	bool bIsInputPressedOnce = false;
 };

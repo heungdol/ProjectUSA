@@ -117,13 +117,13 @@ void UGA_CharacterDash::DoDash()
 			+ (RightDirection * DashOffsetLocation.Y)
 			+ (FVector::UpVector * DashOffsetLocation.Z);
 
-		UAT_MoveToLocationByVelocity* AbilityTask = UAT_MoveToLocationByVelocity::GetNewAbilityTask
+		UAT_MoveToLocationByVelocity* AbilityTask = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
 		(this, TEXT("Dash"), EndLocation, DashDuration, DashCurveFloat, nullptr);
 
 		AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::SimpleEndAbility);
 		AbilityTask->ReadyForActivation();
 
-		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, DashAnimMontageData);
+		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, DashAnimMontageData);
 		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 

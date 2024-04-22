@@ -8,7 +8,8 @@
 #include "GameFramework/Character.h"
 
 
-UAT_LaunchCharacterForPeriod* UAT_LaunchCharacterForPeriod::GetNewAbilityTask(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod)
+UAT_LaunchCharacterForPeriod* UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
+(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod)
 {
 	UAT_LaunchCharacterForPeriod* MyObj = NewAbilityTask<UAT_LaunchCharacterForPeriod>(OwningAbility);
 

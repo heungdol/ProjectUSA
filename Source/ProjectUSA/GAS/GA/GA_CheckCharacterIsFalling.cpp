@@ -30,7 +30,7 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 		SimpleCancelAbility();
 	}
 
-	UAT_CheckCharacterIsFalling* AbilityTask = UAT_CheckCharacterIsFalling::GetNewAbilityTask(this, MyCharacterMovementComponent);
+	UAT_CheckCharacterIsFalling* AbilityTask = UAT_CheckCharacterIsFalling::GetNewAbilityTask_CheckCharacterIsFalling(this, MyCharacterMovementComponent);
 	
 	AbilityTask->OnPositiveFalling.AddDynamic(this, &UGA_CheckCharacterIsFalling::OnPositiveFallingCallback);
 	AbilityTask->OnNegativeFalling.AddDynamic(this, &UGA_CheckCharacterIsFalling::OnNegativeFallingCallback);

@@ -13,7 +13,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 
-UAT_CheckCharacterCeiling* UAT_CheckCharacterCeiling::GetNewAbilityTask
+UAT_CheckCharacterCeiling* UAT_CheckCharacterCeiling::GetNewAbilityTask_CheckCharacterCeiling
 (UGameplayAbility* OwningAbility, ACharacter* InCharacter, float InCharacterHeight, float InCharacterRadius)
 {
 	UAT_CheckCharacterCeiling* MyObj = NewAbilityTask<UAT_CheckCharacterCeiling>(OwningAbility);

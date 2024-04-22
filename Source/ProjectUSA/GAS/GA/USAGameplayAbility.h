@@ -44,17 +44,6 @@ public:
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-	virtual void External_ActivateUSAGameplayAbility();
-
-	//virtual void ActivateAbility_Server(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo);
-
-	//virtual void ActivateAbility_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo);
-
-	//virtual void ActivateAbility_Multicast(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo);
-
-
-
-
 	/** Destroys instanced-per-execution abilities. Instance-per-actor abilities should 'reset'. Any active ability state tasks receive the 'OnAbilityStateInterrupted' event. Non instance abilities - what can we do? */
 	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility) override;
 
@@ -83,16 +72,6 @@ protected:
 		float GameplayEffectLevel = 1.0f, 
 		int32 Stacks = 1);
 
-
 	UFUNCTION(BlueprintCallable)
 	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
-
-	//UPROPERTY()
-	//TArray <TObjectPtr<UAbilityTask>> AbilityTasks;
-
-	//UFUNCTION()
-	//void AddAbilityTaskToArray (UAbilityTask* InAbilityTask);
-
-	//UFUNCTION()
-	//void SetAbilityTasks_ReadyForActivation();
 };

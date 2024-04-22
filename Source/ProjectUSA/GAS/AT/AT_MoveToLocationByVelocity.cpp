@@ -18,7 +18,7 @@
 
 
 // TODO: 공중 로테이션 다듬어 볼 것
-UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask(UGameplayAbility* OwningAbility, FName TaskInstanceName, FVector Location, float Duration, UCurveFloat* OptionalInterpolationCurve, UCurveVector* OptionalVectorInterpolationCurve)
+UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity(UGameplayAbility* OwningAbility, FName TaskInstanceName, FVector Location, float Duration, UCurveFloat* OptionalInterpolationCurve, UCurveVector* OptionalVectorInterpolationCurve)
 {
 	UAT_MoveToLocationByVelocity* MyObj = NewAbilityTask<UAT_MoveToLocationByVelocity>(OwningAbility, TaskInstanceName);
 

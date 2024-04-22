@@ -22,7 +22,7 @@ class PROJECTUSA_API UAT_CheckCharacterSlope : public UUSAAbilityTask
 public:
 	/** Spawn new Actor on the network authority (server) */
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"), Category = "Ability|Tasks")
-	static UAT_CheckCharacterSlope* GetNewAbilityTask(UGameplayAbility* OwningAbility, class ACharacter* InCharacter, float InStartSlopeAngle);
+	static UAT_CheckCharacterSlope* GetNewAbilityTask_CheckCharacterSlope(UGameplayAbility* OwningAbility, class ACharacter* InCharacter, float InStartSlopeAngle);
 
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override;

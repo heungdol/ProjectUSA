@@ -11,7 +11,7 @@
 #include "GameFramework/Controller.h"
 
 
-UAT_MoveToGround* UAT_MoveToGround::GetNewAbilityTask
+UAT_MoveToGround* UAT_MoveToGround::GetNewAbilityTask_MoveToGround
 (UGameplayAbility* OwningAbility, FName TaskInstanceName, float InputMoveSpeed/*, float InPreDelay, float InPostDela*/)
 {
 	UAT_MoveToGround* MyObj = NewAbilityTask<UAT_MoveToGround>(OwningAbility, TaskInstanceName);

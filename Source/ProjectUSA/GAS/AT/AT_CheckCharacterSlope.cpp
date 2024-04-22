@@ -11,7 +11,7 @@
 #include "Debug/DebugDrawComponent.h"
 
 
-UAT_CheckCharacterSlope* UAT_CheckCharacterSlope::GetNewAbilityTask
+UAT_CheckCharacterSlope* UAT_CheckCharacterSlope::GetNewAbilityTask_CheckCharacterSlope
 (UGameplayAbility* OwningAbility, ACharacter* InCharacter, float InStartSlopeAngle)
 {
 	UAT_CheckCharacterSlope* MyObj = NewAbilityTask<UAT_CheckCharacterSlope>(OwningAbility);

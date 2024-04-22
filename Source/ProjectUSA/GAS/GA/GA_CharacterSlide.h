@@ -17,21 +17,10 @@ class PROJECTUSA_API UGA_CharacterSlide : public UUSAGameplayAbility
 	GENERATED_BODY()
 
 public:
-
-
-	///** Input binding stub. */
-	//virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
-	///** Input binding stub. */
-	//virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)  override;
-
-
-	///** Returns true if this ability can be activated right now. Has no side effects */
-	//virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
-
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	void DoSlide();
 
 	/** Destroys instanced-per-execution abilities. Instance-per-actor abilities should 'reset'. Any active ability state tasks receive the 'OnAbilityStateInterrupted' event. Non instance abilities - what can we do? */
 	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility) override;
@@ -69,14 +58,12 @@ public:
 	void OnGroundOut ();
 
 
-	//UFUNCTION()
-	//void OnTimeEnd();
-
-
 	void CheckAndRenewEndTimerHandle();
 
-
 	FTimerHandle EndTimerHandle;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC_SetDirectionAndDoSlide (const FVector& InDirection);
 
 
 protected:
@@ -121,11 +108,15 @@ protected:
 	TArray <TSubclassOf<class UGameplayEffect>> OutGroundEffects;
 
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
-	struct FPlayAnimMontageData SlideAnimMontageData ;
+	struct FPlayAnimMontageData SlideAnimMontageData;
+
 
 protected:
+
+	UPROPERTY()
+	FVector SlideForwardDirection = FVector::ForwardVector;
+
 	bool bIsSlope = false;
 	bool bIsCeiling = false;
 	bool bIsReleased = false;

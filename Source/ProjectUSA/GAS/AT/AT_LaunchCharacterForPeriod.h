@@ -16,7 +16,7 @@ class PROJECTUSA_API UAT_LaunchCharacterForPeriod : public UUSAAbilityTask
 public:
 	/** Spawn new Actor on the network authority (server) */
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"), Category = "Ability|Tasks")
-	static UAT_LaunchCharacterForPeriod* GetNewAbilityTask(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod);
+	static UAT_LaunchCharacterForPeriod* GetNewAbilityTask_LaunchCharacterForPeriod(UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod = -1.0f);
 
 	virtual void Activate() override;
 

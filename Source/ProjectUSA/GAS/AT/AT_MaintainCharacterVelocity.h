@@ -16,7 +16,7 @@ class PROJECTUSA_API UAT_MaintainCharacterVelocity : public UUSAAbilityTask
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_MaintainCharacterVelocity* GetNewAbilityTask
+	static UAT_MaintainCharacterVelocity* GetNewAbilityTask_MaintainCharacterVelocity
 	(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InVelocitySpeed, bool InIsConsiderZVelocity);
 
 	virtual void Activate() override;

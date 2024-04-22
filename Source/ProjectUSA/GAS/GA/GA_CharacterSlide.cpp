@@ -10,7 +10,7 @@
 
 #include "GAS/AT/AT_CheckCharacterCeiling.h"
 #include "GAS/AT/AT_CheckCharacterSlope.h"
-#include "GAS/AT/AT_InputCharacterMoveForPeriod.h"
+//#include "GAS/AT/AT_InputCharacterMoveForPeriod.h"
 #include "GAS/AT/AT_PlayAnimMontages.h"
 #include "GAS/AT/AT_MaintainCharacterVelocity.h"
 
@@ -33,21 +33,48 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		return;
 	}
 
-	FVector NewDirection = Character->GetCharacterMovement()->Velocity;
+	SlideForwardDirection = Character->GetPendingMovementInputVector();
 
-	if (Character->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
+	if (HasAuthority(&ActivationInfo))
 	{
-		NewDirection = Character->GetPendingMovementInputVector();
+		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+
+		{
+			DoSlide();
+		}
+	}
+	else
+	{
+		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+		{
+			ServerRPC_SetDirectionAndDoSlide(Character->GetPendingMovementInputVector());
+
+			DoSlide();
+		}
 	}
 
-	NewDirection.Normalize();
-
-	Character->SetActorRotation(NewDirection.Rotation());
-
-	//Character->GetCharacterMovement()->Velocity = VelocityDirection * SlideStartPower;
-	//Character->GetCharacterMovement()->UpdateComponentVelocity();
-
 	//
+
+}
+
+void UGA_CharacterSlide::DoSlide()
+{
+	ACharacter* Character = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	if (Character == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	if (SlideForwardDirection.Length() < SMALL_NUMBER)
+	{
+		SlideForwardDirection = Character->GetActorForwardVector();
+	}
+
+	SlideForwardDirection.Normalize();
+	
+	Character->SetActorRotation(SlideForwardDirection.Rotation());
 
 	bIsSlope = false;
 	bIsCeiling = false;
@@ -56,16 +83,16 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	bIsOnceAcitved = false;
 	CheckAndRenewEndTimerHandle();
 
-	UAT_InputCharacterMoveForPeriod* AbilityTaskMove = UAT_InputCharacterMoveForPeriod::GetNewAbilityTask(this, Character, FVector::ForwardVector, -1);
-	AbilityTaskMove->ReadyForActivation();
+	//UAT_InputCharacterMoveForPeriod* AbilityTaskMove = UAT_InputCharacterMoveForPeriod::GetNewAbilityTask(this, Character, FVector::ForwardVector, -1);
+	//AbilityTaskMove->ReadyForActivation();
 
-	UAT_CheckCharacterSlope* AbilityTaskSlope = UAT_CheckCharacterSlope::GetNewAbilityTask(this, Character, SlideStartAngle);
+	UAT_CheckCharacterSlope* AbilityTaskSlope = UAT_CheckCharacterSlope::GetNewAbilityTask_CheckCharacterSlope(this, Character, SlideStartAngle);
 	AbilityTaskSlope->OnSlopeFalse.AddDynamic(this, &UGA_CharacterSlide::OnSlopeFalse);
 	AbilityTaskSlope->OnSlopeTrue.AddDynamic(this, &UGA_CharacterSlide::OnSlopeTrue);
 	AbilityTaskSlope->OnGroundOut.AddDynamic(this, &UGA_CharacterSlide::OnGroundOut);
 	AbilityTaskSlope->ReadyForActivation();
 
-	UAT_CheckCharacterCeiling* AbilityTaskCeiling = UAT_CheckCharacterCeiling::GetNewAbilityTask
+	UAT_CheckCharacterCeiling* AbilityTaskCeiling = UAT_CheckCharacterCeiling::GetNewAbilityTask_CheckCharacterCeiling
 	(this, Character, SlideDetectCeilingHeight, SlideDetectCeilingRadius);
 	AbilityTaskCeiling->OnCeilingFalse.AddDynamic(this, &UGA_CharacterSlide::OnCeilingFalse);
 	AbilityTaskCeiling->OnCeilingTrue.AddDynamic(this, &UGA_CharacterSlide::OnCeilingTrue);
@@ -79,11 +106,11 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	AbilityTaskReleased->Added.AddDynamic(this, &UGA_CharacterSlide::OnInputReleased);
 	AbilityTaskReleased->ReadyForActivation();
 
-	UAT_MaintainCharacterVelocity* AbilityTaskVelocity = UAT_MaintainCharacterVelocity::GetNewAbilityTask
+	UAT_MaintainCharacterVelocity* AbilityTaskVelocity = UAT_MaintainCharacterVelocity::GetNewAbilityTask_MaintainCharacterVelocity
 	(this, TEXT("Slide Veloicty"), SlideStartPower, true);
 	AbilityTaskVelocity->ReadyForActivation();
 
-	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, SlideAnimMontageData);
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, SlideAnimMontageData);
 	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	AbilityTaskMontage->ReadyForActivation();
@@ -190,5 +217,17 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 	//{
 	//	SimpleEndAbility();
 	//}
+}
+
+bool UGA_CharacterSlide::ServerRPC_SetDirectionAndDoSlide_Validate(const FVector& InDirection)
+{
+	return true;
+}
+
+void UGA_CharacterSlide::ServerRPC_SetDirectionAndDoSlide_Implementation(const FVector& InDirection)
+{
+	SlideForwardDirection = InDirection;
+
+	DoSlide();
 }
 

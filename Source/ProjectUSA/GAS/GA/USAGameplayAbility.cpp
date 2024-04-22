@@ -21,8 +21,6 @@ UUSAGameplayAbility::UUSAGameplayAbility()
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-
-	//OnActivateAbility.AddUObject(this, &UUSAGameplayAbility::SetAbilityTasks_ReadyForActivation);
 }
 
 //
@@ -34,40 +32,7 @@ void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	ApplyEffectsViaArray(ActivateAbilityEffects, Handle, ActorInfo, ActivationInfo);
 
 	OnActivateAbility.Broadcast();
-
-	//if (HasAuthority(&ActivationInfo))
-	//{
-	//	ActivateAbility_Server(Handle, ActorInfo, ActivationInfo);
-	//}
-	//else
-	//{
-	//	ActivateAbility_Client(Handle, ActorInfo, ActivationInfo);
-	//}
-
-	//ActivateAbility_Multicast(Handle, ActorInfo, ActivationInfo);
 }
-
-void UUSAGameplayAbility::External_ActivateUSAGameplayAbility()
-{
-
-}
-
-//void UUSAGameplayAbility::ActivateAbility_Server(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-//{
-//
-//}
-//
-//void UUSAGameplayAbility::ActivateAbility_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-//{
-//
-//}
-//
-//void UUSAGameplayAbility::ActivateAbility_Multicast(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-//{
-//	ApplyEffectsViaArray(ActivateAbilityEffects, Handle, ActorInfo, ActivationInfo);
-//
-//	//OnActivateAbility.Broadcast();
-//}
 
 //
 
@@ -134,28 +99,3 @@ void UUSAGameplayAbility::ApplyEffectsViaArray(const TArray<TSubclassOf<class UG
 {
 	ApplyEffectsViaArray(GameplayEffects, CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo);
 }
-
-//
-
-//void UUSAGameplayAbility::AddAbilityTaskToArray(UAbilityTask* InTask)
-//{
-//	if (InTask == nullptr)
-//	{
-//		return;
-//	}
-//
-//	AbilityTasks.Add(InTask);
-//}
-//
-//void UUSAGameplayAbility::SetAbilityTasks_ReadyForActivation()
-//{
-//	for (UAbilityTask* Task : AbilityTasks)
-//	{
-//		if (Task == nullptr)
-//		{
-//			continue;
-//		}
-//
-//		Task->ReadyForActivation();
-//	}
-//}

@@ -37,7 +37,7 @@ void UGA_CharacterJump::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	FVector JumpVelocity(0, 0, (CharacterMovementComponent->JumpZVelocity) * JumpPowerRatio);
 	float JumpMaxHoldTime = Character->GetJumpMaxHoldTime();
 
-	UAT_LaunchCharacterForPeriod* AbilityTask = UAT_LaunchCharacterForPeriod::GetNewAbilityTask
+	UAT_LaunchCharacterForPeriod* AbilityTask = UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
 	(this, JumpVelocity, false, true, JumpMaxHoldTime);
 
 	AbilityTask->OnFinished.AddDynamic(this, &UGA_CharacterJump::SimpleEndAbility);

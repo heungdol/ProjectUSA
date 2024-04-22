@@ -11,7 +11,7 @@
 #include "Components/SkeletalMeshComponent.h"
 
 
-UAT_PlayAnimMontages* UAT_PlayAnimMontages::GetNewAbilityTask(UGameplayAbility* OwningAbility, const FPlayAnimMontageData& AnimMontageData)
+UAT_PlayAnimMontages* UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(UGameplayAbility* OwningAbility, const FPlayAnimMontageData& AnimMontageData)
 {
 	UAT_PlayAnimMontages* MyObj = NewAbilityTask<UAT_PlayAnimMontages>(OwningAbility);
 
@@ -34,11 +34,6 @@ void UAT_PlayAnimMontages::Activate()
 		return;
 	}
 
-	//if (AbilitySystemComponent.IsValid())
-	//{
-	//	AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_PlayAnimMontages::SimpleCancelAbilityTask);
-	//}
-
 	bool bPlayedMontage = false;
 	CurrentPlayAnimMontageIndex = -1;
 
@@ -52,7 +47,6 @@ void UAT_PlayAnimMontages::Activate()
 		{
 			bPlayedMontage = true;
 			CurrentPlayAnimMontageIndex = 0;
-
 		}
 	}
 
@@ -69,16 +63,8 @@ void UAT_PlayAnimMontages::Activate()
 		GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
 	}
 
-	// TODO 다른 어빌리티 태스크토 아래의 호출을 추가할 것
 	SetWaitingOnAvatar();
 }
-
-//void UAT_PlayAnimMontages::ExternalCancel()
-//{
-//	Super::ExternalCancel();
-//	
-//	//SimpleCancelAbilityTask();
-//}
 
 void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 {
@@ -88,10 +74,9 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 	}
 
 	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	if (ASC/* && Ability*/)
+	if (ASC)
 	{
-		if (/*(ASC->GetAnimatingAbility() == Ability || ASC->GetAnimatingAbility() == nullptr)
-			&& */ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
 			if (PlayAnimMontageData->bHasEndSection)
 			{
@@ -105,7 +90,6 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 	}
 
 	Super::SimpleEndAbilityTask();
-
 }
 
 void UAT_PlayAnimMontages::SimpleCancelAbilityTask()
@@ -123,10 +107,9 @@ void UAT_PlayAnimMontages::OnSectionTimerHandleEnd()
 	}
 
 	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	if (ASC /*&& Ability*/)
+	if (ASC)
 	{
-		if (/*ASC->GetAnimatingAbility() == Ability
-			&& */ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
 			ASC->CurrentMontageJumpToSection(PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
 		}
@@ -156,11 +139,6 @@ void UAT_PlayAnimMontages::OnSectionTimerHandleEnd()
 
 bool UAT_PlayAnimMontages::StopPlayingMontage()
 {
-	//if (Ability == nullptr)
-	//{
-	//	return false;
-	//}
-
 	if (PlayAnimMontageData == nullptr)
 	{
 		return false;
@@ -169,10 +147,10 @@ bool UAT_PlayAnimMontages::StopPlayingMontage()
 	// Check if the montage is still playing
 	// The ability would have been interrupted, in which case we should automatically stop the montage
 	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	if (ASC /*&& Ability*/)
+
+	if (ASC)
 	{
-		if (/*(ASC->GetAnimatingAbility() == Ability || ASC->GetAnimatingAbility() == nullptr)
-			&& */ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
 			ASC->CurrentMontageStop();
 			return true;

@@ -22,7 +22,7 @@ class PROJECTUSA_API UAT_CheckCharacterIsFalling : public UUSAAbilityTask
 public:
 	/** Spawn new Actor on the network authority (server) */
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"), Category = "Ability|Tasks")
-	static UAT_CheckCharacterIsFalling* GetNewAbilityTask(UGameplayAbility* OwningAbility, /*class ACharacter* InCharacter,*/ class UCharacterMovementComponent* InCharacterMovement);
+	static UAT_CheckCharacterIsFalling* GetNewAbilityTask_CheckCharacterIsFalling(UGameplayAbility* OwningAbility, /*class ACharacter* InCharacter,*/ class UCharacterMovementComponent* InCharacterMovement);
 
 	virtual void Activate() override;
 
