@@ -13,10 +13,10 @@ UCLASS()
 class PROJECTUSA_API UGA_CharacterJump : public UUSAGameplayAbility
 {
 	GENERATED_BODY()
-	
-	UGA_CharacterJump ();
 
 public:
+	UGA_CharacterJump ();
+	
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* OwnerInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;

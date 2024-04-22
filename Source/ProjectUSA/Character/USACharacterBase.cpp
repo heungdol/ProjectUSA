@@ -22,6 +22,8 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
+#include "GAS/GA/USAGameplayAbility.h"
+
 #include "GameFramework/PlayerState.h"
 
 #include "Component/USAJellyEffectComponent.h"
@@ -187,7 +189,7 @@ AUSACharacterBase::AUSACharacterBase()
 
 	bIsNextWeapon = false;
 
-	NetUpdateFrequency = 200.0f;
+	//NetUpdateFrequency = 200.0f;
 }
 
 void AUSACharacterBase::OnConstruction(const FTransform& Transform)
@@ -198,24 +200,6 @@ void AUSACharacterBase::OnConstruction(const FTransform& Transform)
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 }
 
-//void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
-//{
-//	if (InNextWeapon == nullptr)
-//	{
-//		return;
-//	}
-//
-//	if (bIsNextWeapon == true)
-//	{
-//		return;
-//	}
-//
-//	bIsNextWeapon = true;
-//	NextWeapon = InNextWeapon;
-//
-//	USA_LOG(LogTemp, Log, TEXT("Next Weapon Waiting..."));
-//}
-
 bool AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Validate(ACharacter* InCharacter, const FName& InKeyName)
 {
 	//if (InCharacter == nullptr)
@@ -223,21 +207,21 @@ bool AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Validate(ACharacter* InC
 	//	return false;
 	//}
 
-	USA_LOG(LogTemp, Log, TEXT("Capsule Info Checking"));
-
-
 	return true;
 }
 
 void AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Implementation(ACharacter* InCharacter, const FName& InKeyName)
 {
-	USA_LOG(LogTemp, Log, TEXT("Capsule Info Start Changing...."));
-
 	MulticastRPC_RenewCharacterCapsule(InCharacter, InKeyName);
 }
 
 void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(ACharacter* InCharacter, const FName& InKeyName)
 {
+	if (InCharacter == nullptr)
+	{
+		return;
+	}
+
 	if (CharacterCapsuleInfos.Num() <= 0)
 	{
 		return;
@@ -248,71 +232,13 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 		return;
 	}
 
-	//if (HasAuthority())
-	//{
-	//	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
-	//}
-	//else
-	//{
-
-	//}
-
-	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
 	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleSize(InCharacter);
-
-	USA_LOG(LogTemp, Log, TEXT("Capsule Info Changed"));
-	USA_LOG(LogTemp, Log, TEXT("Mesh World Location in Updated Tick: %s"), *GetMesh()->GetComponentLocation().ToCompactString());
+	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
+	
 	//if (HasAuthority())
 	//{
-	//}
-	//else
-	//{
-
 	//}
 }
-
-
-
-//void AUSACharacterBase::ServerRPC_TestFunction()
-//{
-//	MulticastRPC_TestFunction();
-//}
-//
-//void AUSACharacterBase::MulticastRPC_TestFunction()
-//{
-//}
-
-//bool AUSACharacterBase::ServerRPCSetCurrnetCapsuleInfoKey_Validate(const FName& InKey)
-//{
-//	return true;
-//}
-//
-//void AUSACharacterBase::ServerRPCSetCurrnetCapsuleInfoKey_Implementation(const FName& InKey)
-//{
-//	MulticastRPCSetCurrnetCapsuleInfoKey(InKey);
-//}
-//
-//
-//void AUSACharacterBase::MulticastRPCSetCurrnetCapsuleInfoKey_Implementation(const FName& InKey)
-//{
-//	if (HasAuthority())
-//	{ 
-//		CurrentCapsuleInfoKey = InKey;
-//		OnRep_CurrentCapsuleInfoKey();
-//	}
-//	else
-//	{
-//
-//	}
-//}
-//
-//void AUSACharacterBase::OnRep_CurrentCapsuleInfoKey()
-//{
-//	CharacterCapsuleInfos[CurrentCapsuleInfoKey].RenewCharacterCapsuleLocation(this);
-//	CharacterCapsuleInfos[CurrentCapsuleInfoKey].RenewCharacterCapsuleSize(this);
-//
-//	USA_LOG(LogTemp, Log, TEXT("Current Capsule Info Key Changed"));
-//}
 
 void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
 {
@@ -321,12 +247,12 @@ void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
 
 bool AUSACharacterBase::ServerRPC_SetNextWeapon_Validate(AUSAWeaponBase* InNextWeapon)
 {
-	USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
+	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
 
-	if (InNextWeapon == nullptr)
-	{
-		return false;
-	}
+	//if (InNextWeapon == nullptr)
+	//{
+	//	return false;
+	//}
 
 	return true;
 }
@@ -350,22 +276,24 @@ void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase
 }
 
 
-
 void AUSACharacterBase::OnRep_NextWeapon()
 {
-	USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
+	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
 
-	EUSAWeaponType WeaponType = NextWeapon->GetWeaponType();
+	EUSAWeaponType WeaponType = EUSAWeaponType::None;
+
+	if (NextWeapon != nullptr)
+	{
+		WeaponType = NextWeapon->GetWeaponType();
+	}
 
 	UnequipWeapon(WeaponType);
 
 	EquipWeapon(NextWeapon);
 
-	//bIsNextWeapon = false;
-
-	USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
-
+	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
 }
+
 
 // Called when the game starts or when spawned
 void AUSACharacterBase::BeginPlay()
@@ -380,8 +308,10 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	//CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
-	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+	
+	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsuleSize(this);
+	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsuleLocation(this);
+
 	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 }
 
@@ -390,9 +320,7 @@ void AUSACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//UE_LOG(LogTemp, Log, TEXT("Z: %f"), GetActorLocation().Z);
-
-	AdjustVelocityWithVelocityZero();
+	//AdjustVelocityWithVelocityZero();
 }
 
 // Called to bind functionality to input
@@ -482,8 +410,6 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
-	//USA_LOG(LogTemp, Log, TEXT("ASC is here"));
-
 	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
 
 	if (GameplayAbilitySpec == nullptr)
@@ -491,18 +417,12 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		return;
 	}
 
-	//USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec is here"));
-
 	if (GameplayAbilitySpec->IsActive())
 	{
-		//USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec AbilitySpecInputPressed"));
-
 		ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
 	}
 	else
 	{
-		//USA_LOG(LogTemp, Log, TEXT("GameplayAbilitySpec TryActivateAbility"));
-
 		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 	}
 }
@@ -515,6 +435,7 @@ void AUSACharacterBase::InputReleaseGameplayAbilityByInputID(int32 InputID)
 	}
 
 	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
+	
 	if (GameplayAbilitySpec == nullptr)
 	{
 		return;
@@ -557,7 +478,6 @@ void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplay
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
-
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput(const FGameplayTag CallbackTag, int32 NewCount)
@@ -648,6 +568,14 @@ void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTa
 	{
 		//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+		
+		//if (bIsCrouched)
+		//{
+
+		//}
+		//else
+		//{
+		//}
 	}
 }
 
@@ -660,12 +588,10 @@ void AUSACharacterBase::OnGameplayTagCallback_Slide(const FGameplayTag CallbackT
 
 	if (NewCount > 0)
 	{
-		//CharacterCapsuleSlideInfo.RenewCharacterCapsule(this);
 		CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 	}
 	else
 	{
-		//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 		CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 	}
 }
@@ -679,6 +605,15 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 	else
 	{
 		UnCrouch();
+
+		//if (GetMovementComponent()->IsFalling())
+		//{
+		//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+		//}
+		//else
+		//{
+		//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+		//}
 	}
 }
 
@@ -716,11 +651,6 @@ void AUSACharacterBase::EquipWeapon(AUSAWeaponBase* InWeapon)
 	}
 	
 	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
-
-	//if (CurrentEquipedWeapons.)
-	//{
-	//	CurrentEquipedWeapons = new TMap <EUSAWeaponType, AUSAWeaponBase>();
-	//}
 
 	if (CurrentEquipedWeapons.Contains (InWeaponType)
 		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
@@ -788,27 +718,27 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 }
 
 // TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
-void AUSACharacterBase::AdjustVelocityWithVelocityZero()
-{
-	if (bIsVelocityZero)
-	{
-		FVector NewVelocity = GetCharacterMovement()->Velocity;
-		NewVelocity.X = 0;
-		NewVelocity.Y = 0;
+//void AUSACharacterBase::AdjustVelocityWithVelocityZero()
+//{
+	//if (bIsVelocityZero)
+	//{
+	//	FVector NewVelocity = GetCharacterMovement()->Velocity;
+	//	NewVelocity.X = 0;
+	//	NewVelocity.Y = 0;
 
-		if (NewVelocity.Z > 0)
-		{
-			NewVelocity.Z = 0;
-		}
-		else
-		{
-			NewVelocity.Z = -NewVelocity.Z;
-		}
+	//	if (NewVelocity.Z > 0)
+	//	{
+	//		NewVelocity.Z = 0;
+	//	}
+	//	else
+	//	{
+	//		NewVelocity.Z = -NewVelocity.Z;
+	//	}
 
-		GetCharacterMovement()->Velocity = NewVelocity;
-		GetCharacterMovement()->UpdateComponentVelocity();
-	}
-}
+	//	GetCharacterMovement()->Velocity = NewVelocity;
+	//	GetCharacterMovement()->UpdateComponentVelocity();
+	//}
+//}
 
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -849,71 +779,31 @@ void AUSACharacterBase::SetupGAS()
 	// 게임 어빌리티 부여
 	if (HasAuthority() == true)
 	{
-		//if (ASC != nullptr)
-		//{
-		//USA_LOG(LogTemp, Log, TEXT("ASC is here"));
+		for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
 
-			for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
+		for (const auto& GameplayActionAbility : GameplayActiveAbilities)
+		{
+
+				FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
+
+			if (GameplayActionAbility.InputID >= 0)
 			{
-				FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
-				ASC->GiveAbility(GameplayAbilitySpec);
+				GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
 			}
 
-			for (const auto& GameplayActionAbility : GameplayActiveAbilities)
-			{
-				//USA_LOG(LogTemp, Log, TEXT("Try to give GameplayActiveAbilities... "))
+			ASC->GiveAbility(GameplayAbilityActionSpec);
+		}
 
-					FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
-
-				if (GameplayActionAbility.InputID >= 0)
-				{
-					GameplayAbilityActionSpec.InputID = GameplayActionAbility.InputID;
-				}
-
-				ASC->GiveAbility(GameplayAbilityActionSpec);
-
-				//USA_LOG(LogTemp, Log, TEXT("Gave GameplayActiveAbilities! "))
-			}
-
-			// 게임 시작 어빌리티
-			for (const auto& GameplayStartAbility : GameplayStartAbilities)
-			{
-				FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
-				ASC->GiveAbility(GameplayStartAbility);
-			}
-
-			//
-
-			//for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
-			//{
-			//	FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartActionAbility);
-			//	ASC->GiveAbility(GameplayStartActionAbility);
-			//}
-
-			//for (const auto& GameplayStartActionAbility : GameplayStartActionAbilites)
-			//{
-			//	if (GameplayStartActionAbility == nullptr)
-			//	{
-			//		continue;
-			//	}
-
-			//	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartActionAbility);
-
-			//	if (GameplayAbilitySpec == nullptr)
-			//	{
-			//		continue;
-			//	}
-
-			//	if (GameplayAbilitySpec->IsActive())
-			//	{
-			//		ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
-			//	}
-			//	else
-			//	{
-			//		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
-			//	}
-			//}
-		//}
+		// 게임 시작 어빌리티
+		for (const auto& GameplayStartAbility : GameplayStartAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
+			ASC->GiveAbility(GameplayStartAbility);
+		}
 	}
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)
@@ -949,7 +839,7 @@ void AUSACharacterBase::SetupGAS()
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon);
 
-	USA_LOG(LogTemp, Log, TEXT("My ASC Name is %s %s"), *ASC->GetOwnerActor()->GetName(), *ASC->GetAvatarActor()->GetName());
+	//USA_LOG(LogTemp, Log, TEXT("My ASC Name is %s %s"), *ASC->GetOwnerActor()->GetName(), *ASC->GetAvatarActor()->GetName());
 	//USA_LOG(LogTemp, Log, TEXT("... And My ASC Authority %i"), HasAuthorityOrPredictionKey ();
 }
 
@@ -990,7 +880,4 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
-	//DOREPLIFETIME(AUSACharacterBase, CurrentCapsuleInfoKey);
-	
-	//DOREPLIFETIME(AUSACharacterBase, NextWeapon);
 }

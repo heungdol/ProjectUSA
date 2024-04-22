@@ -12,10 +12,13 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 
+#include "Character/USACharacterBase.h"
+
+#include "ProjectUSA.h"
+
 UGA_CharacterDash::UGA_CharacterDash()
 {
-	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	//ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
+
 }
 
 void UGA_CharacterDash::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
@@ -28,18 +31,13 @@ void UGA_CharacterDash::InputReleased(const FGameplayAbilitySpecHandle Handle, c
 	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
 }
 
-bool UGA_CharacterDash::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
-{
-	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
-}
-
 void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-
+	
 	if (ActorInfo != nullptr)
 	{
 		MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
@@ -53,25 +51,68 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
+		DashForwardDirection = MyCharacter->GetPendingMovementInputVector();
+
+		if (HasAuthority(&ActivationInfo) == false
+			&& GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+		{
+			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Client"));
+
+			ServerRPC_SetDashForwardDirection(MyCharacter->GetPendingMovementInputVector());
+
+			DoDash();
+		}
+		else if (HasAuthority(&ActivationInfo) == true
+			&& GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+		{
+			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Server"));
+
+			DoDash();
+		}
+	}
+	else
+	{
+		SimpleCancelAbility();
+	}
+}
+
+void UGA_CharacterDash::DoDash()
+{
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
+
+	if (CurrentActorInfo != nullptr)
+	{
+		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	}
+
+	if (MyCharacter != nullptr)
+	{
+		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
+	}
+
+	if (MyCharacter != nullptr
+		&& MyCharacterMovementComponent != nullptr)
+	{
 		FVector ForwardDirection = MyCharacter->GetActorForwardVector();
 		FVector RightDirection = MyCharacter->GetActorRightVector();
 
-		// TODO: 만약 멀티를 본격적으로 들어간다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
-		if (MyCharacter->GetPendingMovementInputVector().Length() > SMALL_NUMBER/* != FVector::ZeroVector*/)
+		if (DashForwardDirection.Length() > SMALL_NUMBER/* != FVector::ZeroVector*/)
 		{
-			FVector InputVector = MyCharacter->GetPendingMovementInputVector();
+			FVector InputVector = DashForwardDirection;
 
 			ForwardDirection = InputVector;
 			ForwardDirection.Normalize();
 
-			RightDirection = FVector::CrossProduct(FVector::UpVector ,ForwardDirection);
+			RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
 			RightDirection.Normalize();
 
 			MyCharacter->SetActorRotation(ForwardDirection.Rotation());
 		}
 
 		FVector EndLocation(0, 0, 0);
-		EndLocation = MyCharacter->GetActorLocation() 
+		EndLocation = MyCharacter->GetActorLocation()
 			+ (ForwardDirection * DashOffsetLocation.X)
 			+ (RightDirection * DashOffsetLocation.Y)
 			+ (FVector::UpVector * DashOffsetLocation.Z);
@@ -85,14 +126,11 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask(this, DashAnimMontageData);
 		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+
 		AbilityTaskMontage->ReadyForActivation();
-
-
-		bIsActivaed = true;
 	}
 	else
 	{
-		// Can not activate this ability 
 		SimpleCancelAbility();
 	}
 }
@@ -105,38 +143,19 @@ void UGA_CharacterDash::CancelAbility(const FGameplayAbilitySpecHandle Handle, c
 void UGA_CharacterDash::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-
-	if (bIsActivaed == (int8)true)
-	{
-		bIsActivaed = false;
-
-		//ACharacter* MyCharacter = nullptr;
-		//UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-
-		//if (ActorInfo != nullptr)
-		//{
-		//	MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
-		//}
-
-		//if (MyCharacter != nullptr)
-		//{
-		//	MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-		//}
-	}
 }
 
-//void UGA_CharacterDash::OnEndAbilityCallback()
-//{
-//	//OnEndAbility.Broadcast();
-//	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-//}
-//
-//void UGA_CharacterDash::OnCancelAbilityCallback()
-//{
-//	//OnCancelAbility.Broadcast();
-//	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-//}
-//
+bool UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Validate(const FVector& InDirection)
+{
+	return true;
+}
 
 
+void UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Implementation(const FVector& InDirection)
+{
+	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("called in server"));
 
+	DashForwardDirection = InDirection;
+
+	DoDash();
+}

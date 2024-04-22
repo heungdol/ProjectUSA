@@ -4,6 +4,8 @@
 #include "GAS/GA/USAGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "Abilities/Tasks/AbilityTask.h"
+#include "GameplayTask.h"
 
 #include "ProjectUSA.h"
 
@@ -12,6 +14,19 @@
 //	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 //}
 
+UUSAGameplayAbility::UUSAGameplayAbility()
+{
+	// GAS 문서에서도 아래의 옵션은 설정하지 말라고 명시되어 있지만...
+	// GameplayAbility간 RPC 통신을 위해서는 아래의 옵션을 켜줘야 한다.
+	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
+
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
+	//OnActivateAbility.AddUObject(this, &UUSAGameplayAbility::SetAbilityTasks_ReadyForActivation);
+}
+
+//
+
 void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -19,9 +34,42 @@ void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	ApplyEffectsViaArray(ActivateAbilityEffects, Handle, ActorInfo, ActivationInfo);
 
 	OnActivateAbility.Broadcast();
-	
-	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Activate Ability"));
+
+	//if (HasAuthority(&ActivationInfo))
+	//{
+	//	ActivateAbility_Server(Handle, ActorInfo, ActivationInfo);
+	//}
+	//else
+	//{
+	//	ActivateAbility_Client(Handle, ActorInfo, ActivationInfo);
+	//}
+
+	//ActivateAbility_Multicast(Handle, ActorInfo, ActivationInfo);
 }
+
+void UUSAGameplayAbility::External_ActivateUSAGameplayAbility()
+{
+
+}
+
+//void UUSAGameplayAbility::ActivateAbility_Server(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+//{
+//
+//}
+//
+//void UUSAGameplayAbility::ActivateAbility_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+//{
+//
+//}
+//
+//void UUSAGameplayAbility::ActivateAbility_Multicast(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+//{
+//	ApplyEffectsViaArray(ActivateAbilityEffects, Handle, ActorInfo, ActivationInfo);
+//
+//	//OnActivateAbility.Broadcast();
+//}
+
+//
 
 void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
@@ -49,6 +97,8 @@ void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("End Ability"));
 }
 
+//
+
 void UUSAGameplayAbility::SimpleCancelAbility()
 {
 	CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
@@ -59,6 +109,7 @@ void UUSAGameplayAbility::SimpleEndAbility()
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
+//
 
 void UUSAGameplayAbility::ApplyEffectsViaArray
 (const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects
@@ -83,3 +134,28 @@ void UUSAGameplayAbility::ApplyEffectsViaArray(const TArray<TSubclassOf<class UG
 {
 	ApplyEffectsViaArray(GameplayEffects, CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo);
 }
+
+//
+
+//void UUSAGameplayAbility::AddAbilityTaskToArray(UAbilityTask* InTask)
+//{
+//	if (InTask == nullptr)
+//	{
+//		return;
+//	}
+//
+//	AbilityTasks.Add(InTask);
+//}
+//
+//void UUSAGameplayAbility::SetAbilityTasks_ReadyForActivation()
+//{
+//	for (UAbilityTask* Task : AbilityTasks)
+//	{
+//		if (Task == nullptr)
+//		{
+//			continue;
+//		}
+//
+//		Task->ReadyForActivation();
+//	}
+//}

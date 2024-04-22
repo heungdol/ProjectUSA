@@ -33,14 +33,27 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Custom Active Effect")
 	TArray <TSubclassOf<class UGameplayEffect>> PostEndAbilityEffects;
-	
+
 
 public:
 	///** Does the commit atomically (consume resources, do cooldowns, etc) */
 	//virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
+	UUSAGameplayAbility();
+
 	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	virtual void External_ActivateUSAGameplayAbility();
+
+	//virtual void ActivateAbility_Server(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo);
+
+	//virtual void ActivateAbility_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo);
+
+	//virtual void ActivateAbility_Multicast(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo);
+
+
+
 
 	/** Destroys instanced-per-execution abilities. Instance-per-actor abilities should 'reset'. Any active ability state tasks receive the 'OnAbilityStateInterrupted' event. Non instance abilities - what can we do? */
 	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility) override;
@@ -48,7 +61,7 @@ public:
 	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-
+	//FUSAGASimpleDelegate OnReadyAbility;
 	FUSAGASimpleDelegate OnActivateAbility;
 	FUSAGASimpleDelegate OnCancelAbility; //-> OnGameplayAbilityCancelled
 	FUSAGASimpleDelegate OnEndAbility; //-> OnGameplayAbilityEnded
@@ -73,4 +86,13 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
+
+	//UPROPERTY()
+	//TArray <TObjectPtr<UAbilityTask>> AbilityTasks;
+
+	//UFUNCTION()
+	//void AddAbilityTaskToArray (UAbilityTask* InAbilityTask);
+
+	//UFUNCTION()
+	//void SetAbilityTasks_ReadyForActivation();
 };

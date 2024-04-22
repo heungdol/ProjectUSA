@@ -10,10 +10,13 @@
 
 #include "USACharacterBase.generated.h"
 
+// ========================================================================================
+
 #define KEYNAME_CAPSULEINFO_WALK TEXT("Walk")
 #define KEYNAME_CAPSULEINFO_FALL TEXT("Fall")
 
 // ========================================================================================
+
 
 // InputID와 InputAction, GameplayAbility를 관리하기 위한 Struct
 USTRUCT(BlueprintType)
@@ -155,16 +158,6 @@ protected:
 	TMap<FName, FUSACharacterCapsuleInfo> CharacterCapsuleInfos;
 
 
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
-
-
-
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
 	FUSACharacterMovementWalkInfo CharacterMovementWalkInfo;
 
@@ -182,7 +175,24 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<class AUSAWeaponBase> NextWeapon;
-	
+
+
+	UPROPERTY()
+	bool bIsNextWeapon = false;
+
+	UPROPERTY()
+	bool bIsVelocityZero = false;
+
+
+public:
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
+
+	//
+
 	UFUNCTION(BlueprintCallable)
 	void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
@@ -195,15 +205,7 @@ protected:
 	UFUNCTION()
 	void OnRep_NextWeapon();
 
-
-	
-	UPROPERTY()
-	bool bIsNextWeapon = false;
-
-	UPROPERTY()
-	bool bIsVelocityZero = false;
-
-
+	//
 
 
 protected:
@@ -226,7 +228,7 @@ protected:
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
 
-	void AdjustVelocityWithVelocityZero();
+	//void AdjustVelocityWithVelocityZero();
 
 	void InputPressGameplayAbilityByInputID(int32 InputID);
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);
