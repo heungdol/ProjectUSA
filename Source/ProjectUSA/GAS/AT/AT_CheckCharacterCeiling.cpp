@@ -38,8 +38,6 @@ void UAT_CheckCharacterCeiling::Activate()
 		SimpleCancelAbilityTask();
 		return;
 	}
-
-	SetWaitingOnAvatar();
 }
 
 void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
@@ -81,12 +79,12 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 		, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility)
 		, false
 		, IgnoreActors
-		, EDrawDebugTrace::ForDuration
+		, EDrawDebugTrace::None
 		, HitResult
-		, (Pawn && Pawn->IsLocallyControlled())
+		, true
 		, FLinearColor::Red
 		, FLinearColor::Green
-		, 0.1f);
+		, 0.0f);
 
 	if (HitResult.bBlockingHit)
 	{

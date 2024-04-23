@@ -145,11 +145,12 @@ void UGA_CharacterDash::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
+
+
 bool UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Validate(const FVector& InDirection)
 {
 	return true;
 }
-
 
 void UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Implementation(const FVector& InDirection)
 {

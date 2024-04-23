@@ -187,7 +187,7 @@ AUSACharacterBase::AUSACharacterBase()
 
 	ASC = nullptr;
 
-	bIsNextWeapon = false;
+	bIsSetNextWeaponBeforeGASSetup = false;
 
 	//NetUpdateFrequency = 200.0f;
 }
@@ -242,32 +242,35 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 
 void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
 {
-	ServerRPC_SetNextWeapon(InNextWeapon);
-}
-
-bool AUSACharacterBase::ServerRPC_SetNextWeapon_Validate(AUSAWeaponBase* InNextWeapon)
-{
-	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
-
-	//if (InNextWeapon == nullptr)
-	//{
-	//	return false;
-	//}
-
-	return true;
-}
-
-void AUSACharacterBase::ServerRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
-{
 	MulticastRPC_SetNextWeapon(InNextWeapon);
 }
+
+//bool AUSACharacterBase::ServerRPC_SetNextWeapon_Validate(AUSAWeaponBase* InNextWeapon)
+//{
+//	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
+//
+//	//if (InNextWeapon == nullptr)
+//	//{
+//	//	return false;
+//	//}
+//
+//	return true;
+//}
+//
+//void AUSACharacterBase::ServerRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
+//{
+//	MulticastRPC_SetNextWeapon(InNextWeapon);
+//}
 
 void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
 {
 	if (HasAuthority())
 	{
-		NextWeapon = InNextWeapon;
-		OnRep_NextWeapon ();
+		if (InNextWeapon != nullptr)
+		{
+			NextWeapon = InNextWeapon;
+			OnRep_NextWeapon ();
+		}
 	}
 	else
 	{
@@ -278,7 +281,25 @@ void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase
 
 void AUSACharacterBase::OnRep_NextWeapon()
 {
-	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
+	USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
+
+	if (ASC == nullptr)
+	{
+		bIsSetNextWeaponBeforeGASSetup = true;
+	
+		USA_LOG(LogTemp, Log, TEXT("Put off Setting Next Weapon..."));
+
+		return;
+	}
+
+	EquipFinalNextWeapon();
+
+	USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
+}
+
+void AUSACharacterBase::EquipFinalNextWeapon()
+{
+	USA_LOG(LogTemp, Log, TEXT("Setting Final Weapon...."));
 
 	EUSAWeaponType WeaponType = EUSAWeaponType::None;
 
@@ -287,11 +308,7 @@ void AUSACharacterBase::OnRep_NextWeapon()
 		WeaponType = NextWeapon->GetWeaponType();
 	}
 
-	UnequipWeapon(WeaponType);
-
 	EquipWeapon(NextWeapon);
-
-	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
 }
 
 
@@ -320,6 +337,11 @@ void AUSACharacterBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//AdjustVelocityWithVelocityZero();
+
+	//if (bIsFixRotation)
+	//{
+	//	SetActorRotation(FixRotation);
+	//}
 }
 
 // Called to bind functionality to input
@@ -477,6 +499,16 @@ void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplay
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
+
+	//if (NewCount == 1)
+	//{
+	//	bIsFixRotation = true;
+	//	FixRotation = GetActorRotation();
+	//}
+	//else if (NewCount == 0)
+	//{
+	//	bIsFixRotation = false;
+	//}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput(const FGameplayTag CallbackTag, int32 NewCount)
@@ -505,12 +537,12 @@ void AUSACharacterBase::OnGameplayTagCallback_VelocityZero(const FGameplayTag Ca
 
 	if (NewCount > 0)
 	{
-		bIsVelocityZero = true;
+		//bIsVelocityZero = true;
 		GetCharacterMovement()->bApplyGravityWhileJumping = false;
 	}
 	else
 	{
-		bIsVelocityZero = false;
+		//bIsVelocityZero = false;
 		GetCharacterMovement()->bApplyGravityWhileJumping = true;
 	}
 }
@@ -666,6 +698,8 @@ void AUSACharacterBase::EquipWeapon(AUSAWeaponBase* InWeapon)
 	AttachWeaponToHolderSocket(InWeapon);
 
 	CurrentEquipedWeapons[InWeaponType] = InWeapon;
+
+	USA_LOG(LogTemp, Log, TEXT("Setting Weapon Complete"));
 }
 
 void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
@@ -802,6 +836,13 @@ void AUSACharacterBase::SetupGAS()
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
 			ASC->GiveAbility(GameplayStartAbility);
+		}
+
+		if (bIsSetNextWeaponBeforeGASSetup)
+		{
+			bIsSetNextWeaponBeforeGASSetup = false;
+
+			EquipFinalNextWeapon();
 		}
 	}
 

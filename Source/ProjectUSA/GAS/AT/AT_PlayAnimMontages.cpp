@@ -63,7 +63,7 @@ void UAT_PlayAnimMontages::Activate()
 		GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
 	}
 
-	SetWaitingOnAvatar();
+	//SetWaitingOnAvatar();
 }
 
 void UAT_PlayAnimMontages::SimpleEndAbilityTask()

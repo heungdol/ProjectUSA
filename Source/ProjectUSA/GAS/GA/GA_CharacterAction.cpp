@@ -10,12 +10,9 @@
 #include "GAS/AT/AT_LaunchCharacterForPeriod.h"
 #include "GAS/AT/AT_WaitDelay.h"
 #include "GAS/AT/AT_PlayAnimMontages.h"
+#include "GAS/AT/AT_SpawnActors.h"
+#include "GAS/AT/AT_TraceAttack.h"
 
-
-//void UGA_CharacterAction::SetAnimBlueprintProperties()
-//{
-//
-//}
 
 void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -37,41 +34,48 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 
 	// 방향 설정
-	FVector ForwardDirection = MyCharacter->GetActorForwardVector();
-	FVector RightDirection = MyCharacter->GetActorRightVector();
-
-	//FVector InputForwardDirection = FVector::ZeroVector;
-	//FVector InputRightDirection = FVector::ZeroVector;
-
-	//FVector ForwardDirectionToTarget = FVector::ZeroVector;
-	//FVector RightDirectionFromTarget = FVector::ZeroVector;
+	// TODO: 만약 멀티를 본격적으로 들어간다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
+	ForwardDirection = MyCharacter->GetActorForwardVector();
+	RightDirection = MyCharacter->GetActorRightVector();
 
 	switch (DirectionType)
 	{
+
+	// 일단 인풋 특별 대우
 	case ECharacterActionDirectionType::Input:
 
-		// TODO: 만약 멀티를 본격적으로 들어간다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
 		if (MyCharacter != nullptr
 			&& MyCharacterMovementComponent != nullptr)
 		{
-			if (MyCharacter->GetPendingMovementInputVector().Length() > SMALL_NUMBER/* != FVector::ZeroVector*/)
+			SetForwardAndRightDirection(MyCharacter->GetPendingMovementInputVector());
+
+			if (HasAuthority(&ActivationInfo))
 			{
-				ForwardDirection = MyCharacter->GetPendingMovementInputVector();
-				ForwardDirection.Normalize();
+				if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+					&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+				{
+					DoAction();
+				}
+			}
+			else
+			{
+				if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+				{
+					ServerRPC_SetActionDirecitonAndDoAction(MyCharacter->GetPendingMovementInputVector());
 
-				RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
-				RightDirection.Normalize();
-
+					DoAction();
+				}
 			}
 		}
-
-		MyCharacter->SetActorRotation(ForwardDirection.Rotation());
 
 		break;
 
 	case ECharacterActionDirectionType::Target:
 
-		// TODO 추후 구현
+		// TODO 추후 타깃 바라보는 과정 구현
+		// 월드에 존재하는 하나의 액터를 바라보는 것이기 때문에, input 처럼 RPC를 이용할 필요는 없을 것 같다.
+
+		DoAction();
 
 		break;
 
@@ -81,10 +85,77 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		break;
 	}
 
+
+	DoSomethingInBlueprint_Activate();
+}
+
+void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
+{
+	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+
+	DoSomethingInBlueprint_Cancel();
+}
+
+void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	DoSomethingInBlueprint_End();
+}
+
+
+//
+
+bool UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Validate(const FVector& InDirection)
+{
+	return true;
+}
+
+void UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Implementation(const FVector& InDirection)
+{
+	SetForwardAndRightDirection(InDirection);
+
+	DoAction();
+}
+
+
+//
+
+
+void UGA_CharacterAction::SetForwardAndRightDirection(const FVector& InDirection)
+{
+	if (InDirection.SquaredLength() > SMALL_NUMBER)
+	{
+		ForwardDirection = InDirection;
+		ForwardDirection.Normalize();
+
+		RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
+		RightDirection.Normalize();
+	}
+}
+
+void UGA_CharacterAction::DoAction()
+{
+	// 컴포넌트 검사
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
+
+	if (CurrentActorInfo != nullptr)
+	{
+		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	}
+
+	if (MyCharacter != nullptr)
+	{
+		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
+	}
+
 	// 이동 설정
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
+		MyCharacter->SetActorRotation(ForwardDirection.Rotation());
+
 		FVector EndLocation = FVector::ZeroVector;
 		FVector FinalLaunchVector = FVector::ZeroVector;
 
@@ -142,14 +213,18 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	UAT_WaitDelay* AbilityTaskDelay = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, Period);
 	AbilityTaskDelay->OnFinish.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
 	AbilityTaskDelay->ReadyForActivation();
-}
 
-void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
-{
-	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
-}
 
-void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	// 스폰 설정
+	UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
+	AbiltiyTaskSpawn->ReadyForActivation();
+
+	
+	if (HasAuthority(&CurrentActivationInfo))
+	{
+		// 공격 설정
+		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
+		AbiltiyTaskAttack->ReadyForActivation();
+	}
+
 }

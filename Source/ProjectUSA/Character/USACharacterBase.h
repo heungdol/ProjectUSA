@@ -178,10 +178,16 @@ protected:
 
 
 	UPROPERTY()
-	bool bIsNextWeapon = false;
+	bool bIsSetNextWeaponBeforeGASSetup = false;
 
-	UPROPERTY()
-	bool bIsVelocityZero = false;
+	//UPROPERTY()
+	//bool bIsVelocityZero = false;
+
+	//UPROPERTY()
+	//bool bIsFixRotation = false;
+
+	//UPROPERTY()
+	//FRotator FixRotation = FRotator::ZeroRotator;
 
 
 public:
@@ -196,14 +202,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
 	UFUNCTION()
 	void OnRep_NextWeapon();
+
+	void EquipFinalNextWeapon();
 
 	//
 

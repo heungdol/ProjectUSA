@@ -6,6 +6,9 @@
 #include "GAS/GA/USAGameplayAbility.h"
 
 #include "GAS/AT/AT_PlayAnimMontages.h"
+#include "GAS/AT/AT_SpawnActors.h"
+#include "GAS/AT/AT_TraceAttack.h"
+
 
 #include "GA_CharacterAction.generated.h"
 
@@ -30,6 +33,7 @@ enum class ECharacterActionDirectionType : uint8
 	None UMETA(DisplayName = "None"),
 	Input UMETA(DisplayName = "Input"),
 	Target UMETA(DisplayName = "Target"),
+	//Damage UMETA(DisplayName = "Damage"), <- 우선 CharacterBase에서 처리
 };
 
 /**
@@ -93,13 +97,31 @@ public:
 
 	//
 
-	// 스폰은 추후 구현
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Spawn")
+	struct FSpawnActorData SpawnActorData ;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
+	struct FAttackTraceData AttackTraceData;
+
+	//
+
+
+	FVector ForwardDirection = FVector::ForwardVector ;
+	FVector RightDirection = FVector::RightVector;
 
 public:
 
 	// 애님 블루프린트는 함수 호출로 대체
 	UFUNCTION(BlueprintImplementableEvent)
-	void SetAnimBlueprintProperties();
+	void DoSomethingInBlueprint_Activate();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DoSomethingInBlueprint_Cancel();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DoSomethingInBlueprint_End();
 
 
 public:
@@ -113,4 +135,11 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC_SetActionDirecitonAndDoAction (const FVector& InDirection);
+
+	void SetForwardAndRightDirection(const FVector& InDirection);
+	
+
+	void DoAction();
 };

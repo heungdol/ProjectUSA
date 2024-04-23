@@ -8,6 +8,9 @@
 
 #include "Components/SkeletalMeshComponent.h"
 
+
+#include "ProjectUSA.h"
+
 // Sets default values
 AUSAWeaponBase::AUSAWeaponBase()
 {
@@ -58,6 +61,7 @@ void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(UAbilitySystemComponent* In
 
 	if (InASC == nullptr)
 	{
+		USA_LOG(LogTemp, Log, TEXT("No ASC"));
 		return;
 	}
 

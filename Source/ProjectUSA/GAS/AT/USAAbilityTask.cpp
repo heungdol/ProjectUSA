@@ -40,4 +40,6 @@ void UUSAAbilityTask::Activate()
 			AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UUSAAbilityTask::SimpleCancelAbilityTask);
 		}
 	}
+
+	SetWaitingOnAvatar();
 }
