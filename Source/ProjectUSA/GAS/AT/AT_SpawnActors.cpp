@@ -30,6 +30,13 @@ void UAT_SpawnActors::Activate()
 
 void UAT_SpawnActors::SpawnActorAndSetNextTimer()
 {
+	ACharacter* MyCharacter = Cast <ACharacter>(GetAvatarActor());
+	
+	if (MyCharacter == nullptr)
+	{
+		return;
+	}
+
 	if (SpawnActorData == nullptr)
 	{
 		return;
@@ -45,13 +52,37 @@ void UAT_SpawnActors::SpawnActorAndSetNextTimer()
 	while (CurrentSpwanActorIndex < SpawnActorData->SpawnActorDetails.Num()
 		&& PrevSpawnActorTime + SMALL_NUMBER >= NextSpawnTime)
 	{
-		if (SpawnActorData->SpawnActorDetails[CurrentSpwanActorIndex].DesiredActorClass)
+		TSubclassOf<AActor> ActorClass = SpawnActorData->SpawnActorDetails[CurrentSpwanActorIndex].DesiredActorClass;
+
+		if (ActorClass)
 		{
+			//bool bIsActorReplicated = false;
+			//bool bIsOkay = false;
+
+			//if (Cast<AActor>(ActorClass))
+			//{
+			//	bIsActorReplicated = Cast<AActor>(ActorClass)->GetIsReplicated();
+			//}
+
+			//if (bIsActorReplicated == true && MyCharacter->HasAuthority())
+			//{
+			//	bIsOkay = true;
+			//}
+
+			//if (bIsActorReplicated == false)
+			//{
+			//	bIsOkay = true;
+			//}
+
+			//if (bIsOkay == false)
+			//{
+			//	continue;
+			//}
+
 			FVector SpawnLocation = GetAvatarActor()->GetActorLocation();
 			FRotator SpawnRotation = GetAvatarActor()->GetActorRotation();
 
-			AActor* NewActor = GetWorld()->SpawnActor<AActor>
-				(SpawnActorData->SpawnActorDetails[CurrentSpwanActorIndex].DesiredActorClass, SpawnLocation, SpawnRotation);
+			AActor* NewActor = GetWorld()->SpawnActor<AActor> (ActorClass, SpawnLocation, SpawnRotation);
 
 			if (NewActor)
 			{

@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GAS/AT/USAAbilityTask.h"
+
+#include "Engine/DamageEvents.h"
+#include "GameFramework/DamageType.h"
+
 #include "AT_TraceAttack.generated.h"
 
 UENUM(BlueprintType)
@@ -15,6 +19,9 @@ enum class EAttackTraceShape : uint8
 	//Box			UMETA(DisplayName = "Box"),
 	//Capsule		UMETA(DisplayName = "Capsule")
 };
+
+
+// =====================================================================
 
 
 USTRUCT(BlueprintType)
@@ -38,6 +45,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
 	float AttackDamage = -1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
+	TSubclassOf<UDamageType> AttackDamageType;
 };
 
 
@@ -57,6 +67,43 @@ public:
 // ========================================================================================
 
 
+
+///** Damage subclass that handles damage with a single impact location and source direction */
+//USTRUCT()
+//struct ENGINE_API FUSADamageEvent : public FDamageEvent
+//{
+//	GENERATED_BODY()
+//
+//public:
+//	/** Actual damage done */
+//	UPROPERTY()
+//	float Damage;
+//
+//	/** Direction the shot came from. Should be normalized. */
+//	UPROPERTY()
+//	FVector_NetQuantizeNormal ShotDirection;
+//
+//	/** Describes the trace/location that caused this damage */
+//	UPROPERTY()
+//	FHitResult HitInfo;
+//
+//	FUSADamageEvent() : Damage(0.0f), ShotDirection(FVector::ZeroVector), HitInfo() {}
+//	FUSADamageEvent(float InDamage, const FHitResult& InHitInfo, FVector const& InShotDirection, TSubclassOf<UDamageType> InDamageTypeClass)
+//		: FDamageEvent(InDamageTypeClass), Damage(InDamage), ShotDirection(InShotDirection), HitInfo(InHitInfo)
+//	{}
+//
+//	/** ID for this class. NOTE this must be unique for all damage events. */
+//	static const int32 ClassID = 1;
+//
+//	virtual int32 GetTypeID() const override { return FPointDamageEvent::ClassID; };
+//	virtual bool IsOfType(int32 InID) const override { return (FPointDamageEvent::ClassID == InID) || FDamageEvent::IsOfType(InID); };
+//
+//	/** Simple API for common cases where we are happy to assume a single hit is expected, even though damage event may have multiple hits. */
+//	//virtual void GetBestHitInfo(AActor const* HitActor, AActor const* HitInstigator, FHitResult& OutHitInfo, FVector& OutImpulseDir) const override;
+//};
+
+
+// ========================================================================================
 
 
 /**

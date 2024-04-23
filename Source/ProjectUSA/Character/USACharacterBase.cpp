@@ -650,6 +650,11 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 
 void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag CallbackTag, int32 NewCount)
 {
+	if (CurrentEquipedWeapons.Contains(EUSAWeaponType::First) == false)
+	{
+		return;
+	}
+
 	if (NewCount > 0)
 	{
 		//USA_LOG(LogTemp, Log, TEXT("First on Hand"));
@@ -664,6 +669,11 @@ void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag
 
 void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTag CallbackTag, int32 NewCount)
 {
+	if (CurrentEquipedWeapons.Contains(EUSAWeaponType::Second) == false)
+	{
+		return;
+	}
+
 	if (NewCount > 0)
 	{
 		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::Second]);
@@ -775,21 +785,91 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	// 뜯어보니
-	// Character의 ApplyDamageMomentum 함수도 적절히 참고해보면 좋을 듯..?
-
 	float Result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	ApplyDamageMomentum(DamageAmount, DamageEvent, EventInstigator->GetPawn(), DamageCauser);
 	
-	for (const auto& GameplayDamageAbility : GameplayDamageAbilities)
+	return Result;
+}
+
+//void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
+//{
+//	if (HasAuthority())
+//	{
+//
+//	}
+//	else
+//	{
+//
+//	}
+//}
+
+
+
+void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
+{
+	FVector NewDirection = FVector::ForwardVector;
+	TSubclassOf<UGameplayAbility> DamageAbilityClass;
+
+	if (HasAuthority())
 	{
-		if (GameplayDamageAbility.Key == DamageEvent.DamageTypeClass)
+		FVector AttackDirection;
+		FHitResult HitResult;
+
+		DamageEvent.GetBestHitInfo(nullptr, nullptr, HitResult, AttackDirection);
+
+		NewDirection = AttackDirection * -1.0f;
+		NewDirection.Z = 0.0f;
+		NewDirection.Normalize();
+
+		
+		for (const auto& GameplayDamageAbility : GameplayDamageAbilities)
 		{
-			// TODO...
+			if (GameplayDamageAbility.Key == DamageEvent.DamageTypeClass)
+			{
+				DamageAbilityClass = GameplayDamageAbility.Value;
+				//FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(DamageAbilityClass);
+				//
+				//if (ASC != nullptr)
+				//{
+				//	ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+				//}
+
+				break;
+			}
+		}
+
+
+		SetActorRotation(NewDirection.Rotation());
+
+		if (DamageAbilityClass != nullptr
+			&& ASC != nullptr)
+		{
+			USA_LOG(LogTemp, Log, TEXT("From"));
+
+			ASC->TryActivateAbilityByClass(DamageAbilityClass);
+		}
+
+
+		if (GetNetMode() != ENetMode::NM_Standalone)
+		{
+			MulticastRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
 		}
 	}
+}
 
+void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
+{
+	SetActorRotation(InNewDirection.Rotation());
 
-	return Result;
+	//if (InAbility != nullptr
+	//	&& ASC != nullptr)
+	//{
+	//	USA_LOG(LogTemp, Log, TEXT ("From"));
+
+	//	//FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(InAbility);
+	//	ASC->TryActivateAbilityByClass(InAbility);
+	//}
 }
 
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
@@ -820,8 +900,7 @@ void AUSACharacterBase::SetupGAS()
 
 		for (const auto& GameplayActionAbility : GameplayActiveAbilities)
 		{
-
-				FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
+			FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
 
 			if (GameplayActionAbility.InputID >= 0)
 			{
@@ -836,6 +915,13 @@ void AUSACharacterBase::SetupGAS()
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
 			ASC->GiveAbility(GameplayStartAbility);
+		}
+
+		// 데미지 어빌리티
+		for (const auto& GameplayDamageAbility : GameplayDamageAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
 		if (bIsSetNextWeaponBeforeGASSetup)

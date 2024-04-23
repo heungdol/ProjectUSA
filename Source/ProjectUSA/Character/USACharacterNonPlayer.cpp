@@ -6,6 +6,11 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
+#include "Debug/DebugDrawComponent.h"
+
+#include "Engine/DamageEvents.h"
+#include "GameFramework/DamageType.h"
+
 #include "ProjectUSA.h"
 
 
@@ -36,7 +41,15 @@ float AUSACharacterNonPlayer::TakeDamage(float Damage, FDamageEvent const& Damag
 	//	&& DamageCauser != nullptr)
 	{
 		ResultDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+		FVector AttackDirection;
+		FHitResult HitResult;
+		
+		DamageEvent.GetBestHitInfo(nullptr, nullptr, HitResult, AttackDirection);
+
 		USA_LOG(LogTemp, Log, TEXT("Get Damage: %f from %s %s"), Damage, *EventInstigator->GetName(), *DamageCauser->GetName());
+
+		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + AttackDirection * 300.0f, FColor::Emerald, false, 0.5f, 0U, 2.0f);
 	}
 
 	return ResultDamage;

@@ -72,19 +72,19 @@ void UAT_CheckCharacterCeiling::TickTask(float DeltaTime)
 	APawn* Pawn = Cast <APawn>(GetAvatarActor());
 
 	FHitResult HitResult;
-	UKismetSystemLibrary::SphereTraceSingle(GetWorld()
-		, StartTracePoint
-		, EndTracePoint
-		, DetectCharacterRadius
-		, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility)
-		, false
-		, IgnoreActors
-		, EDrawDebugTrace::None
-		, HitResult
-		, true
-		, FLinearColor::Red
-		, FLinearColor::Green
-		, 0.0f);
+	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), 
+		StartTracePoint, 
+		EndTracePoint, 
+		DetectCharacterRadius, 
+		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility), 
+		false, 
+		IgnoreActors, 
+		EDrawDebugTrace::None, 
+		HitResult, 
+		true, 
+		FLinearColor::Red, 
+		FLinearColor::Green, 
+		0.0f);
 
 	if (HitResult.bBlockingHit)
 	{

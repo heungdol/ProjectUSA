@@ -13,6 +13,8 @@
 #include "GAS/AT/AT_SpawnActors.h"
 #include "GAS/AT/AT_TraceAttack.h"
 
+#include "ProjectUSA.h"
+
 
 void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -82,9 +84,13 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	case ECharacterActionDirectionType::None:
 	default:
 
+		DoAction();
+
 		break;
 	}
 
+	// 애님 설정
+	ServerRPC_PlayAnimMontageTask();
 
 	DoSomethingInBlueprint_Activate();
 }
@@ -133,6 +139,24 @@ void UGA_CharacterAction::SetForwardAndRightDirection(const FVector& InDirection
 		RightDirection.Normalize();
 	}
 }
+
+void UGA_CharacterAction::ServerRPC_PlayAnimMontageTask_Implementation()
+{
+	MulticastRPC_PlayAnimMontageTask();
+}
+
+void UGA_CharacterAction::MulticastRPC_PlayAnimMontageTask_Implementation()
+{
+	// 애니메이션 설정
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, ActionAnimMontageData);
+	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	AbilityTaskMontage->ReadyForActivation();
+
+	UE_LOG (LogTemp, Log, TEXT("Setted Animation Montage"));
+}
+
+//
 
 void UGA_CharacterAction::DoAction()
 {
@@ -202,11 +226,7 @@ void UGA_CharacterAction::DoAction()
 		}
 	}
 
-	// 애니메이션 설정
-	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, ActionAnimMontageData);
-	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-	AbilityTaskMontage->ReadyForActivation();
+	
 
 
 	// 시간 설정
@@ -214,11 +234,11 @@ void UGA_CharacterAction::DoAction()
 	AbilityTaskDelay->OnFinish.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
 	AbilityTaskDelay->ReadyForActivation();
 
-
 	// 스폰 설정
 	UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
 	AbiltiyTaskSpawn->ReadyForActivation();
 
+	
 	
 	if (HasAuthority(&CurrentActivationInfo))
 	{

@@ -134,12 +134,21 @@ public:
 	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	//
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPC_SetActionDirecitonAndDoAction (const FVector& InDirection);
 
 	void SetForwardAndRightDirection(const FVector& InDirection);
+
+	//
 	
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_PlayAnimMontageTask();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_PlayAnimMontageTask();
+
 
 	void DoAction();
 };

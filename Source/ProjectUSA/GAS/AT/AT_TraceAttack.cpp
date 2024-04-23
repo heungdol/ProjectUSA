@@ -3,11 +3,10 @@
 
 #include "GAS/AT/AT_TraceAttack.h"
 
-#include "Kismet/KismetSystemLibrary.h"
-
-#include "Debug/DebugDrawComponent.h"
-
 #include "GameFramework/Character.h"
+
+#include "Kismet/KismetSystemLibrary.h"
+#include "Debug/DebugDrawComponent.h"
 
 #include "Engine/DamageEvents.h"
 #include "GameFramework/DamageType.h"
@@ -65,21 +64,23 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Init(GetAvatarActor(), 1);
 
+	FVector AttackDirection = MyCharacter->GetActorForwardVector();
 	
 	while (CurrentAttackTraceIndex < AttackTraceData->AttackTraceInfos.Num()
 		&& PrevAttackTraceTime + SMALL_NUMBER >= NextSpawnTime)
 	{
-		FVector AttackTraceLocation = GetAvatarActor()->GetActorLocation();
-		AttackTraceLocation += GetAvatarActor()->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.X;
-		AttackTraceLocation += GetAvatarActor()->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Y;
-		AttackTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Z;
+		FVector AttackStartTraceLocation = GetAvatarActor()->GetActorLocation();
+		AttackStartTraceLocation += GetAvatarActor()->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.X;
+		AttackStartTraceLocation += GetAvatarActor()->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Y;
+		AttackStartTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Z;
+
+		FVector AttackEndTraceLocation = AttackStartTraceLocation;
+		AttackEndTraceLocation += AttackDirection * 1.0f;
 
 		float AttackTraceRadius = 0.0f;
 		float AttackDamage = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamage;
 
-		FHitResult HitResult;
-
-		TArray<AActor*> OutActors;
+		TArray<FHitResult> HitResults;
 
 		switch (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].TraceShape)
 		{
@@ -87,29 +88,34 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 
 			AttackTraceRadius = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].TraceSize.X;
 
-			UKismetSystemLibrary::SphereOverlapActors
-			(GetWorld(),
-				AttackTraceLocation,
+			UKismetSystemLibrary::SphereTraceMulti (GetWorld(),
+				AttackStartTraceLocation,
+				AttackEndTraceLocation,
 				AttackTraceRadius,
-				TraceObjectTyps,
-				nullptr,
+				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
+				false,
 				IgnoreActors,
-				OutActors);
+				EDrawDebugTrace::ForDuration,
+				HitResults,
+				true,
+				FLinearColor::Red,
+				FLinearColor::Green,
+				0.5f);
 
-			DrawDebugSphere(GetWorld(), AttackTraceLocation, AttackTraceRadius, 16, FColor::Emerald, false, 0.5f, 0U, 2.0f);
-			
-			for (AActor* OutActor : OutActors)
+			for (FHitResult HitResult : HitResults)
 			{
-				ACharacter* OutCharacter = Cast <ACharacter>(OutActor);
+				ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
 
 				if (OutCharacter == nullptr)
 				{
 					continue;
 				}
 
-				FDamageEvent DamageEvent;
+				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
 
-				OutCharacter->TakeDamage(AttackDamage, DamageEvent, MyCharacter->GetController(), MyCharacter);
+				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+
+				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
 			
 			break;
@@ -139,3 +145,4 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 		GetWorld()->GetTimerManager().SetTimer(SpawnActorTimerHandle, this, &UAT_TraceAttack::AttackTraceAndSetNextTimer, TimeDelay, false);
 	}
 }
+

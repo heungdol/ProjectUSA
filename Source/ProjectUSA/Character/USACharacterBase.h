@@ -268,16 +268,16 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
 
-	/**
-	 * Apply damage to this actor.
-	 * @see https://www.unrealengine.com/blog/damage-in-ue4
-	 * @param DamageAmount		How much damage to apply
-	 * @param DamageEvent		Data package that fully describes the damage received.
-	 * @param EventInstigator	The Controller responsible for the damage.
-	 * @param DamageCauser		The Actor that directly caused the damage (e.g. the projectile that exploded, the rock that landed on you)
-	 * @return					The amount of damage actually applied.
-	 */
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override; 
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
+
+	//UFUNCTION(Client, Reliable)
+	//void ClientRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
+
+
+	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
 
 
 public:
