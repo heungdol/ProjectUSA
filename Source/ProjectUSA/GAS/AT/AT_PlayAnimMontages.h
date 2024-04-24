@@ -93,6 +93,12 @@ public:
 	FTimerHandle CallSectionTimerHandle;
 	void OnSectionTimerHandleEnd();
 
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerRPC_Test ();
+
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_Test();
+
 protected:
 	/** Checks if the ability is playing a montage and stops that montage, returns true if a montage was stopped, false if not. */
 	bool StopPlayingMontage();

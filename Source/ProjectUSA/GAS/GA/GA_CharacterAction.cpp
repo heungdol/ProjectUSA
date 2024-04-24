@@ -20,6 +20,8 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	
+	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("A"));
+
 	// 컴포넌트 검사
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
@@ -89,9 +91,6 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		break;
 	}
 
-	// 애님 설정
-	ServerRPC_PlayAnimMontageTask();
-
 	DoSomethingInBlueprint_Activate();
 }
 
@@ -153,13 +152,15 @@ void UGA_CharacterAction::MulticastRPC_PlayAnimMontageTask_Implementation()
 	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	AbilityTaskMontage->ReadyForActivation();
 
-	UE_LOG (LogTemp, Log, TEXT("Setted Animation Montage"));
+	//UE_LOG (LogTemp, Log, TEXT("Setted Animation Montage"));
 }
 
 //
 
 void UGA_CharacterAction::DoAction()
 {
+	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("B"));
+
 	// 컴포넌트 검사
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
@@ -226,9 +227,6 @@ void UGA_CharacterAction::DoAction()
 		}
 	}
 
-	
-
-
 	// 시간 설정
 	UAT_WaitDelay* AbilityTaskDelay = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, Period);
 	AbilityTaskDelay->OnFinish.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
@@ -238,13 +236,20 @@ void UGA_CharacterAction::DoAction()
 	UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
 	AbiltiyTaskSpawn->ReadyForActivation();
 
+	// 애니메이션 설정
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, ActionAnimMontageData);
+	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	AbilityTaskMontage->ReadyForActivation();
+
 	
-	
-	if (HasAuthority(&CurrentActivationInfo))
-	{
+	//if (HasAuthority(&CurrentActivationInfo))
+	//{		 
 		// 공격 설정
 		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
 		AbiltiyTaskAttack->ReadyForActivation();
-	}
+	
+	//	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("C"));
+	//}
 
 }

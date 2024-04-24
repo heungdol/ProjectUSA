@@ -120,7 +120,7 @@ public:
 	// Sets default values for this character's properties
 	AUSACharacterBase();
 
-	virtual void OnConstruction(const FTransform& Transform) override;
+	//virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
 
@@ -199,6 +199,28 @@ public:
 
 	//
 
+	virtual float PlayAnimMontage(class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None) override;
+
+	UFUNCTION(Server, Reliable/*, WithValidation*/)
+	void ServerRPC_PlayAnimMontage (class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_PlayAnimMontage(class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None);
+
+	//
+
+	virtual void StopAnimMontage(class UAnimMontage* AnimMontage = nullptr) override;
+
+	UFUNCTION(Server, Reliable/*, WithValidation*/)
+	void ServerRPC_StopAnimMontage(class UAnimMontage* AnimMontage = nullptr);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_StopAnimMontage(class UAnimMontage* AnimMontage = nullptr);
+
+
+
+	//
+
 	UFUNCTION(BlueprintCallable)
 	void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
@@ -270,6 +292,9 @@ protected:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override; 
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
 
@@ -298,12 +323,27 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
 
+
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAbilities;
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageGroundAbilities;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAirAbilities;
+
+
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	//TMap <TSubclassOf<class UDamageType>, FGameplayTag> DamageTypeToGameplayTag;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	//TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayEffect>> DamageTypeToGameplayEffects;
 
 
 protected:
 	virtual void SetupGAS();
+
+	virtual void PostSetupGAS();
 
 	void BeginStartAbilities();
 

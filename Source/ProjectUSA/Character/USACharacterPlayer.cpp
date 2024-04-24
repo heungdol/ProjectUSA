@@ -24,13 +24,8 @@ void AUSACharacterPlayer::PossessedBy(AController* NewController)
 
 void AUSACharacterPlayer::SetupGAS()
 {
-	//if (ASC == nullptr)
-	//{
-	//	return;
-	//}
-
 	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
-	//IAbilitySystemInterface* AbilitySystemInterface = Cast <IAbilitySystemInterface>(GetPlayerState());
+
 	if (USAPlayerState != nullptr)
 	{
 		ASC = USAPlayerState->GetAbilitySystemComponent();

@@ -48,6 +48,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
 	TSubclassOf<UDamageType> AttackDamageType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
+	TSubclassOf<UGameplayEffect> AttackDamageGameplayEffect;
 };
 
 

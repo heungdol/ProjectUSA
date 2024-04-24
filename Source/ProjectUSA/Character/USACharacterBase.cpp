@@ -80,17 +80,14 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter
 		{
 		case EUSACharacterCapsulePivot::Top:
 			NewLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
-			//InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight));
 			break;
 
 		case EUSACharacterCapsulePivot::Center:
 			NewLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
-			//InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleOriginalHalfHeight));
 			break;
 
 		case EUSACharacterCapsulePivot::Bottom:
 			NewLocation = FVector::UpVector * -(CapsuleHaflHeight);
-			//InCharacter->GetMesh()->SetRelativeLocation(FVector::UpVector * -(CapsuleHaflHeight));
 			break;
 		}
 
@@ -125,11 +122,8 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 		}
 
 		InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
-	}
-
-	
+	}	
 }
-
 
 
 // ====================================================================================
@@ -192,21 +186,16 @@ AUSACharacterBase::AUSACharacterBase()
 	//NetUpdateFrequency = 200.0f;
 }
 
-void AUSACharacterBase::OnConstruction(const FTransform& Transform)
-{
-	Super::OnConstruction(Transform);
-
-	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
-	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-}
+//void AUSACharacterBase::OnConstruction(const FTransform& Transform)
+//{
+//	Super::OnConstruction(Transform);
+//
+//	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+//	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+//}
 
 bool AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Validate(ACharacter* InCharacter, const FName& InKeyName)
 {
-	//if (InCharacter == nullptr)
-	//{
-	//	return false;
-	//}
-
 	return true;
 }
 
@@ -234,33 +223,67 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 
 	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleSize(InCharacter);
 	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
-	
-	//if (HasAuthority())
-	//{
-	//}
 }
+
+float AUSACharacterBase::PlayAnimMontage(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
+{
+	if (GetWorld()->GetNetMode() == ENetMode::NM_Standalone)
+	{
+		return Super::PlayAnimMontage(AnimMontage, InPlayRate, StartSectionName);
+	}
+
+	if (AnimMontage == nullptr)
+	{
+		return 0.0f;
+	}
+
+	float AnimMontageDuration = AnimMontage->GetPlayLength();
+	AnimMontageDuration = AnimMontageDuration / (InPlayRate * AnimMontage->RateScale);
+
+	ServerRPC_PlayAnimMontage(AnimMontage, InPlayRate, StartSectionName);
+
+	return AnimMontageDuration;
+}
+
+void AUSACharacterBase::ServerRPC_PlayAnimMontage_Implementation(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
+{
+	MulticastRPC_PlayAnimMontage(AnimMontage, InPlayRate, StartSectionName);
+}
+
+void AUSACharacterBase::MulticastRPC_PlayAnimMontage_Implementation(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
+{
+	Super::PlayAnimMontage(AnimMontage, InPlayRate, StartSectionName);
+}
+
+//
+
+void AUSACharacterBase::StopAnimMontage(UAnimMontage* AnimMontage)
+{
+	if (GetWorld()->GetNetMode() == ENetMode::NM_Standalone)
+	{
+		Super::StopAnimMontage(AnimMontage);
+		return;
+	}
+
+	ServerRPC_StopAnimMontage();
+}
+
+void AUSACharacterBase::ServerRPC_StopAnimMontage_Implementation(UAnimMontage* AnimMontage)
+{
+	MulticastRPC_StopAnimMontage(AnimMontage);
+}
+
+void AUSACharacterBase::MulticastRPC_StopAnimMontage_Implementation(UAnimMontage* AnimMontage)
+{
+	Super::StopAnimMontage(AnimMontage);
+}
+
+//
 
 void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
 {
 	MulticastRPC_SetNextWeapon(InNextWeapon);
 }
-
-//bool AUSACharacterBase::ServerRPC_SetNextWeapon_Validate(AUSAWeaponBase* InNextWeapon)
-//{
-//	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Check Chanagable..."));
-//
-//	//if (InNextWeapon == nullptr)
-//	//{
-//	//	return false;
-//	//}
-//
-//	return true;
-//}
-//
-//void AUSACharacterBase::ServerRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
-//{
-//	MulticastRPC_SetNextWeapon(InNextWeapon);
-//}
 
 void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
 {
@@ -272,34 +295,29 @@ void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase
 			OnRep_NextWeapon ();
 		}
 	}
-	else
-	{
-
-	}
 }
-
 
 void AUSACharacterBase::OnRep_NextWeapon()
 {
-	USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
+	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
 
 	if (ASC == nullptr)
 	{
 		bIsSetNextWeaponBeforeGASSetup = true;
 	
-		USA_LOG(LogTemp, Log, TEXT("Put off Setting Next Weapon..."));
+		//USA_LOG(LogTemp, Log, TEXT("Put off Setting Next Weapon..."));
 
 		return;
 	}
 
 	EquipFinalNextWeapon();
 
-	USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
+	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
 }
 
 void AUSACharacterBase::EquipFinalNextWeapon()
 {
-	USA_LOG(LogTemp, Log, TEXT("Setting Final Weapon...."));
+	//USA_LOG(LogTemp, Log, TEXT("Setting Final Weapon...."));
 
 	EUSAWeaponType WeaponType = EUSAWeaponType::None;
 
@@ -311,6 +329,17 @@ void AUSACharacterBase::EquipFinalNextWeapon()
 	EquipWeapon(NextWeapon);
 }
 
+//
+
+void AUSACharacterBase::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	// 일반 클라에서 수행
+	SetupGAS();
+}
+
+//
 
 // Called when the game starts or when spawned
 void AUSACharacterBase::BeginPlay()
@@ -335,13 +364,6 @@ void AUSACharacterBase::BeginPlay()
 void AUSACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//AdjustVelocityWithVelocityZero();
-
-	//if (bIsFixRotation)
-	//{
-	//	SetActorRotation(FixRotation);
-	//}
 }
 
 // Called to bind functionality to input
@@ -386,14 +408,6 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	{
 		PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
 	}
-}
-
-void AUSACharacterBase::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	// 일반 클라에서 수행
-	SetupGAS();
 }
 
 void AUSACharacterBase::Move(const FInputActionValue& Value)
@@ -709,7 +723,7 @@ void AUSACharacterBase::EquipWeapon(AUSAWeaponBase* InWeapon)
 
 	CurrentEquipedWeapons[InWeaponType] = InWeapon;
 
-	USA_LOG(LogTemp, Log, TEXT("Setting Weapon Complete"));
+	//USA_LOG(LogTemp, Log, TEXT("Setting Weapon Complete"));
 }
 
 void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
@@ -787,23 +801,14 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 {
 	float Result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	// TODO: 수치 관련 연산 수행
+	// 만약 Armor 나 무적 등인 경우, 아래의 ApplyDamageMomentum은 수행하지 않도록 별도 처리
+	// ...
+
 	ApplyDamageMomentum(DamageAmount, DamageEvent, EventInstigator->GetPawn(), DamageCauser);
 	
 	return Result;
 }
-
-//void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
-//{
-//	if (HasAuthority())
-//	{
-//
-//	}
-//	else
-//	{
-//
-//	}
-//}
-
 
 
 void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
@@ -811,65 +816,67 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	FVector NewDirection = FVector::ForwardVector;
 	TSubclassOf<UGameplayAbility> DamageAbilityClass;
 
-	if (HasAuthority())
+	FVector AttackDirection;
+	FHitResult HitResult;
+	TSubclassOf<UDamageType> DamageType;
+
+	DamageEvent.GetBestHitInfo(nullptr, nullptr, HitResult, AttackDirection);
+
+	NewDirection = AttackDirection * -1.0f;
+	NewDirection.Z = 0.0f;
+	NewDirection.Normalize();
+
+	DamageType = DamageEvent.DamageTypeClass;
+
+	if (GetMovementComponent()->IsFalling())
 	{
-		FVector AttackDirection;
-		FHitResult HitResult;
-
-		DamageEvent.GetBestHitInfo(nullptr, nullptr, HitResult, AttackDirection);
-
-		NewDirection = AttackDirection * -1.0f;
-		NewDirection.Z = 0.0f;
-		NewDirection.Normalize();
-
-		
-		for (const auto& GameplayDamageAbility : GameplayDamageAbilities)
+		if (GameplayDamageGroundAbilities.Contains(DamageType))
 		{
-			if (GameplayDamageAbility.Key == DamageEvent.DamageTypeClass)
-			{
-				DamageAbilityClass = GameplayDamageAbility.Value;
-				//FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(DamageAbilityClass);
-				//
-				//if (ASC != nullptr)
-				//{
-				//	ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
-				//}
-
-				break;
-			}
-		}
-
-
-		SetActorRotation(NewDirection.Rotation());
-
-		if (DamageAbilityClass != nullptr
-			&& ASC != nullptr)
-		{
-			USA_LOG(LogTemp, Log, TEXT("From"));
-
-			ASC->TryActivateAbilityByClass(DamageAbilityClass);
-		}
-
-
-		if (GetNetMode() != ENetMode::NM_Standalone)
-		{
-			MulticastRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
+			DamageAbilityClass = GameplayDamageAirAbilities[DamageType];
 		}
 	}
+	else
+	{
+		if (GameplayDamageGroundAbilities.Contains(DamageType))
+		{
+			DamageAbilityClass = GameplayDamageGroundAbilities[DamageType];
+		}
+	}
+
+	ServerRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
 }
 
-void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
+bool AUSACharacterBase::ServerRPC_ApplyDamageMomentum_Validate
+(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
 {
+	return true;
+}
+
+void AUSACharacterBase::ServerRPC_ApplyDamageMomentum_Implementation
+(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
+{
+	MulticastRPC_ApplyDamageMomentum(InNewDirection, InAbility);
+}
+
+void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation
+(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
+{
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
 	SetActorRotation(InNewDirection.Rotation());
 
-	//if (InAbility != nullptr
-	//	&& ASC != nullptr)
-	//{
-	//	USA_LOG(LogTemp, Log, TEXT ("From"));
+	if (HasAuthority())
+	{
+		FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(InAbility);
 
-	//	//FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(InAbility);
-	//	ASC->TryActivateAbilityByClass(InAbility);
-	//}
+		if (GameplayAbilitySpec != nullptr)
+		{
+			ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+		}
+	}
 }
 
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
@@ -879,10 +886,21 @@ UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 
 void AUSACharacterBase::OnRep_ASC()
 {
+	PostSetupGAS();
+	
 	BeginStartAbilities();
+
 }
 
 void AUSACharacterBase::SetupGAS()
+{
+	if (HasAuthority())
+	{
+		PostSetupGAS();
+	}
+}
+
+void AUSACharacterBase::PostSetupGAS()
 {
 	if (ASC == nullptr)
 	{
@@ -918,12 +936,19 @@ void AUSACharacterBase::SetupGAS()
 		}
 
 		// 데미지 어빌리티
-		for (const auto& GameplayDamageAbility : GameplayDamageAbilities)
+		for (const auto& GameplayDamageAbility : GameplayDamageGroundAbilities)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
+		for (const auto& GameplayDamageAbility : GameplayDamageAirAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
+
+		// 첫 스폰 시, 딜레이를 고려한 무기 장착 과정
 		if (bIsSetNextWeaponBeforeGASSetup)
 		{
 			bIsSetNextWeaponBeforeGASSetup = false;
@@ -955,7 +980,7 @@ void AUSACharacterBase::SetupGAS()
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Slide);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH , EGameplayTagEventType::NewOrRemoved)
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Crouch);
 
 
@@ -964,9 +989,6 @@ void AUSACharacterBase::SetupGAS()
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon);
-
-	//USA_LOG(LogTemp, Log, TEXT("My ASC Name is %s %s"), *ASC->GetOwnerActor()->GetName(), *ASC->GetAvatarActor()->GetName());
-	//USA_LOG(LogTemp, Log, TEXT("... And My ASC Authority %i"), HasAuthorityOrPredictionKey ();
 }
 
 void AUSACharacterBase::BeginStartAbilities()

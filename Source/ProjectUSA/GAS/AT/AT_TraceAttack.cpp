@@ -11,6 +11,8 @@
 #include "Engine/DamageEvents.h"
 #include "GameFramework/DamageType.h"
 
+#include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
 
 
 UAT_TraceAttack::UAT_TraceAttack()
@@ -112,10 +114,26 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 				}
 
 				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
-
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
 
 				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+
+				//
+
+				//IAbilitySystemInterface* OutASCInterface = Cast <IAbilitySystemInterface>(OutCharacter);
+				//UAbilitySystemComponent* OutASC = nullptr;
+				//if (OutASCInterface != nullptr)
+				//{
+				//	OutASC = OutASCInterface->GetAbilitySystemComponent();
+				//}
+
+				//if (OutASC != nullptr)
+				//{
+				//	UGameplayEffect* GameplayEffect = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageGameplayEffect->GetDefaultObject<UGameplayEffect>();
+				//	FGameplayEffectContextHandle GameplayEffectContextHandle = OutASC->MakeEffectContext();
+
+				//	OutASC->ApplyGameplayEffectToSelf(GameplayEffect, 0.0f, GameplayEffectContextHandle);
+				//}
 			}
 			
 			break;

@@ -10,6 +10,10 @@
 
 #include "Components/SkeletalMeshComponent.h"
 
+#include "GameFramework/Character.h"
+
+#include "ProjectUSA.h"
+
 
 UAT_PlayAnimMontages* UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(UGameplayAbility* OwningAbility, const FPlayAnimMontageData& AnimMontageData)
 {
@@ -34,19 +38,39 @@ void UAT_PlayAnimMontages::Activate()
 		return;
 	}
 
+
 	bool bPlayedMontage = false;
 	CurrentPlayAnimMontageIndex = -1;
 
-	if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
+	//if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
+	//{
+	//	if (ASC->PlayMontage(Ability
+	//		, Ability->GetCurrentActivationInfo()
+	//		, PlayAnimMontageData->AnimMontage
+	//		, PlayAnimMontageData->AnimMontageRate
+	//		, PlayAnimMontageData->StartAnimMontageSectionDetail.SectionName/*, StartTimeSeconds*/) > 0.0f)
+	//	{
+	//		bPlayedMontage = true;
+	//		CurrentPlayAnimMontageIndex = 0;	
+	//	}
+	//}
+
+	ACharacter* MyCharacter = nullptr;
+
+	if (Ability != nullptr)
 	{
-		if (ASC->PlayMontage(Ability
-			, Ability->GetCurrentActivationInfo()
-			, PlayAnimMontageData->AnimMontage
-			, PlayAnimMontageData->AnimMontageRate
-			, PlayAnimMontageData->StartAnimMontageSectionDetail.SectionName/*, StartTimeSeconds*/) > 0.0f)
+		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+	}
+
+	if (MyCharacter != nullptr)
+	{
+		if (MyCharacter->PlayAnimMontage
+		(PlayAnimMontageData->AnimMontage, 
+			PlayAnimMontageData->AnimMontageRate, 
+			PlayAnimMontageData->StartAnimMontageSectionDetail.SectionName))
 		{
 			bPlayedMontage = true;
-			CurrentPlayAnimMontageIndex = 0;
+			CurrentPlayAnimMontageIndex = 0;	
 		}
 	}
 
@@ -73,18 +97,44 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 		return;
 	}
 
-	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	if (ASC)
+	//UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
+	//if (ASC)
+	//{
+	//	if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+	//	{
+	//		if (PlayAnimMontageData->bHasEndSection)
+	//		{
+	//			ASC->CurrentMontageJumpToSection(PlayAnimMontageData->EndAnimMontageSectionDetail.SectionName);
+	//		}
+	//		else
+	//		{
+	//			ASC->CurrentMontageStop();
+	//		}
+	//	}
+	//}
+
+	ACharacter* MyCharacter = nullptr;
+	
+	if (Ability != nullptr)
 	{
-		if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+	}
+	
+	if (MyCharacter != nullptr)
+	{
+		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
 			if (PlayAnimMontageData->bHasEndSection)
 			{
-				ASC->CurrentMontageJumpToSection(PlayAnimMontageData->EndAnimMontageSectionDetail.SectionName);
+				MyCharacter->StopAnimMontage();
+				MyCharacter->PlayAnimMontage
+				(PlayAnimMontageData->AnimMontage, 
+					PlayAnimMontageData->AnimMontageRate, 
+					PlayAnimMontageData->EndAnimMontageSectionDetail.SectionName);
 			}
 			else
 			{
-				ASC->CurrentMontageStop();
+				MyCharacter->StopAnimMontage();
 			}
 		}
 	}
@@ -106,12 +156,34 @@ void UAT_PlayAnimMontages::OnSectionTimerHandleEnd()
 		return;
 	}
 
-	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	if (ASC)
+	//UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
+	//if (ASC)
+	//{
+	//	if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+	//	{
+	//		ASC->CurrentMontageJumpToSection(PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
+	//	}
+	//}
+
+	ACharacter* MyCharacter = nullptr;
+
+	if (Ability != nullptr)
 	{
-		if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+	}
+
+	if (MyCharacter != nullptr)
+	{
+		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
-			ASC->CurrentMontageJumpToSection(PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
+			if (PlayAnimMontageData->bHasEndSection)
+			{
+				MyCharacter->StopAnimMontage();
+				MyCharacter->PlayAnimMontage
+				(PlayAnimMontageData->AnimMontage,
+					PlayAnimMontageData->AnimMontageRate,
+					PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
+			}
 		}
 	}
 
@@ -144,18 +216,53 @@ bool UAT_PlayAnimMontages::StopPlayingMontage()
 		return false;
 	}
 
-	// Check if the montage is still playing
-	// The ability would have been interrupted, in which case we should automatically stop the montage
-	UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
+	//// Check if the montage is still playing
+	//// The ability would have been interrupted, in which case we should automatically stop the montage
+	//UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
 
-	if (ASC)
+	//if (ASC)
+	//{
+	//	if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+	//	{
+	//		ASC->CurrentMontageStop();
+	//		ASC->ClearAnimatingAbility(Ability);
+	//		
+	//		return true;
+	//	}
+	//}
+
+	ACharacter* MyCharacter = nullptr;
+
+	if (Ability != nullptr)
 	{
-		if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+	}
+
+	if (MyCharacter != nullptr)
+	{
+		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
-			ASC->CurrentMontageStop();
+			MyCharacter->StopAnimMontage();
+			
 			return true;
 		}
 	}
 
 	return false;
 }
+
+
+//bool UAT_PlayAnimMontages::ServerRPC_Test_Validate()
+//{
+//	return true;
+//}
+//
+//void UAT_PlayAnimMontages::ServerRPC_Test_Implementation()
+//{
+//	MulticastRPC_Test();
+//}
+//
+//void UAT_PlayAnimMontages::MulticastRPC_Test_Implementation()
+//{
+//	USA_LOG_ABILITYTASK(LogTemp, Log, TEXT("From Anim Montage Task"));
+//}
