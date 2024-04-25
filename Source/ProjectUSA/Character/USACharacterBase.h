@@ -14,9 +14,13 @@
 
 #define KEYNAME_CAPSULEINFO_WALK TEXT("Walk")
 #define KEYNAME_CAPSULEINFO_FALL TEXT("Fall")
+#define KEYNAME_CAPSULEINFO_CROUCH TEXT("Crouch")
+
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSimpleUSACharacterDelegate);
+// FCharacterReachedApexSignature
 
 // ========================================================================================
-
 
 // InputID와 InputAction, GameplayAbility를 관리하기 위한 Struct
 USTRUCT(BlueprintType)
@@ -43,33 +47,6 @@ public:
 // ========================================================================================
 
 
-USTRUCT(BlueprintType)
-struct FUSACharacterMovementWalkInfo
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float MaxWalkSpeed = 500;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	FRotator RotationRate = FRotator (0, 500, 0);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float MaxAcceleration = 2000;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float GroundFriction = 8;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float BrakingDecelerationWalking = 2000;
-
-public:
-
-	void RenewCharacterMovementInfo(class UCharacterMovementComponent* InMovementComponent);
-};
-
-// ========================================================================================
 
 UENUM(BlueprintType)
 enum class EUSACharacterCapsulePivot : uint8
@@ -99,16 +76,17 @@ struct FUSACharacterCapsuleInfo
 	EUSACharacterCapsulePivot CapsulePivot = EUSACharacterCapsulePivot::Bottom;
 
 public:
-	void RenewCharacterCapsuleSize(class ACharacter* InCharacter);
-	
+	void RenewCharacterCapsule(class ACharacter* InCharacter);
+	void RenewCharacterCapsuleSize(class ACharacter* InCharacter);	
 	void RenewCharacterCapsuleLocation(class ACharacter* InCharacter);
-
 
 };
 
+
 // ========================================================================================
-// 
-// 
+
+
+
 // ========================================================================================
 
 UCLASS()
@@ -158,16 +136,6 @@ protected:
 	TMap<FName, FUSACharacterCapsuleInfo> CharacterCapsuleInfos;
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
-	FUSACharacterMovementWalkInfo CharacterMovementWalkInfo;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
-	FUSACharacterMovementWalkInfo CharacterMovementRealWalkInfo;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Movement Walk Info")
-	FUSACharacterMovementWalkInfo CharacterMovementSlideInfo;
-
-
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
@@ -179,15 +147,6 @@ protected:
 
 	UPROPERTY()
 	bool bIsSetNextWeaponBeforeGASSetup = false;
-
-	//UPROPERTY()
-	//bool bIsVelocityZero = false;
-
-	//UPROPERTY()
-	//bool bIsFixRotation = false;
-
-	//UPROPERTY()
-	//FRotator FixRotation = FRotator::ZeroRotator;
 
 
 public:
@@ -253,30 +212,29 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 
+	//
+
+	virtual void Falling() override;
+
+	virtual void Landed(const FHitResult& Hit) override;
+
+	////
+	//UFUNCTION(BlueprintAssignable)
+	//FCharacterReachedApexSignature OnUSACrounch  ;
+	//////
+	//UFUNCTION(BlueprintAssignable)
+	//FCharacterReachedApexSignature OnUSAUnCrounch;
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACrouch", ScriptName = "OnUSACrouch"))
+	void K2_OnUSACrouch();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUnCrouch", ScriptName = "OnUSAUnCrouch"))
+	void K2_OnUSAUnCrouch();
+
 
 protected:
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
-
-	//void AdjustVelocityWithVelocityZero();
-
-	void InputPressGameplayAbilityByInputID(int32 InputID);
-	void InputReleaseGameplayAbilityByInputID(int32 InputID);
-
-	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
-
-	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_IgnoreMoveInput(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_VelocityZero(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_CanNotWalkOffLedge(const struct FGameplayTag CallbackTag, int32 NewCount);
-
-	void OnGameplayTagCallback_Walk(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
-
-	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	UFUNCTION(BlueprintCallable)
 	void EquipWeapon(class AUSAWeaponBase* InWeapon);
@@ -297,10 +255,6 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
-
-	//UFUNCTION(Client, Reliable)
-	//void ClientRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
-
 
 	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
 
@@ -332,12 +286,8 @@ public:
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAirAbilities;
 
 
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	//TMap <TSubclassOf<class UDamageType>, FGameplayTag> DamageTypeToGameplayTag;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	//TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayEffect>> DamageTypeToGameplayEffects;
+public:
+	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
 
 
 protected:
@@ -346,6 +296,22 @@ protected:
 	virtual void PostSetupGAS();
 
 	void BeginStartAbilities();
+
+	void InputPressGameplayAbilityByInputID(int32 InputID);
+	void InputReleaseGameplayAbilityByInputID(int32 InputID);
+
+	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_IgnoreMoveInput(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_VelocityZero(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_CanNotWalkOffLedge(const struct FGameplayTag CallbackTag, int32 NewCount);
+
+	void OnGameplayTagCallback_Walk(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
+
+	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; 
 

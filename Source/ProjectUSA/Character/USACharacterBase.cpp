@@ -43,22 +43,16 @@
 
 #include "Net/UnrealNetwork.h"
 
+#include "Components/SceneComponent.h"
+
 #include "ProjectUSA.h"
 
 // ====================================================================================
 
-void FUSACharacterMovementWalkInfo::RenewCharacterMovementInfo(UCharacterMovementComponent* InMovementComponet)
+void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
 {
-	if (InMovementComponet == nullptr)
-	{
-		return;
-	}
-
-	InMovementComponet->MaxWalkSpeed = FUSACharacterMovementWalkInfo::MaxWalkSpeed;
-	InMovementComponet->RotationRate = FUSACharacterMovementWalkInfo::RotationRate;
-	InMovementComponet->MaxAcceleration = FUSACharacterMovementWalkInfo::MaxAcceleration;
-	InMovementComponet->GroundFriction = FUSACharacterMovementWalkInfo::GroundFriction;
-	InMovementComponet->BrakingDecelerationWalking = FUSACharacterMovementWalkInfo::BrakingDecelerationWalking;
+	RenewCharacterCapsuleLocation(InCharacter);
+	RenewCharacterCapsuleSize(InCharacter);
 }
 
 void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter)
@@ -68,31 +62,15 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter
 		return;
 	}
 
-
-	InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
-	InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
-
-	FVector NewLocation = FVector::ZeroVector;
-
-	if (InCharacter->GetMesh() != nullptr)
+	if (InCharacter->GetCapsuleComponent() == nullptr)
 	{
-		switch (CapsulePivot)
-		{
-		case EUSACharacterCapsulePivot::Top:
-			NewLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
-			break;
-
-		case EUSACharacterCapsulePivot::Center:
-			NewLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
-			break;
-
-		case EUSACharacterCapsulePivot::Bottom:
-			NewLocation = FVector::UpVector * -(CapsuleHaflHeight);
-			break;
-		}
-
-		InCharacter->GetMesh()->SetRelativeLocation(NewLocation);
+		return;
 	}
+
+	//InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
+	//InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
+
+	InCharacter->GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHaflHeight);
 }
 
 void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InCharacter)
@@ -102,27 +80,81 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 		return;
 	}
 
-	if (InCharacter->GetCapsuleComponent() != nullptr
-		&& InCharacter->GetMovementComponent() != nullptr)
+	UCharacterMovementComponent* CharacterMovementComponent = InCharacter->GetCharacterMovement();
+
+	if (CharacterMovementComponent == nullptr)
 	{
-		FVector NewLocation = InCharacter->GetActorLocation();
+		return;
+	}
 
-		switch (CapsulePivot)
-		{
-		case EUSACharacterCapsulePivot::Top:
-			NewLocation.Z += -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-			break;
+	if (InCharacter->GetCapsuleComponent() == nullptr)
+	{
+		return;
+	}
 
-		case EUSACharacterCapsulePivot::Center:
-			break;
+	if (InCharacter->GetMesh() == nullptr)
+	{
+		return;
+	}
 
-		case EUSACharacterCapsulePivot::Bottom:
-			NewLocation.Z += (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-			break;
-		}
 
-		InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
-	}	
+	FVector GroundHitLocation = FVector::ZeroVector;
+
+	if (CharacterMovementComponent->CurrentFloor.bBlockingHit)
+	{
+		GroundHitLocation = CharacterMovementComponent->CurrentFloor.HitResult.ImpactPoint;
+	}
+
+
+	FVector NewLocation = InCharacter->GetActorLocation();
+
+	switch (CapsulePivot)
+	{
+	case EUSACharacterCapsulePivot::Top:
+		NewLocation.Z += -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		break;
+
+	case EUSACharacterCapsulePivot::Center:
+		break;
+
+	case EUSACharacterCapsulePivot::Bottom:
+		NewLocation.Z += (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		break;
+	}
+
+	if (CharacterMovementComponent->CurrentFloor.bBlockingHit &&
+		GroundHitLocation.Z > NewLocation.Z - CapsuleHaflHeight)
+	{
+		NewLocation.Z = GroundHitLocation.Z + CapsuleHaflHeight;
+	}
+
+	InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
+
+
+	FVector NewUpdatedComponentsLocation = FVector::ZeroVector;
+
+	switch (CapsulePivot)
+	{
+	case EUSACharacterCapsulePivot::Top:
+		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
+		break;
+
+	case EUSACharacterCapsulePivot::Center:
+		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
+		break;
+
+	case EUSACharacterCapsulePivot::Bottom:
+		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleHaflHeight);
+		break;
+	}
+
+	InCharacter->GetMesh()->SetRelativeLocation(NewUpdatedComponentsLocation);
+
+	
+	//CharacterMovementComponent->UpdatedComponent->MoveComponent
+	//(NewUpdatedComponentsLocation, 
+	//	CharacterMovementComponent->UpdatedComponent->GetComponentQuat(), 
+	//	true, nullptr, EMoveComponentFlags::MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
 }
 
 
@@ -172,7 +204,7 @@ AUSACharacterBase::AUSACharacterBase()
 	PivotComponent->SetupAttachment(RootComponent);
 
 	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
-	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 
 	//GetCharacterMovement()->MovementState.bCanCrouch = true;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
@@ -221,8 +253,7 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 		return;
 	}
 
-	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleSize(InCharacter);
-	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsuleLocation(InCharacter);
+	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(InCharacter);
 }
 
 float AUSACharacterBase::PlayAnimMontage(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
@@ -341,6 +372,22 @@ void AUSACharacterBase::OnRep_PlayerState()
 
 //
 
+void AUSACharacterBase::Falling()
+{
+	Super::Falling();
+
+	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+}
+
+void AUSACharacterBase::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+}
+
+//
+
 // Called when the game starts or when spawned
 void AUSACharacterBase::BeginPlay()
 {
@@ -354,10 +401,9 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsuleSize(this);
-	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsuleLocation(this);
+	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
 
-	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 }
 
 // Called every frame
@@ -589,76 +635,105 @@ void AUSACharacterBase::OnGameplayTagCallback_Walk(const FGameplayTag CallbackTa
 
 	if (NewCount > 0)
 	{
-		CharacterMovementRealWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+		//CharacterMovementRealWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 	}
 	else
 	{
-		CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+		//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 	}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if (GetCapsuleComponent() == nullptr)
-	{
-		return;
-	}
+	//if (GetCapsuleComponent() == nullptr)
+	//{
+	//	return;
+	//}
 
-	if (NewCount > 0)
-	{
-		//CharacterCapsuleFallInfo.RenewCharacterCapsule(this);
-		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
-	}
-	else
-	{
-		//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
-		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
-		
-		//if (bIsCrouched)
-		//{
+	//bool IsAbleToChange = false;
 
-		//}
-		//else
-		//{
-		//}
-	}
+	//if (HasAuthority())
+	//{
+	//	if (GetLocalRole() == ENetRole::ROLE_Authority)
+	//	{
+	//		IsAbleToChange = true;
+	//	}
+	//}
+	//else
+	//{
+	//	if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//	{
+	//		IsAbleToChange = true;
+	//	}
+	//}
+	//
+	//if (IsAbleToChange == false)
+	//{
+	//	return;
+	//}
+
+	//if (NewCount > 0)
+	//{
+	//	//CharacterCapsuleFallInfo.RenewCharacterCapsule(this);
+	//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+	//}
+	//else
+	//{
+	//	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
+	//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+	//	
+	//	//if (bIsCrouched)
+	//	//{
+
+	//	//}
+	//	//else
+	//	//{
+	//	//}
+	//}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Slide(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if (GetCharacterMovement() == nullptr)
-	{
-		return;
-	}
+	// TODO: 어빌리티로 뺄 것
+	//if (GetCharacterMovement() == nullptr)
+	//{
+	//	return;
+	//}
 
-	if (NewCount > 0)
-	{
-		CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-	}
-	else
-	{
-		CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-	}
+	//if (NewCount > 0)
+	//{
+	//	CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	//}
+	//else
+	//{
+	//	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	//}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (NewCount > 0)
 	{
-		Crouch();
+		//Crouch();
+		//OnUSACrounch.Broadcast();
+		K2_OnUSACrouch();
+
+		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_CROUCH);
 	}
 	else
 	{
-		UnCrouch();
+		//UnCrouch();
+		//OnUSAUnCrounch.Broadcast();
+		K2_OnUSAUnCrouch();
 
-		//if (GetMovementComponent()->IsFalling())
-		//{
-		//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
-		//}
-		//else
-		//{
-		//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
-		//}
+		if (GetMovementComponent()->IsFalling())
+		{
+			ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+		}
+		else
+		{
+			ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+		}
 	}
 }
 
@@ -969,13 +1044,15 @@ void AUSACharacterBase::PostSetupGAS()
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge);
 
-
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FALL, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Fall);
+	//
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_WALK, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Walk);
 
+	//
+
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FALL, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Fall);
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Slide);
@@ -983,6 +1060,7 @@ void AUSACharacterBase::PostSetupGAS()
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Crouch);
 
+	//
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_FIRSTWEAPON, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon);

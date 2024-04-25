@@ -51,7 +51,7 @@ void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 
 	MyCharacter->LaunchCharacter(LaunchVelocity, bXYOverride, bZOverride);
 	
-	if (Period < 0)
+	if (Period < SMALL_NUMBER)
 	{
 		BroadcastSimpleDelegate (OnFinished);
 

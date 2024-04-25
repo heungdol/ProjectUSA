@@ -12,8 +12,6 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 
-#include "Character/USACharacterBase.h"
-
 #include "ProjectUSA.h"
 
 UGA_CharacterDash::UGA_CharacterDash()

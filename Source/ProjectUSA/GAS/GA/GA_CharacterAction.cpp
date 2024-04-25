@@ -19,8 +19,6 @@
 void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	
-	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("A"));
 
 	// 컴포넌트 검사
 	ACharacter* MyCharacter = nullptr;
@@ -38,7 +36,6 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 
 	// 방향 설정
-	// TODO: 만약 멀티를 본격적으로 들어간다면, 아래 부문의 GetPendingMovementInputVector 관련하여 수정할 것!
 	ForwardDirection = MyCharacter->GetActorForwardVector();
 	RightDirection = MyCharacter->GetActorRightVector();
 
@@ -123,9 +120,7 @@ void UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Implementation
 	DoAction();
 }
 
-
 //
-
 
 void UGA_CharacterAction::SetForwardAndRightDirection(const FVector& InDirection)
 {

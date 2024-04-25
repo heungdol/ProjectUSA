@@ -34,15 +34,26 @@ void UGA_CharacterJump::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		return;
 	}
 
-	FVector JumpVelocity(0, 0, (CharacterMovementComponent->JumpZVelocity) * JumpPowerRatio);
+	FVector JumpVelocity(0, 0, (CharacterMovementComponent->JumpZVelocity));
 	float JumpMaxHoldTime = Character->GetJumpMaxHoldTime();
+
+	if (bIsUsingCharacterJumpPower == false)
+	{
+		JumpVelocity = FVector::UpVector * CustomJumpPower;
+		JumpMaxHoldTime = CustomJumpMaxHoldTime;
+	}
 
 	UAT_LaunchCharacterForPeriod* AbilityTask = UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
 	(this, JumpVelocity, false, true, JumpMaxHoldTime);
-
 	AbilityTask->OnFinished.AddDynamic(this, &UGA_CharacterJump::SimpleEndAbility);
 
 	AbilityTask->ReadyForActivation();
+
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, JumpAnimMontageData);
+	//OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	//OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+
+	AbilityTaskMontage->ReadyForActivation();
 }
 
 void UGA_CharacterJump::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)

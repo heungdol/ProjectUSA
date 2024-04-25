@@ -110,6 +110,12 @@ void UGA_CharacterSlide::DoSlide()
 	(this, TEXT("Slide Veloicty"), SlideStartPower, true);
 	AbilityTaskVelocity->ReadyForActivation();
 
+	UAT_ChangeCharacterMovementInfo* AbilityTaskChangeMovementInfo = UAT_ChangeCharacterMovementInfo::GetNewAbilityTask_ChangeCharacterMovementInfo
+	(this, Character, SlideMovementInfo);
+	OnEndAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo);
+	OnCancelAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo);
+	AbilityTaskChangeMovementInfo->ReadyForActivation();
+
 	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, SlideAnimMontageData);
 	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
@@ -213,10 +219,10 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 		}
 	}
 	
-	//if (bIsGrounded == false)
-	//{
-	//	SimpleEndAbility();
-	//}
+	if (bIsGrounded == false)
+	{
+		SimpleEndAbility();
+	}
 }
 
 bool UGA_CharacterSlide::ServerRPC_SetDirectionAndDoSlide_Validate(const FVector& InDirection)

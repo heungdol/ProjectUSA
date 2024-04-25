@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GAS/GA/USAGameplayAbility.h"
 #include "GAS/AT/AT_PlayAnimMontages.h"
+#include "GAS/AT/AT_ChangeCharacterMovementInfo.h"
 
 #include "GA_CharacterSlide.generated.h"
 
@@ -110,6 +111,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
 	struct FPlayAnimMontageData SlideAnimMontageData;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Slide)
+	struct FCharacterMovementWalkInfo SlideMovementInfo;
 
 
 protected:

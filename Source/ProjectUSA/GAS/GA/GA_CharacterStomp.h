@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GAS/GA/USAGameplayAbility.h"
+
+#include "GAS/AT/AT_PlayAnimMontages.h"
+
 #include "GA_CharacterStomp.generated.h"
 
 /**
@@ -40,6 +43,10 @@ public:
 
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Stomp")
+	struct FPlayAnimMontageData StompAnimMontageData;
+
+
 	UPROPERTY(EditAnywhere, Category = "Stomp Effect")
 	TArray <TSubclassOf<class UGameplayEffect>> PreGameplayEffects;
 

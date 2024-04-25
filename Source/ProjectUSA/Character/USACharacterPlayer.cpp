@@ -10,6 +10,10 @@
 
 #include "Player/USAPlayerState.h"
 
+#include "ProjectUSA.h"
+
+
+
 AUSACharacterPlayer::AUSACharacterPlayer()
 {
 	ASC = nullptr;

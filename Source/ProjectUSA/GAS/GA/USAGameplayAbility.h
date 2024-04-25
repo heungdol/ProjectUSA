@@ -54,6 +54,12 @@ public:
 	FUSAGASimpleDelegate OnActivateAbility;
 	FUSAGASimpleDelegate OnCancelAbility; //-> OnGameplayAbilityCancelled
 	FUSAGASimpleDelegate OnEndAbility; //-> OnGameplayAbilityEnded
+
+	//UPROPERTY(BlueprintAssignable)
+	//FUSAGASimpleDynamicDelegate OnDynamicCancelAbility;
+
+	//UPROPERTY(BlueprintAssignable)
+	//FUSAGASimpleDynamicDelegate OnDynamicEndAbility;
 	//
 
 	UFUNCTION()

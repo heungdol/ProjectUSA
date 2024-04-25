@@ -20,6 +20,7 @@ public:
 public:
 	virtual void PossessedBy(class AController* NewController) override;
 
+
 protected:
 	virtual void SetupGAS() override;
 

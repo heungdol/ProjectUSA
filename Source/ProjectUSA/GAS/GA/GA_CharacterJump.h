@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GAS/GA/USAGameplayAbility.h"
+
+#include "GAS/AT/AT_PlayAnimMontages.h"
+
 #include "GA_CharacterJump.generated.h"
 
 /**
@@ -35,8 +38,17 @@ public:
 	//void OnEndAbilityCallback ();
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Jump")
+	struct FPlayAnimMontageData JumpAnimMontageData;
+
 	UPROPERTY (EditDefaultsOnly, BlueprintReadOnly, Category = "Character Jump")
-	float JumpPowerRatio = 1.0f;
+	bool bIsUsingCharacterJumpPower = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Jump")
+	float CustomJumpPower = 1000.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Jump")
+	float CustomJumpMaxHoldTime= 0.2f;
 
 //protected:
 //	UPROPERTY ()

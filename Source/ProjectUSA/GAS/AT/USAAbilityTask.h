@@ -21,12 +21,12 @@ public:
 	FUSAATSimpleDelegate OnAbilityTaskCancel;
 	FUSAATSimpleDelegate OnAbilityTaskEnd;
 
-
 	UFUNCTION()
 	virtual void SimpleCancelAbilityTask();
 
 	UFUNCTION()
 	virtual void SimpleEndAbilityTask();
+
 
 	void BroadcastSimpleDelegate(const FUSAATSimpleDelegate& InDelegate);
 

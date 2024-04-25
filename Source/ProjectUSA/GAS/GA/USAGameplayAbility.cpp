@@ -41,6 +41,8 @@ void UUSAGameplayAbility::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 	ApplyEffectsViaArray(CancelAbilityEffects, Handle, ActorInfo, ActivationInfo);
 
 	OnCancelAbility.Broadcast();
+
+	//OnDynamicCancelAbility.Broadcast();
 	
 	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
 
@@ -54,6 +56,8 @@ void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	ApplyEffectsViaArray(EndAbilityEffects, Handle, ActorInfo, ActivationInfo);
 	
 	OnEndAbility.Broadcast();
+
+	//OnDynamicEndAbility.Broadcast();
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
