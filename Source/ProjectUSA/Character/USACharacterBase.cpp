@@ -256,6 +256,8 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(InCharacter);
 }
 
+//
+
 float AUSACharacterBase::PlayAnimMontage(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
 {
 	if (GetWorld()->GetNetMode() == ENetMode::NM_Standalone)

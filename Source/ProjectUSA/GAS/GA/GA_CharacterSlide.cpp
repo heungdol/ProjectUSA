@@ -112,8 +112,10 @@ void UGA_CharacterSlide::DoSlide()
 
 	UAT_ChangeCharacterMovementInfo* AbilityTaskChangeMovementInfo = UAT_ChangeCharacterMovementInfo::GetNewAbilityTask_ChangeCharacterMovementInfo
 	(this, Character, SlideMovementInfo);
-	OnEndAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo);
-	OnCancelAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo);
+	OnEndAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleEndAbilityTask);
+	//OnEndAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo);
+	OnCancelAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleCancelAbilityTask);
+	//OnCancelAbility.AddUObject(AbilityTaskChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo);
 	AbilityTaskChangeMovementInfo->ReadyForActivation();
 
 	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, SlideAnimMontageData);

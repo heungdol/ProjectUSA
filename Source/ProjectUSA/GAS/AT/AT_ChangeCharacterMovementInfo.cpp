@@ -76,6 +76,8 @@ void UAT_ChangeCharacterMovementInfo::ResetCharacterMovementInfo()
 	DefaultCharacterMovementWalkInfo.RenewCharacterMovementInfo(MyCharacter->GetCharacterMovement());
 }
 
+//
+
 void UAT_ChangeCharacterMovementInfo::Activate()
 {
 	Super::Activate();
@@ -83,11 +85,17 @@ void UAT_ChangeCharacterMovementInfo::Activate()
 	SetCharacterMovementInfo();
 }
 
+void UAT_ChangeCharacterMovementInfo::SimpleCancelAbilityTask()
+{
+	ResetCharacterMovementInfo();
 
-//void UAT_ChangeCharacterMovementInfo::TickTask(float DeltaTime)
-//{
-//	Super::TickTask(DeltaTime);
-//
-//
-//
-//}
+	Super::SimpleCancelAbilityTask();
+}
+
+void UAT_ChangeCharacterMovementInfo::SimpleEndAbilityTask()
+{
+	ResetCharacterMovementInfo();
+
+	Super::SimpleEndAbilityTask();
+}
+

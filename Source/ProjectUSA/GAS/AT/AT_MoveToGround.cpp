@@ -85,8 +85,9 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 	}
 	else
 	{
-		MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
-		MyCharacterMovementComponent->UpdateComponentVelocity();
+		//MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
+		//MyCharacterMovementComponent->UpdateComponentVelocity();
+		MyCharacter->LaunchCharacter(FVector(0, 0, MoveSpeed * -1.0f), true, true);
 	}
 }
 

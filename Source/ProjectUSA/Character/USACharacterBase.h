@@ -218,19 +218,19 @@ public:
 
 	virtual void Landed(const FHitResult& Hit) override;
 
-	////
-	//UFUNCTION(BlueprintAssignable)
-	//FCharacterReachedApexSignature OnUSACrounch  ;
-	//////
-	//UFUNCTION(BlueprintAssignable)
-	//FCharacterReachedApexSignature OnUSAUnCrounch;
+	//
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACrouch", ScriptName = "OnUSACrouch"))
 	void K2_OnUSACrouch();
 
+	// ...
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUnCrouch", ScriptName = "OnUSAUnCrouch"))
 	void K2_OnUSAUnCrouch();
 
+	// ...
+
+	// + Anim Ability task 재확인할 것
 
 protected:
 	void Move(const struct FInputActionValue& Value);

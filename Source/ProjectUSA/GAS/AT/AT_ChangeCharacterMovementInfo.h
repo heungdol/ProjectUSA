@@ -58,5 +58,8 @@ public:
 
 	void SetCharacterMovementInfo();
 	void ResetCharacterMovementInfo();
+
+	virtual void SimpleCancelAbilityTask() override;
+	virtual void SimpleEndAbilityTask() override;
 	
 };
