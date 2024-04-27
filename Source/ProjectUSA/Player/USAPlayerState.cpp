@@ -20,3 +20,18 @@ UAbilitySystemComponent* AUSAPlayerState::GetAbilitySystemComponent() const
 {
     return ASC;
 }
+
+float AUSAPlayerState::GetLookSensitivityRatio()
+{
+    if (bIsUsingGamepad == true) 
+    {
+        return LookSensitivityGamepadRatio;
+    }
+    
+    return LookSensitivityMouseRatio;
+}
+
+void AUSAPlayerState::SetIsUsingGamepad(bool InUsing)
+{
+    bIsUsingGamepad = InUsing;
+}

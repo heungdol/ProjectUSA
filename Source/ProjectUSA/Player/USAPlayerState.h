@@ -24,7 +24,23 @@ public:
 	UPROPERTY(/*Replicated, */EditAnywhere, Category = GAS)
 	TObjectPtr <class UAbilitySystemComponent> ASC;
 
+	UPROPERTY (EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
+	float LookSensitivityMouseRatio = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
+	float LookSensitivityGamepadRatio = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
+	bool bIsUsingGamepad = false ;
+
+
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	UFUNCTION(BlueprintCallable)
+	float GetLookSensitivityRatio();
+
+	UFUNCTION(BlueprintCallable)
+	void SetIsUsingGamepad (bool InUsing);
 	
 };

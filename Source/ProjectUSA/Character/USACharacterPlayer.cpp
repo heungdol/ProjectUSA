@@ -10,6 +10,9 @@
 
 #include "Player/USAPlayerState.h"
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+
 #include "ProjectUSA.h"
 
 
@@ -24,6 +27,29 @@ void AUSACharacterPlayer::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	
+}
+
+void AUSACharacterPlayer::Look(const FInputActionValue& Value)
+{
+	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
+
+	if (USAPlayerState == nullptr)
+	{
+		Super::Look(Value);
+		return;
+	}
+	
+	float LookSensitivityRatio = USAPlayerState->GetLookSensitivityRatio();
+
+	//USA_LOG(LogTemp, Log, TEXT("Current Look Sensitivity Ratio: %f"), LookSensitivityRatio);
+
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		AddControllerYawInput(LookAxisVector.X * LookSensitivityRatio);
+		AddControllerPitchInput(LookAxisVector.Y * LookSensitivityRatio);
+	}
 }
 
 void AUSACharacterPlayer::SetupGAS()

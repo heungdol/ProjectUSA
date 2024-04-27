@@ -220,21 +220,37 @@ public:
 
 	//
 
+	void OnUSACrouch();
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACrouch", ScriptName = "OnUSACrouch"))
 	void K2_OnUSACrouch();
 
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_OnUSACrouch();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_OnUSACrouch();
+
 	// ...
+
+	void OnUSAUnCrouch();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUnCrouch", ScriptName = "OnUSAUnCrouch"))
 	void K2_OnUSAUnCrouch();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_OnUSAUnCrouch();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_OnUSAUnCrouch();
 
 	// ...
 
 	// + Anim Ability task 재확인할 것
 
 protected:
-	void Move(const struct FInputActionValue& Value);
-	void Look(const struct FInputActionValue& Value);
+	virtual void Move(const struct FInputActionValue& Value);
+	virtual void Look(const struct FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void EquipWeapon(class AUSAWeaponBase* InWeapon);

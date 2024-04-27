@@ -3,51 +3,45 @@
 
 #include "Character/USACharacterBase.h"
 
-#include "Components/CapsuleComponent.h"
+#include "Engine/DamageEvents.h"
 
+#include "Net/UnrealNetwork.h"
+
+#include "GameFramework/DamageType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerState.h"
+
+#include "Components/SceneComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 #include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "Camera/USACameraComponent.h"
+#include "Camera/USASpringArmComponent.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
 #include "Component/USACharacterMovementComponent.h"
-
-#include "Camera/USACameraComponent.h"
-#include "Camera/USASpringArmComponent.h"
+#include "Component/USAJellyEffectComponent.h"
+#include "Component/USACharacterPivotComponent.h"
 
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
 #include "GAS/GA/USAGameplayAbility.h"
 
-#include "GameFramework/PlayerState.h"
-
-#include "Component/USAJellyEffectComponent.h"
-
 #include "Tag/USAGameplayTags.h"
-
-
-#include "Components/SkeletalMeshComponent.h"
 
 #include "Weapon/USAWeaponBase.h"
 
-
-#include "Engine/DamageEvents.h"
-#include "GameFramework/DamageType.h"
-
-#include "Component/USACharacterPivotComponent.h"
-
-#include "Net/UnrealNetwork.h"
-
-#include "Components/SceneComponent.h"
-
 #include "ProjectUSA.h"
 
+
 // ====================================================================================
+
 
 void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
 {
@@ -66,9 +60,6 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter
 	{
 		return;
 	}
-
-	//InCharacter->GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHaflHeight);
-	//InCharacter->GetCapsuleComponent()->SetCapsuleRadius(CapsuleRadius);
 
 	InCharacter->GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHaflHeight);
 }
@@ -104,7 +95,6 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 	{
 		GroundHitLocation = CharacterMovementComponent->CurrentFloor.HitResult.ImpactPoint;
 	}
-
 
 	FVector NewLocation = InCharacter->GetActorLocation();
 
@@ -149,12 +139,6 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 	}
 
 	InCharacter->GetMesh()->SetRelativeLocation(NewUpdatedComponentsLocation);
-
-	
-	//CharacterMovementComponent->UpdatedComponent->MoveComponent
-	//(NewUpdatedComponentsLocation, 
-	//	CharacterMovementComponent->UpdatedComponent->GetComponentQuat(), 
-	//	true, nullptr, EMoveComponentFlags::MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
 }
 
 
@@ -207,7 +191,7 @@ AUSACharacterBase::AUSACharacterBase()
 	//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 
 	//GetCharacterMovement()->MovementState.bCanCrouch = true;
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	//GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 0.0f;
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
@@ -378,14 +362,64 @@ void AUSACharacterBase::Falling()
 {
 	Super::Falling();
 
-	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+	if (GetLocalRole() == ENetRole::ROLE_Authority
+		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+	}
 }
 
 void AUSACharacterBase::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+	if (GetLocalRole() == ENetRole::ROLE_Authority
+		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+	}
+}
+
+//
+
+void AUSACharacterBase::OnUSACrouch()
+{
+	if (GetLocalRole() == ENetRole::ROLE_Authority
+		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		ServerRPC_OnUSACrouch();
+	}
+}
+
+void AUSACharacterBase::ServerRPC_OnUSACrouch_Implementation()
+{
+	MulticastRPC_OnUSACrouch();
+}
+
+void AUSACharacterBase::MulticastRPC_OnUSACrouch_Implementation()
+{
+	K2_OnUSACrouch();
+}
+
+//
+
+void AUSACharacterBase::OnUSAUnCrouch()
+{
+	if (GetLocalRole() == ENetRole::ROLE_Authority
+		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		ServerRPC_OnUSAUnCrouch();
+	}
+}
+
+void AUSACharacterBase::ServerRPC_OnUSAUnCrouch_Implementation()
+{
+	MulticastRPC_OnUSAUnCrouch();
+}
+
+void AUSACharacterBase::MulticastRPC_OnUSAUnCrouch_Implementation()
+{
+	K2_OnUSAUnCrouch();
 }
 
 //
@@ -716,25 +750,33 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 {
 	if (NewCount > 0)
 	{
-		//Crouch();
-		//OnUSACrounch.Broadcast();
-		K2_OnUSACrouch();
+		OnUSACrouch();
 
-		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_CROUCH);
+		if (GetLocalRole() == ENetRole::ROLE_Authority
+			|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+		{
+			ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_CROUCH);
+		}
 	}
 	else
 	{
-		//UnCrouch();
-		//OnUSAUnCrounch.Broadcast();
-		K2_OnUSAUnCrouch();
+		OnUSAUnCrouch();
 
 		if (GetMovementComponent()->IsFalling())
 		{
-			ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+			if (GetLocalRole() == ENetRole::ROLE_Authority
+				|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)	
+			{
+				ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+			}
 		}
 		else
 		{
-			ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+			if (GetLocalRole() == ENetRole::ROLE_Authority
+				|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			{
+				ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+			}
 		}
 	}
 }
@@ -920,7 +962,11 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		}
 	}
 
-	ServerRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
+	if (GetLocalRole() == ENetRole::ROLE_Authority
+		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		ServerRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
+	}
 }
 
 bool AUSACharacterBase::ServerRPC_ApplyDamageMomentum_Validate
@@ -1109,3 +1155,4 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
 }
+

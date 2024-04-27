@@ -20,8 +20,9 @@ public:
 public:
 	virtual void PossessedBy(class AController* NewController) override;
 
-
 protected:
+	virtual void Look(const struct FInputActionValue& Value) override;
+
 	virtual void SetupGAS() override;
 
 };

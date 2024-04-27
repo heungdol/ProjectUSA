@@ -4,6 +4,8 @@
 
 #include "GameplayTagContainer.h"
 
+#define USA_CHARACTER_ACTION FGameplayTag::RequestGameplayTag(FName("Character.Action"))
+
 #define USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE FGameplayTag::RequestGameplayTag(FName("Character.Adjust.IgnoreRotateToMove"))
 #define USA_CHARACTER_ADJUST_IGNOREMOVEINPUT FGameplayTag::RequestGameplayTag(FName("Character.Adjust.IgnoreMoveInput"))
 #define USA_CHARACTER_ADJUST_VELOCITYZERO FGameplayTag::RequestGameplayTag(FName("Character.Adjust.VelocityZero"))
