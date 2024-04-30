@@ -13,6 +13,8 @@
 #include "GAS/AT/AT_SpawnActors.h"
 #include "GAS/AT/AT_TraceAttack.h"
 
+#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
+
 #include "ProjectUSA.h"
 
 
@@ -108,10 +110,10 @@ void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 
 //
 
-bool UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Validate(const FVector& InDirection)
-{
-	return true;
-}
+//bool UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Validate(const FVector& InDirection)
+//{
+//	return true;
+//}
 
 void UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Implementation(const FVector& InDirection)
 {
@@ -222,10 +224,40 @@ void UGA_CharacterAction::DoAction()
 		}
 	}
 
-	// 시간 설정
-	UAT_WaitDelay* AbilityTaskDelay = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, Period);
-	AbilityTaskDelay->OnFinish.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
-	AbilityTaskDelay->ReadyForActivation();
+	// Action 종료 조건 설정
+	UAbilityTask_WaitGameplayTagAdded* WaitGameplayTagAdded = nullptr;
+	UAbilityTask_WaitGameplayTagRemoved* WaitGameplayTagRemoved = nullptr;
+	UAT_WaitDelay* AbilityTaskDelay = nullptr;
+
+	switch (EndType)
+	{
+
+	case ECharacterActionEndType::WaitTagAdded:
+
+		WaitGameplayTagAdded = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, EndGameplayTag);
+		WaitGameplayTagAdded->Added.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
+		WaitGameplayTagAdded->ReadyForActivation();
+
+		break;
+
+	case ECharacterActionEndType::WaitTagRemoved:
+
+		WaitGameplayTagRemoved = UAbilityTask_WaitGameplayTagRemoved::WaitGameplayTagRemove(this, EndGameplayTag);
+		WaitGameplayTagRemoved->Removed.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
+		WaitGameplayTagRemoved->ReadyForActivation();
+
+		break;
+
+	case ECharacterActionEndType::WaitTime:
+	default:
+
+		AbilityTaskDelay = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, Period);
+		AbilityTaskDelay->OnFinish.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
+		AbilityTaskDelay->ReadyForActivation();
+
+		break;
+
+	}
 
 	// 스폰 설정
 	UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
@@ -240,9 +272,10 @@ void UGA_CharacterAction::DoAction()
 	
 	//if (HasAuthority(&CurrentActivationInfo))
 	//{		 
-		// 공격 설정
-		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
-		AbiltiyTaskAttack->ReadyForActivation();
+	
+	// 공격 설정
+	UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
+	AbiltiyTaskAttack->ReadyForActivation();
 	
 	//	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("C"));
 	//}

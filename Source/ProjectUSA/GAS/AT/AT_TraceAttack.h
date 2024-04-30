@@ -10,15 +10,16 @@
 
 #include "AT_TraceAttack.generated.h"
 
-UENUM(BlueprintType)
-enum class EAttackTraceShape : uint8
-{
-	None		UMETA(DisplayName = "None"),
-	//Line		UMETA(DisplayName = "Line"),
-	Sphere		UMETA(DisplayName = "Sphere"),
-	//Box			UMETA(DisplayName = "Box"),
-	//Capsule		UMETA(DisplayName = "Capsule")
-};
+// 우선 Sphere 탐지만 진행
+//UENUM(BlueprintType)
+//enum class EAttackTraceShape : uint8
+//{
+//	None		UMETA(DisplayName = "None"),
+//	//Line		UMETA(DisplayName = "Line"),
+//	Sphere		UMETA(DisplayName = "Sphere"),
+//	//Box			UMETA(DisplayName = "Box"),
+//	//Capsule		UMETA(DisplayName = "Capsule")
+//};
 
 
 // =====================================================================
@@ -33,12 +34,17 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
 	FVector OffsetTraceLocation = FVector::ZeroVector;
 
-	// 형태는?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
-	EAttackTraceShape TraceShape = EAttackTraceShape::Sphere;
+	FVector OffsetTraceEndLocation = FVector::ZeroVector;
+
+
+	// 형태는?
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
+	//EAttackTraceShape TraceShape = EAttackTraceShape::Sphere;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
-	FVector TraceSize = FVector::ZeroVector;
+	float AttackTraceRadius = 100.0f;
+	//FVector TraceSize = FVector::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
 	float AttackTime = -1.0f;

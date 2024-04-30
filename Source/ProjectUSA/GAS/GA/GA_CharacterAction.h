@@ -19,6 +19,16 @@
 // 방향 (없음 / 입력 방향 / 적)
 
 UENUM(BlueprintType)
+enum class ECharacterActionEndType : uint8
+{
+	None UMETA(DisplayName = "None"),
+	WaitTime UMETA(DisplayName = "WaitTime"),
+	WaitTagAdded UMETA(DisplayName = "WaitTagAdded"),
+	WaitTagRemoved UMETA(DisplayName = "WaitTagRemoved"),
+};
+
+
+UENUM(BlueprintType)
 enum class ECharacterActionMoveType : uint8
 {
 	None UMETA(DisplayName = "None"),
@@ -51,7 +61,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: General")
 	float Period = 0.5f;
 
-
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Direction")
@@ -61,6 +70,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
 	ECharacterActionMoveType MoveType = ECharacterActionMoveType::Move;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
+	ECharacterActionEndType EndType = ECharacterActionEndType::WaitTime;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
+	FGameplayTag EndGameplayTag;
 
 	//
 
@@ -136,7 +154,7 @@ public:
 
 	//
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable/*, WithValidation*/)
 	void ServerRPC_SetActionDirecitonAndDoAction (const FVector& InDirection);
 
 	void SetForwardAndRightDirection(const FVector& InDirection);

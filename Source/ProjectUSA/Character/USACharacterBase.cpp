@@ -316,26 +316,18 @@ void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase
 
 void AUSACharacterBase::OnRep_NextWeapon()
 {
-	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Start Chancing"));
-
 	if (ASC == nullptr)
 	{
 		bIsSetNextWeaponBeforeGASSetup = true;
-	
-		//USA_LOG(LogTemp, Log, TEXT("Put off Setting Next Weapon..."));
 
 		return;
 	}
 
 	EquipFinalNextWeapon();
-
-	//USA_LOG(LogTemp, Log, TEXT("Next Weapon Change Complete"));
 }
 
 void AUSACharacterBase::EquipFinalNextWeapon()
 {
-	//USA_LOG(LogTemp, Log, TEXT("Setting Final Weapon...."));
-
 	EUSAWeaponType WeaponType = EUSAWeaponType::None;
 
 	if (NextWeapon != nullptr)

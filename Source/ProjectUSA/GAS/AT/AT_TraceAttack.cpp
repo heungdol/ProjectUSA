@@ -77,73 +77,43 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 		AttackStartTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Z;
 
 		FVector AttackEndTraceLocation = AttackStartTraceLocation;
-		AttackEndTraceLocation += AttackDirection * 1.0f;
+		//AttackEndTraceLocation += AttackDirection * 1.0f;
+		AttackEndTraceLocation += GetAvatarActor()->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.X;
+		AttackEndTraceLocation += GetAvatarActor()->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.Y;
+		AttackEndTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.Z;
 
-		float AttackTraceRadius = 0.0f;
 		float AttackDamage = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamage;
+		float AttackTraceRadius = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackTraceRadius;
 
 		TArray<FHitResult> HitResults;
+		UKismetSystemLibrary::SphereTraceMulti(GetWorld(),
+			AttackStartTraceLocation,
+			AttackEndTraceLocation,
+			AttackTraceRadius,
+			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
+			false,
+			IgnoreActors,
+			EDrawDebugTrace::ForDuration,
+			HitResults,
+			true,
+			FLinearColor::Red,
+			FLinearColor::Green,
+			0.5f);
 
-		switch (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].TraceShape)
+		for (FHitResult HitResult : HitResults)
 		{
-		case EAttackTraceShape::Sphere:
+			ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
 
-			AttackTraceRadius = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].TraceSize.X;
-
-			UKismetSystemLibrary::SphereTraceMulti (GetWorld(),
-				AttackStartTraceLocation,
-				AttackEndTraceLocation,
-				AttackTraceRadius,
-				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
-				false,
-				IgnoreActors,
-				EDrawDebugTrace::ForDuration,
-				HitResults,
-				true,
-				FLinearColor::Red,
-				FLinearColor::Green,
-				0.5f);
-
-			for (FHitResult HitResult : HitResults)
+			if (OutCharacter == nullptr)
 			{
-				ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
-
-				if (OutCharacter == nullptr)
-				{
-					continue;
-				}
-
-				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
-				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
-
-				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
-
-				//
-
-				//IAbilitySystemInterface* OutASCInterface = Cast <IAbilitySystemInterface>(OutCharacter);
-				//UAbilitySystemComponent* OutASC = nullptr;
-				//if (OutASCInterface != nullptr)
-				//{
-				//	OutASC = OutASCInterface->GetAbilitySystemComponent();
-				//}
-
-				//if (OutASC != nullptr)
-				//{
-				//	UGameplayEffect* GameplayEffect = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageGameplayEffect->GetDefaultObject<UGameplayEffect>();
-				//	FGameplayEffectContextHandle GameplayEffectContextHandle = OutASC->MakeEffectContext();
-
-				//	OutASC->ApplyGameplayEffectToSelf(GameplayEffect, 0.0f, GameplayEffectContextHandle);
-				//}
+				continue;
 			}
-			
-			break;
 
-		case EAttackTraceShape::None:
-		default:
+			TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
+			FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
 
-			break;
+			OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 		}
-
 
 		PrevAttackTraceTime = FMath::Max(PrevAttackTraceTime, NextSpawnTime);
 
