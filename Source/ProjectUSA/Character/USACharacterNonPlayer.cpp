@@ -11,12 +11,15 @@
 #include "Engine/DamageEvents.h"
 #include "GameFramework/DamageType.h"
 
+#include "GAS/AttributeSet/USAAttributeSet.h"
+
 #include "ProjectUSA.h"
 
 
 AUSACharacterNonPlayer::AUSACharacterNonPlayer()
 {
 	ASC = CreateDefaultSubobject <UAbilitySystemComponent>(TEXT("Ability System Component"));
+	AttributeSet = CreateDefaultSubobject <UUSAAttributeSet>(TEXT("USA Attribute Set"));
 }
 
 void AUSACharacterNonPlayer::SetupGAS()

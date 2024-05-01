@@ -265,6 +265,9 @@ protected:
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override; 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_TakeDamage(float DamageAmount);
+
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
@@ -281,8 +284,11 @@ public:
 	UFUNCTION()
 	void OnRep_ASC();
 
-	UPROPERTY(ReplicatedUsing = OnRep_ASC, EditDefaultsOnly, Category = GAS)
+	UPROPERTY(ReplicatedUsing = OnRep_ASC, EditDefaultsOnly, Category = "Character GAS")
 	TObjectPtr <class UAbilitySystemComponent> ASC;
+
+	UPROPERTY()
+	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartAbilities;

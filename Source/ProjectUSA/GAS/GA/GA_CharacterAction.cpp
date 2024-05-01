@@ -273,9 +273,14 @@ void UGA_CharacterAction::DoAction()
 	//if (HasAuthority(&CurrentActivationInfo))
 	//{		 
 	
-	// 공격 설정
-	UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
-	AbiltiyTaskAttack->ReadyForActivation();
+	// 서버에서 판정 수행
+	if (GetWorld()->GetNetMode() == ENetMode::NM_DedicatedServer
+		|| GetWorld()->GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		// 공격 설정
+		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
+		AbiltiyTaskAttack->ReadyForActivation();
+	}
 	
 	//	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("C"));
 	//}

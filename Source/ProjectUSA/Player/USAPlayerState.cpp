@@ -5,9 +5,13 @@
 
 #include "AbilitySystemComponent.h"
 
+#include "GAS/AttributeSet/USAAttributeSet.h"
+
+
 AUSAPlayerState::AUSAPlayerState()
 {
     ASC = CreateDefaultSubobject <UAbilitySystemComponent>(TEXT("Ability System Component"));
+    AttributeSet = CreateDefaultSubobject <UUSAAttributeSet>(TEXT("USA Attribute Set"));
 
     // 멀티 활성화
     //if (ASC != nullptr)

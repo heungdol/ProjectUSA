@@ -32,11 +32,12 @@
 #include "AbilitySystemComponent.h"
 
 #include "GAS/GA/USAGameplayAbility.h"
-
-#include "Tag/USAGameplayTags.h"
+#include "GAS/AttributeSet/USAAttributeSet.h"
+#include "GameplayEffect.h"
 
 #include "Weapon/USAWeaponBase.h"
 
+#include "Tag/USAGameplayTags.h"
 #include "ProjectUSA.h"
 
 
@@ -196,6 +197,7 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
 	ASC = nullptr;
+	AttributeSet = nullptr;
 
 	bIsSetNextWeaponBeforeGASSetup = false;
 
@@ -431,7 +433,7 @@ void AUSACharacterBase::BeginPlay()
 
 	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
 
-	//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+	
 }
 
 // Called every frame
@@ -910,15 +912,32 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float Result = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	float ResultDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	// TODO: 수치 관련 연산 수행
-	// 만약 Armor 나 무적 등인 경우, 아래의 ApplyDamageMomentum은 수행하지 않도록 별도 처리
-	// ...
+	USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
 
-	ApplyDamageMomentum(DamageAmount, DamageEvent, EventInstigator->GetPawn(), DamageCauser);
-	
-	return Result;
+	// 데미지
+	MulticastRPC_TakeDamage(ResultDamageAmount);
+
+	// 넉백 어빌리티 수행
+	ApplyDamageMomentum(ResultDamageAmount, DamageEvent, EventInstigator->GetPawn(), DamageCauser);
+
+	return ResultDamageAmount;
+}
+
+void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmount)
+{
+	UUSAAttributeSet* USAAttributeSet = nullptr;
+
+	if (ASC != nullptr)
+	{
+		USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	}
+
+	if (USAAttributeSet != nullptr)
+	{
+		USAAttributeSet->SetDamage(DamageAmount);
+	}
 }
 
 

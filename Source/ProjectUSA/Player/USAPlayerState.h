@@ -23,6 +23,9 @@ public:
 public:
 	UPROPERTY(/*Replicated, */EditAnywhere, Category = GAS)
 	TObjectPtr <class UAbilitySystemComponent> ASC;
+	UPROPERTY()
+	TObjectPtr <class UUSAAttributeSet> AttributeSet;
+
 
 	UPROPERTY (EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
 	float LookSensitivityMouseRatio = 1.0f;
