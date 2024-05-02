@@ -15,7 +15,8 @@
  GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
  GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
-DECLARE_MULTICAST_DELEGATE(FUSAAttributeimpleDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUSAAttributeSimpleDynamicDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUSAAttributeSimpleDynamicDelegateFloat, float, InFloat);
 
 /**
  * 
@@ -24,12 +25,14 @@ UCLASS()
 class PROJECTUSA_API UUSAAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
-	
+
 public:
 	UUSAAttributeSet();
 
-	ATTRIBUTE_ACCESSORS(UUSAAttributeSet, Health);
+	ATTRIBUTE_ACCESSORS(UUSAAttributeSet, CurrentHealth);
 	ATTRIBUTE_ACCESSORS(UUSAAttributeSet, MaxHealth);
+	ATTRIBUTE_ACCESSORS(UUSAAttributeSet, CurrentArmor);
+	ATTRIBUTE_ACCESSORS(UUSAAttributeSet, BaseArmor);
 	ATTRIBUTE_ACCESSORS(UUSAAttributeSet, Damage);
 
 
@@ -62,22 +65,39 @@ public:
 	 */
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
-	
-	FUSAAttributeimpleDelegate OnOutOfHealth;
-
-	//FORCEINLINE bool GetIsOutOfHealth() { return bOutOfHealth; }
-
+	mutable FUSAAttributeSimpleDynamicDelegate OnOutOfHealth;
+	mutable FUSAAttributeSimpleDynamicDelegateFloat OnCurrentHealthChanged;
+	mutable FUSAAttributeSimpleDynamicDelegateFloat OnMaxHealthChanged;
 
 protected:
 
-	UPROPERTY(BlueprintReadOnly, Category = "Health", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData Health;
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth, BlueprintReadOnly, Category = "Attribute", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData CurrentHealth;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Health", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(ReplicatedUsing = OnRep_MaxHealth, BlueprintReadOnly, Category = "Attribute", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Health", Meta = (AllowPrivateAccess = true))
+
+	UFUNCTION()
+	void OnRep_CurrentHealth();
+
+	UFUNCTION()
+	void OnRep_MaxHealth();
+
+
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData CurrentArmor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData BaseArmor;
+
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData Damage;
 
 	bool bOutOfHealth = false;
+
+	// 체력 관련 어트리뷰트 접근 위함
+	friend class AUSACharacterBase;
 };

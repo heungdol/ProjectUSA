@@ -8,6 +8,11 @@
 #include "AbilitySystemInterface.h"
 #include "Weapon/USAWeaponBase.h"
 
+#include "Interface/USACharacterInterface.h"
+
+// 어트리뷰트 접근을 위한 헤더
+#include "GameplayEffectTypes.h"
+
 #include "USACharacterBase.generated.h"
 
 // ========================================================================================
@@ -90,7 +95,7 @@ public:
 // ========================================================================================
 
 UCLASS()
-class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface
+class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface
 {
 	GENERATED_BODY()
 
@@ -113,8 +118,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	TObjectPtr <class UUSAJellyEffectComponent> JellyEffectComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
-	TObjectPtr <class UUSACharacterPivotComponent> PivotComponent;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
+	//TObjectPtr <class UUSACharacterPivotComponent> PivotComponent;
 
 
 
@@ -131,6 +136,14 @@ protected:
 	TObjectPtr <class UInputAction> LookAction;
 
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Widget")
+	TObjectPtr <class UWidgetComponent> NicknameWidgetComponent;
+
+	UPROPERTY(/*ReplicatedUsing = OnRep_HealthBarWidgetComponent, */EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Widget")
+	TObjectPtr <class UWidgetComponent> HealthBarWidgetComponent;
+
+	//UFUNCTION()
+	//void OnRep_HealthBarWidgetComponent();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
 	TMap<FName, FUSACharacterCapsuleInfo> CharacterCapsuleInfos;
@@ -231,7 +244,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_OnUSACrouch();
 
-	// ...
+	//
 
 	void OnUSAUnCrouch();
 
@@ -244,9 +257,22 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_OnUSAUnCrouch();
 
-	// ...
+	//
 
-	// + Anim Ability task 재확인할 것
+	UFUNCTION()
+	void OnUSADeath();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUnCrouch", ScriptName = "OnUSAUnCrouch"))
+	void K2_OnUSADeath();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_OnUSADeath();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_OnUSADeath();
+
+	//
+
 
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
@@ -264,10 +290,10 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
 
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override; 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_TakeDamage(float DamageAmount);
-
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
@@ -305,11 +331,27 @@ public:
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageGroundAbilities;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayDeathAbilities;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAirAbilities;
 
 
 public:
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
+
+	float GetCharacterCurrentHealth_Implementation() override;
+	float GetCharacterMaxHealth_Implementation() override;
+	float GetCharacterCurrentArmor_Implementation() override;
+
+	void OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
+	void OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthChanged", ScriptName = "OnUSACurrentHealthChanged"))
+	void K2_OnCurrentHealthChanged(float InValue);
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAMaxHealthChanged", ScriptName = "OnUSAMaxHealthChanged"))
+	void K2_OnMaxHealthChanged(float InValue);
+
 
 
 protected:
@@ -318,6 +360,8 @@ protected:
 	virtual void PostSetupGAS();
 
 	void BeginStartAbilities();
+
+	void SetupAttributeSet();
 
 	void InputPressGameplayAbilityByInputID(int32 InputID);
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);

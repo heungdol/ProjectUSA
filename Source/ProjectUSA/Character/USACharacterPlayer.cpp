@@ -13,6 +13,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "GAS/AttributeSet/USAAttributeSet.h"
+
 #include "ProjectUSA.h"
 
 
@@ -63,4 +65,25 @@ void AUSACharacterPlayer::SetupGAS()
 	}
 
 	Super::SetupGAS();
+
+	//AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
+	//UUSAAttributeSet* USAAttributeSet = nullptr;
+
+	//if (USAPlayerState != nullptr)
+	//{
+	//	ASC = USAPlayerState->GetAbilitySystemComponent();
+	//	ASC->InitAbilityActorInfo(USAPlayerState, this);
+	//}
+
+	//if (ASC != nullptr)
+	//{
+	//	USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	//}
+
+	//if (USAAttributeSet != nullptr)
+	//{
+	//	USAAttributeSet->OnOutOfHealth.AddUObject(this, &AUSACharacterBase::OnUSADeath);
+	//}
+
+	//Super::SetupGAS();
 }

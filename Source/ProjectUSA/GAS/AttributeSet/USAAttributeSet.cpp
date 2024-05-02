@@ -5,13 +5,19 @@
 
 #include "GameplayEffectExtension.h"
 
+#include "Net/UnrealNetwork.h"
+
+#include "ProjectUSA.h"
+
 
 UUSAAttributeSet::UUSAAttributeSet() :
-	Health (100.0f),
-	MaxHealth (100.0f),
+	CurrentHealth(100.0f),
+	MaxHealth(100.0f),
+	CurrentArmor(0.0f),
+	BaseArmor(0.0f),
 	Damage (0.0f)
 {
-	InitHealth(GetMaxHealth());
+	InitCurrentHealth(GetMaxHealth());
 
 	bOutOfHealth = false;
 }
@@ -39,12 +45,18 @@ void UUSAAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, 
 
 	if (Attribute == GetDamageAttribute() && NewValue > SMALL_NUMBER)
 	{
-		SetHealth(FMath::Clamp(GetHealth() - NewValue, MinHealth, GetMaxHealth()));
+		SetCurrentHealth(FMath::Clamp(GetCurrentHealth() - NewValue, MinHealth, GetMaxHealth()));
 		SetDamage(0.0f);
 
-		//if (NewValue > 0.0f)
-		//{
-		//}
+		if (GetCurrentHealth() <= SMALL_NUMBER
+			&& bOutOfHealth == false)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Death condition from attributeset"));
+
+			bOutOfHealth = true;
+
+			OnOutOfHealth.Broadcast();
+		}
 	}
 }
 
@@ -63,29 +75,43 @@ void UUSAAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 
 	const float MinHealth = 0.0f;
 
-	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
 	{
-		SetHealth(FMath::Clamp(GetHealth(), MinHealth, GetMaxHealth()));
+		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), MinHealth, GetMaxHealth()));
 	}
 
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
 	{
-		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinHealth, GetMaxHealth()));
+		SetCurrentHealth(FMath::Clamp(GetCurrentHealth() - GetDamage(), MinHealth, GetMaxHealth()));
 		SetDamage(0.0f);
-	}
 
+		if (GetCurrentHealth() <= SMALL_NUMBER
+			&& bOutOfHealth == false)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Death condition from attributeset"));
 
-	// ...
+			bOutOfHealth = true;
 
-
-	if (GetHealth() <= 0.0f && bOutOfHealth == false)
-	{
-		bOutOfHealth = true;
-
-		OnOutOfHealth.Broadcast();
+			OnOutOfHealth.Broadcast();
+		}
 	}
 }
 
+void UUSAAttributeSet::OnRep_CurrentHealth()
+{
+	OnCurrentHealthChanged.Broadcast(GetCurrentHealth());
+}
+
+void UUSAAttributeSet::OnRep_MaxHealth()
+{
+	OnMaxHealthChanged.Broadcast(GetMaxHealth());
+}
 
 
+void UUSAAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(UUSAAttributeSet, CurrentHealth);
+	DOREPLIFETIME(UUSAAttributeSet, MaxHealth);
+}

@@ -30,6 +30,21 @@ void AUSACharacterNonPlayer::SetupGAS()
 	}
 
 	Super::SetupGAS();
+
+	//UUSAAttributeSet* USAAttributeSet = nullptr;
+
+	//if (ASC != nullptr)
+	//{
+	//	ASC->InitAbilityActorInfo(this, this);
+	//	USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	//}
+
+	//if (USAAttributeSet != nullptr)
+	//{
+	//	USAAttributeSet->OnOutOfHealth.AddUObject(this, &AUSACharacterBase::OnUSADeath);
+	//}
+
+	//Super::SetupGAS();
 }
 
 float AUSACharacterNonPlayer::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

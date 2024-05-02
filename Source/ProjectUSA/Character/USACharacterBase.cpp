@@ -17,6 +17,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
+#include "Components/WidgetComponent.h"
+#include "Blueprint/UserWidget.h"
+
 #include "Camera/CameraComponent.h"
 #include "Camera/USACameraComponent.h"
 #include "Camera/USASpringArmComponent.h"
@@ -27,6 +30,7 @@
 #include "Component/USACharacterMovementComponent.h"
 #include "Component/USAJellyEffectComponent.h"
 #include "Component/USACharacterPivotComponent.h"
+
 
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
@@ -185,8 +189,16 @@ AUSACharacterBase::AUSACharacterBase()
 	JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
 	JellyEffectComponent->SetMeshComponent(GetMesh());
 
-	PivotComponent = CreateDefaultSubobject <UUSACharacterPivotComponent>(TEXT("Character Pivot Component"));
-	PivotComponent->SetupAttachment(RootComponent);
+
+	NicknameWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Nickname Widget Component"));
+	NicknameWidgetComponent->SetupAttachment(RootComponent);
+
+	HealthBarWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Health Bar Widget Component"));
+	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+
+
+	//PivotComponent = CreateDefaultSubobject <UUSACharacterPivotComponent>(TEXT("Character Pivot Component"));
+	//PivotComponent->SetupAttachment(RootComponent);
 
 	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
 	//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
@@ -243,6 +255,11 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 }
 
 //
+
+//void AUSACharacterBase::OnRep_HealthBarWidgetComponent()
+//{
+//	USA_LOG(LogTemp, Log, TEXT("Update HP Bar"));
+//}
 
 float AUSACharacterBase::PlayAnimMontage(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
 {
@@ -432,8 +449,6 @@ void AUSACharacterBase::BeginPlay()
 	}
 
 	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
-
-	
 }
 
 // Called every frame
@@ -477,6 +492,8 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	SetupGAS();
 
 	BeginStartAbilities();
+
+	SetupAttributeSet();
 
 	// 시작할 때 자동으로 콘솔 입력
 	APlayerController* PlayerController = Cast <APlayerController>(NewController);
@@ -572,6 +589,73 @@ void AUSACharacterBase::TryGameplayAbilityByGameplayTag(FName GameplayTag)
 
 	FGameplayTagContainer TagContainer(FGameplayTag::RequestGameplayTag(GameplayTag));
 	ASC->TryActivateAbilitiesByTag(TagContainer);
+}
+
+float AUSACharacterBase::GetCharacterCurrentHealth_Implementation()
+{
+	float Result = 0.0f;
+
+	UUSAAttributeSet* USAAttributeSet = nullptr;
+
+	if (ASC != nullptr)
+	{
+		USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	}
+
+	if (USAAttributeSet != nullptr)
+	{
+		Result = USAAttributeSet->GetCurrentHealth();
+	}
+
+	return Result;
+}
+
+float AUSACharacterBase::GetCharacterMaxHealth_Implementation()
+{
+	float Result = 1.0f;
+
+	UUSAAttributeSet* USAAttributeSet = nullptr;
+
+	if (ASC != nullptr)
+	{
+		USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	}
+
+	if (USAAttributeSet != nullptr)
+	{
+		Result = USAAttributeSet->GetMaxHealth();
+	}
+
+	return Result;
+}
+
+float AUSACharacterBase::GetCharacterCurrentArmor_Implementation()
+{
+	float Result = 0.0f;
+
+	UUSAAttributeSet* USAAttributeSet = nullptr;
+
+	if (ASC != nullptr)
+	{
+		USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	}
+
+	if (USAAttributeSet != nullptr)
+	{
+		Result = USAAttributeSet->GetCurrentArmor();
+	}
+
+	return Result;
+}
+
+void AUSACharacterBase::OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
+{
+	K2_OnCurrentHealthChanged(ChangeData.NewValue);
+}
+
+void AUSACharacterBase::OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
+{
+	K2_OnMaxHealthChanged(ChangeData.NewValue);
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplayTag CallbackTag, int32 NewCount)
@@ -675,69 +759,12 @@ void AUSACharacterBase::OnGameplayTagCallback_Walk(const FGameplayTag CallbackTa
 
 void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	//if (GetCapsuleComponent() == nullptr)
-	//{
-	//	return;
-	//}
 
-	//bool IsAbleToChange = false;
-
-	//if (HasAuthority())
-	//{
-	//	if (GetLocalRole() == ENetRole::ROLE_Authority)
-	//	{
-	//		IsAbleToChange = true;
-	//	}
-	//}
-	//else
-	//{
-	//	if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	//	{
-	//		IsAbleToChange = true;
-	//	}
-	//}
-	//
-	//if (IsAbleToChange == false)
-	//{
-	//	return;
-	//}
-
-	//if (NewCount > 0)
-	//{
-	//	//CharacterCapsuleFallInfo.RenewCharacterCapsule(this);
-	//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
-	//}
-	//else
-	//{
-	//	//CharacterCapsuleWalkInfo.RenewCharacterCapsule(this);
-	//	ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
-	//	
-	//	//if (bIsCrouched)
-	//	//{
-
-	//	//}
-	//	//else
-	//	//{
-	//	//}
-	//}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Slide(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	// TODO: 어빌리티로 뺄 것
-	//if (GetCharacterMovement() == nullptr)
-	//{
-	//	return;
-	//}
 
-	//if (NewCount > 0)
-	//{
-	//	CharacterMovementSlideInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-	//}
-	//else
-	//{
-	//	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-	//}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag CallbackTag, int32 NewCount)
@@ -938,6 +965,8 @@ void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmoun
 	{
 		USAAttributeSet->SetDamage(DamageAmount);
 	}
+
+	// 죽음인 경우 델리게이트로 처리
 }
 
 
@@ -1024,6 +1053,8 @@ void AUSACharacterBase::OnRep_ASC()
 	
 	BeginStartAbilities();
 
+	SetupAttributeSet(); 
+
 }
 
 void AUSACharacterBase::SetupGAS()
@@ -1079,6 +1110,13 @@ void AUSACharacterBase::PostSetupGAS()
 		for (const auto& GameplayDamageAbility : GameplayDamageAirAbilities)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
+
+		// 죽음 어빌리티
+		for (const auto& GameplayTriggerAbility : GameplayDeathAbilities)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
@@ -1158,6 +1196,55 @@ void AUSACharacterBase::BeginStartAbilities()
 	}
 }
 
+void AUSACharacterBase::SetupAttributeSet()
+{
+	// 어트리뷰트 설정
+	if (ASC != nullptr)
+	{
+		if (ASC->GetSet <UUSAAttributeSet>() != nullptr)
+		{
+			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetCurrentHealthAttribute()).AddUObject
+			(this, &AUSACharacterBase::OnCurrentHealthChangedCallback);
+
+			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetMaxHealthAttribute()).AddUObject
+			(this, &AUSACharacterBase::OnMaxHealthChangedCallback);
+
+			ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::OnUSADeath);
+
+			ASC->GetSet <UUSAAttributeSet>()->OnCurrentHealthChanged.AddDynamic
+			(this, &AUSACharacterBase::K2_OnCurrentHealthChanged);
+
+			ASC->GetSet <UUSAAttributeSet>()->OnMaxHealthChanged.AddDynamic
+			(this, &AUSACharacterBase::K2_OnMaxHealthChanged);
+
+			K2_OnMaxHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetMaxHealth());
+			K2_OnCurrentHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetCurrentHealth());
+		}
+	}
+}
+
+void AUSACharacterBase::OnUSADeath()
+{
+	USA_LOG(LogTemp, Log, TEXT("Die"));
+
+	K2_OnUSADeath();
+
+	ServerRPC_OnUSADeath();
+}
+
+void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
+{
+	MulticastRPC_OnUSADeath();
+}
+
+void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
+{
+	if (ASC != nullptr)
+	{
+		ASC->AddLooseGameplayTag(USA_CHARACTER_STATE_DEAD);
+	}
+}
+
 
 void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -1166,4 +1253,3 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
 }
-

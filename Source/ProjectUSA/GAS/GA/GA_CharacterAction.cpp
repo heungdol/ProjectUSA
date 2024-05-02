@@ -274,8 +274,8 @@ void UGA_CharacterAction::DoAction()
 	//{		 
 	
 	// 서버에서 판정 수행
-	if (GetWorld()->GetNetMode() == ENetMode::NM_DedicatedServer
-		|| GetWorld()->GetNetMode() == ENetMode::NM_ListenServer)
+	// TODO: 서버 관련 조건문을 재확인 할 것
+	if (GetAvatarActorFromActorInfo()->HasAuthority())
 	{
 		// 공격 설정
 		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
