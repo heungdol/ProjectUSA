@@ -86,5 +86,5 @@ void AUSACharacterPlayer::OnRep_ASC()
 
 	BeginStartAbilities();
 
-	//OnCurrentHealthRatioChanged(0.0f);
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
 }

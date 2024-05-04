@@ -53,7 +53,7 @@ void AUSACharacterNonPlayer::OnRep_bIsASCInitialized()
 
 	BeginStartAbilities();
 
-	//OnCurrentHealthRatioChanged(0.0f);
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
 }
 
 void AUSACharacterNonPlayer::SetupGAS()
