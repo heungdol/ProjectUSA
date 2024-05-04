@@ -21,10 +21,6 @@ public:
 	UPROPERTY()
 	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
-	//virtual void OnRep_Controller() override;
-
-	//virtual void PossessedBy(AController* NewController) override;
-
 	virtual void OnRep_bIsASCInitialized() override;
 
 protected:

@@ -29,20 +29,6 @@ AUSACharacterNonPlayer::AUSACharacterNonPlayer()
 	}
 }
 
-//void AUSACharacterNonPlayer::OnRep_Controller()
-//{
-//	Super::OnRep_Controller();
-//
-//	SetupGAS();
-//}
-
-//void AUSACharacterNonPlayer::PossessedBy(AController* NewController)
-//{
-//	Super::PossessedBy(NewController);
-//
-//	SetupGAS();
-//}
-
 void AUSACharacterNonPlayer::OnRep_bIsASCInitialized()
 {
 	Super::OnRep_bIsASCInitialized();
