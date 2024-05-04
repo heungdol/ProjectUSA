@@ -17,9 +17,10 @@ class PROJECTUSA_API AUSACharacterNonPlayer : public AUSACharacterBase
 public:
 	AUSACharacterNonPlayer();
 
+	UPROPERTY()
+	TObjectPtr <class UUSAAttributeSet> AttributeSet;
+
+
 protected:
 	virtual void SetupGAS() override;
-
-	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	
 };

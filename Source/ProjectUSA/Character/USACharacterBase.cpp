@@ -209,7 +209,7 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
 	ASC = nullptr;
-	AttributeSet = nullptr;
+	//AttributeSet = nullptr;
 
 	bIsSetNextWeaponBeforeGASSetup = false;
 
@@ -355,16 +355,6 @@ void AUSACharacterBase::EquipFinalNextWeapon()
 	}
 
 	EquipWeapon(NextWeapon);
-}
-
-//
-
-void AUSACharacterBase::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	// 일반 클라에서 수행
-	SetupGAS();
 }
 
 //

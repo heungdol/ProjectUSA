@@ -223,8 +223,6 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	virtual void OnRep_PlayerState() override;
-
 	//
 
 	virtual void Falling() override;
@@ -313,8 +311,6 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_ASC, EditDefaultsOnly, Category = "Character GAS")
 	TObjectPtr <class UAbilitySystemComponent> ASC;
 
-	UPROPERTY()
-	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartAbilities;

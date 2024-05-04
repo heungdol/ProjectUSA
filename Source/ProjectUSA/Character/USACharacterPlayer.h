@@ -25,4 +25,6 @@ protected:
 
 	virtual void SetupGAS() override;
 
+	virtual void OnRep_PlayerState() override;
+
 };

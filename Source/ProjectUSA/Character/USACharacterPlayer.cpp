@@ -65,25 +65,14 @@ void AUSACharacterPlayer::SetupGAS()
 	}
 
 	Super::SetupGAS();
+}
 
-	//AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
-	//UUSAAttributeSet* USAAttributeSet = nullptr;
+//
 
-	//if (USAPlayerState != nullptr)
-	//{
-	//	ASC = USAPlayerState->GetAbilitySystemComponent();
-	//	ASC->InitAbilityActorInfo(USAPlayerState, this);
-	//}
+void AUSACharacterPlayer::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
 
-	//if (ASC != nullptr)
-	//{
-	//	USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
-	//}
-
-	//if (USAAttributeSet != nullptr)
-	//{
-	//	USAAttributeSet->OnOutOfHealth.AddUObject(this, &AUSACharacterBase::OnUSADeath);
-	//}
-
-	//Super::SetupGAS();
+	// 일반 클라에서 수행
+	SetupGAS();
 }
