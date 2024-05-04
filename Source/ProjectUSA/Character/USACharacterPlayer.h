@@ -18,13 +18,12 @@ public:
 	AUSACharacterPlayer();
 	
 public:
-	virtual void PossessedBy(class AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
 
 protected:
 	virtual void Look(const struct FInputActionValue& Value) override;
 
 	virtual void SetupGAS() override;
 
-	virtual void OnRep_PlayerState() override;
-
+	virtual void OnRep_ASC() override;
 };

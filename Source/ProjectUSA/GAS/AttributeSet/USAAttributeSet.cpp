@@ -99,6 +99,8 @@ void UUSAAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 
 void UUSAAttributeSet::OnRep_CurrentHealth()
 {
+	UE_LOG(LogTemp, Log, TEXT("Replicated Health"));
+
 	OnCurrentHealthChanged.Broadcast(GetCurrentHealth());
 }
 

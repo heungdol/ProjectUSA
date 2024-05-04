@@ -17,9 +17,15 @@ class PROJECTUSA_API AUSACharacterNonPlayer : public AUSACharacterBase
 public:
 	AUSACharacterNonPlayer();
 
+public:
 	UPROPERTY()
 	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
+	//virtual void OnRep_Controller() override;
+
+	//virtual void PossessedBy(AController* NewController) override;
+
+	virtual void OnRep_bIsASCInitialized() override;
 
 protected:
 	virtual void SetupGAS() override;

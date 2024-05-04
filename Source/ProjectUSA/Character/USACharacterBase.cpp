@@ -209,7 +209,6 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
 	ASC = nullptr;
-	//AttributeSet = nullptr;
 
 	bIsSetNextWeaponBeforeGASSetup = false;
 
@@ -439,6 +438,10 @@ void AUSACharacterBase::BeginPlay()
 	}
 
 	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
+
+	//ResetAttributeSet();
+
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
 }
 
 // Called every frame
@@ -478,14 +481,14 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	// 일반 클라에서는 수행되지 않음
+	// 서버에서 수행
 	SetupGAS();
 
 	PostSetupGAS();
 
-	BeginStartAbilities();
-
 	SetupAttributeSet();
+
+	BeginStartAbilities();
 
 	// 시작할 때 자동으로 콘솔 입력
 	APlayerController* PlayerController = Cast <APlayerController>(NewController);
@@ -640,15 +643,24 @@ float AUSACharacterBase::GetCharacterCurrentArmor_Implementation()
 	return Result;
 }
 
-void AUSACharacterBase::OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
+float AUSACharacterBase::GetCharacterCurrentHealthRatio_Implementation()
 {
-	K2_OnCurrentHealthChanged(ChangeData.NewValue);
+	float CurrentHealth = GetCharacterCurrentHealth_Implementation();
+	float MaxHealth = GetCharacterMaxHealth_Implementation();
+
+	float Result = CurrentHealth / MaxHealth;
+	return Result;
 }
 
-void AUSACharacterBase::OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
-{
-	K2_OnMaxHealthChanged(ChangeData.NewValue);
-}
+//void AUSACharacterBase::OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
+//{
+//	K2_OnCurrentHealthChanged(ChangeData.NewValue);
+//}
+//
+//void AUSACharacterBase::OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
+//{
+//	K2_OnMaxHealthChanged(ChangeData.NewValue);
+//}
 
 void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplayTag CallbackTag, int32 NewCount)
 {
@@ -933,7 +945,7 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 {
 	float ResultDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
+	//USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
 
 	// 데미지
 	MulticastRPC_TakeDamage(ResultDamageAmount);
@@ -1041,17 +1053,29 @@ UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 
 void AUSACharacterBase::OnRep_ASC()
 {
-	PostSetupGAS();
-	
-	BeginStartAbilities();
+	// ... 
+}
 
-	SetupAttributeSet(); 
+void AUSACharacterBase::OnRep_bIsASCInitialized()
+{
+	// ...
+}
 
+void AUSACharacterBase::OnCurrentHealthRatioChanged(float InValue)
+{
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+}
+
+void AUSACharacterBase::OnCurrentHealthRatioChanged(const FOnAttributeChangeData& ChangeData)
+{
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
 }
 
 void AUSACharacterBase::SetupGAS()
 {
 	// ...
+
+	bIsASCInitialized = true;
 }
 
 void AUSACharacterBase::PostSetupGAS()
@@ -1187,34 +1211,62 @@ void AUSACharacterBase::BeginStartAbilities()
 
 void AUSACharacterBase::SetupAttributeSet()
 {
+	//if (GetLocalRole() != nullptr)
+	//{
+	//	GetNetOwningPlayer()->GetLocalRole();
+	//}
+
+	GetLocalRole();
+
 	// 어트리뷰트 설정
 	if (ASC != nullptr)
 	{
 		if (ASC->GetSet <UUSAAttributeSet>() != nullptr)
 		{
 			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetCurrentHealthAttribute()).AddUObject
-			(this, &AUSACharacterBase::OnCurrentHealthChangedCallback);
+			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
 			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetMaxHealthAttribute()).AddUObject
-			(this, &AUSACharacterBase::OnMaxHealthChangedCallback);
+			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
 			ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::OnUSADeath);
 
 			ASC->GetSet <UUSAAttributeSet>()->OnCurrentHealthChanged.AddDynamic
-			(this, &AUSACharacterBase::K2_OnCurrentHealthChanged);
+			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
 			ASC->GetSet <UUSAAttributeSet>()->OnMaxHealthChanged.AddDynamic
-			(this, &AUSACharacterBase::K2_OnMaxHealthChanged);
+			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
-			K2_OnMaxHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetMaxHealth());
-			K2_OnCurrentHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetCurrentHealth());
+			//K2_OnMaxHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetMaxHealth());
+			//K2_OnCurrentHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetCurrentHealth());
+
+			//K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+		}
+	}
+}
+
+void AUSACharacterBase::ResetAttributeSet()
+{
+	if (HasAuthority() == true)
+	{
+		return;
+	}
+
+	// 클라에서만 수행
+	// 어트리뷰트 설정
+	if (ASC != nullptr)
+	{
+		if (ASC->GetSet <UUSAAttributeSet>() != nullptr)
+		{
+			ASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentHealthAttribute(), 0.0f);
+			//ASC->SetNumericAttributeBase(UUSAAttributeSet::GetMaxHealthAttribute(), 0.0f);
 		}
 	}
 }
 
 void AUSACharacterBase::OnUSADeath()
 {
-	USA_LOG(LogTemp, Log, TEXT("Die"));
+	//USA_LOG(LogTemp, Log, TEXT("Die"));
 
 	K2_OnUSADeath();
 
@@ -1241,4 +1293,5 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
+	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
 }

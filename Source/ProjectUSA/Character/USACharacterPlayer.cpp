@@ -21,15 +21,9 @@
 
 AUSACharacterPlayer::AUSACharacterPlayer()
 {
-	ASC = nullptr;
+	//ASC = nullptr;
 }
 
-void AUSACharacterPlayer::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	
-}
 
 void AUSACharacterPlayer::Look(const FInputActionValue& Value)
 {
@@ -61,7 +55,11 @@ void AUSACharacterPlayer::SetupGAS()
 	if (USAPlayerState != nullptr)
 	{
 		ASC = USAPlayerState->GetAbilitySystemComponent();
-		ASC->InitAbilityActorInfo(USAPlayerState, this);
+
+		if (ASC != nullptr)
+		{
+			ASC->InitAbilityActorInfo(USAPlayerState, this);
+		}
 	}
 
 	Super::SetupGAS();
@@ -75,4 +73,18 @@ void AUSACharacterPlayer::OnRep_PlayerState()
 
 	// 일반 클라에서 수행
 	SetupGAS();
+}
+
+
+void AUSACharacterPlayer::OnRep_ASC()
+{
+	Super::OnRep_ASC();
+
+	PostSetupGAS();
+
+	SetupAttributeSet();
+
+	BeginStartAbilities();
+
+	//OnCurrentHealthRatioChanged(0.0f);
 }

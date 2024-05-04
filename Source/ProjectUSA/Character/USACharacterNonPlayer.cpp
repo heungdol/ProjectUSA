@@ -13,12 +13,13 @@
 
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
+#include "Controller/USAAIController.h"
+
 #include "ProjectUSA.h"
 
 
 AUSACharacterNonPlayer::AUSACharacterNonPlayer()
 {
-	// 아래 컴포넌트들의 이름을 바꾸면 인식을 못하는 것 같다.
 	ASC = CreateDefaultSubobject <UAbilitySystemComponent>(TEXT("Ability System Component"));
 	AttributeSet = CreateDefaultSubobject <UUSAAttributeSet>(TEXT("USA Attribute Set"));
 
@@ -26,6 +27,33 @@ AUSACharacterNonPlayer::AUSACharacterNonPlayer()
 	{
 		ASC->SetIsReplicated(true);
 	}
+}
+
+//void AUSACharacterNonPlayer::OnRep_Controller()
+//{
+//	Super::OnRep_Controller();
+//
+//	SetupGAS();
+//}
+
+//void AUSACharacterNonPlayer::PossessedBy(AController* NewController)
+//{
+//	Super::PossessedBy(NewController);
+//
+//	SetupGAS();
+//}
+
+void AUSACharacterNonPlayer::OnRep_bIsASCInitialized()
+{
+	Super::OnRep_bIsASCInitialized();
+
+	PostSetupGAS();
+
+	SetupAttributeSet();
+
+	BeginStartAbilities();
+
+	//OnCurrentHealthRatioChanged(0.0f);
 }
 
 void AUSACharacterNonPlayer::SetupGAS()

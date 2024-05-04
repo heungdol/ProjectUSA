@@ -304,12 +304,23 @@ protected:
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+
 	
+	// For Player State
 	UFUNCTION()
-	void OnRep_ASC();
+	virtual void OnRep_ASC();
 
 	UPROPERTY(ReplicatedUsing = OnRep_ASC, EditDefaultsOnly, Category = "Character GAS")
 	TObjectPtr <class UAbilitySystemComponent> ASC;
+
+	// For AI
+	UFUNCTION()
+	virtual void OnRep_bIsASCInitialized();
+
+	UPROPERTY(ReplicatedUsing = OnRep_bIsASCInitialized, VisibleAnywhere, Category = "Character GAS")
+	bool bIsASCInitialized = false;
+
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
@@ -339,15 +350,23 @@ public:
 	float GetCharacterCurrentHealth_Implementation() override;
 	float GetCharacterMaxHealth_Implementation() override;
 	float GetCharacterCurrentArmor_Implementation() override;
+	float GetCharacterCurrentHealthRatio_Implementation() override;
 
-	void OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
-	void OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
+	//void OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
+	//void OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthChanged", ScriptName = "OnUSACurrentHealthChanged"))
-	void K2_OnCurrentHealthChanged(float InValue);
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAMaxHealthChanged", ScriptName = "OnUSAMaxHealthChanged"))
-	void K2_OnMaxHealthChanged(float InValue);
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthChanged", ScriptName = "OnUSACurrentHealthChanged"))
+	//void K2_OnCurrentHealthChanged(float InValue);
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAMaxHealthChanged", ScriptName = "OnUSAMaxHealthChanged"))
+	//void K2_OnMaxHealthChanged(float InValue);
 
+	UFUNCTION()
+	void OnCurrentHealthRatioChanged(float InValue);
+	
+	void OnCurrentHealthRatioChanged(const FOnAttributeChangeData& ChangeData);
+	
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthRatioChanged", ScriptName = "OnUSACurrentHealthRatioChanged"))
+	void K2_OnCurrentHealthRatioChanged(float InValue);
 
 
 protected:
@@ -355,6 +374,7 @@ protected:
 	virtual void PostSetupGAS();
 
 	void SetupAttributeSet();
+	void ResetAttributeSet();
 
 	void BeginStartAbilities();
 
