@@ -352,12 +352,11 @@ public:
 
 protected:
 	virtual void SetupGAS();
-
 	virtual void PostSetupGAS();
 
-	void BeginStartAbilities();
-
 	void SetupAttributeSet();
+
+	void BeginStartAbilities();
 
 	void InputPressGameplayAbilityByInputID(int32 InputID);
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);

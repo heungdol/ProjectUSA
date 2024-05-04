@@ -481,6 +481,8 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	// 일반 클라에서는 수행되지 않음
 	SetupGAS();
 
+	PostSetupGAS();
+
 	BeginStartAbilities();
 
 	SetupAttributeSet();
@@ -1049,10 +1051,7 @@ void AUSACharacterBase::OnRep_ASC()
 
 void AUSACharacterBase::SetupGAS()
 {
-	if (HasAuthority())
-	{
-		PostSetupGAS();
-	}
+	// ...
 }
 
 void AUSACharacterBase::PostSetupGAS()
