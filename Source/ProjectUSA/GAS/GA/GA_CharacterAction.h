@@ -125,21 +125,17 @@ public:
 
 	//
 
-
-	FVector ForwardDirection = FVector::ForwardVector ;
-	FVector RightDirection = FVector::RightVector;
-
 public:
 
 	// 애님 블루프린트는 함수 호출로 대체
 	UFUNCTION(BlueprintImplementableEvent)
-	void DoSomethingInBlueprint_Activate();
+	void K2_DoSomething_Activate();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DoSomethingInBlueprint_Cancel();
+	void K2_DoSomething_Cancel();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void DoSomethingInBlueprint_End();
+	void K2_DoSomething_End();
 
 
 public:
@@ -152,21 +148,9 @@ public:
 	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	//
+public:
+	virtual void CalculateTargetVector() override;
+	virtual void DoSomethingWithTargetVector() override;
+	virtual bool GetIsAbleToActivateCondition() override;
 
-	UFUNCTION(Server, Reliable/*, WithValidation*/)
-	void ServerRPC_SetActionDirecitonAndDoAction (const FVector& InDirection);
-
-	void SetForwardAndRightDirection(const FVector& InDirection);
-
-	//
-	
-	UFUNCTION(Server, Reliable)
-	void ServerRPC_PlayAnimMontageTask();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_PlayAnimMontageTask();
-
-
-	void DoAction();
 };

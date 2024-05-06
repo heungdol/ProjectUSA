@@ -51,3 +51,11 @@ void AUSACharacterNonPlayer::SetupGAS()
 
 	Super::SetupGAS();
 }
+
+void AUSACharacterNonPlayer::UpdateCurrentTargetableActor()
+{
+	// 보통 BT에서 처리
+	
+	// ... 
+
+}

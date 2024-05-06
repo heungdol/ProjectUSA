@@ -4,8 +4,10 @@
 #include "GAS/GA/USAGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
-#include "Abilities/Tasks/AbilityTask.h"
-#include "GameplayTask.h"
+//#include "Abilities/Tasks/AbilityTask.h"
+//#include "GameplayTask.h"
+
+//#include "GameplayAbilities/Public/Abilities/GameplayAbilityTypes.h"
 
 #include "ProjectUSA.h"
 
@@ -18,6 +20,15 @@ UUSAGameplayAbility::UUSAGameplayAbility()
 {
 	// GAS 문서에서도 아래의 옵션은 설정하지 말라고 명시되어 있지만...
 	// GameplayAbility간 RPC 통신을 위해서는 아래의 옵션을 켜줘야 한다.
+
+	// 2024.05.04
+	// 어빌리티에서 RPC 통신은 가능하지만, 기존의 언리얼에서 사용하는 방식은 오류를 발생시킬 수 있다.
+	// 그러므로 ASC에서 사전 정의된, CallServerSetReplicatedTargetData, ConsumeClientReplicatedTargetData등의 함수를 활용할 것
+	// 그래도 상식적으로 RPC를 이용하기 위해선 Replicate Policty를 켜줘야 한다고 판단
+
+	// ... 그렇지만, RPC를 이용하는 것 보단 반응이 떨어지기 때문에, 사용자 경험에 부정적이라고 판단
+	// 그러므로 RPC를 이용하는 것으로 코드 작성 수행
+
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateYes;
 
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
@@ -66,6 +77,180 @@ void UUSAGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("End Ability"));
 }
 
+// ==============================================================================================================
+
+void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	if (GetIsAbleToActivateCondition() == false)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	if (GetWorld() == nullptr
+		|| GetWorld()->GetNetDriver() == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	CalculateTargetVector();
+
+	if (GetWorld()->GetNetDriver()->IsServer() == true)
+	{
+		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+		{
+			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Server"));
+
+			DoSomethingWithTargetVector();
+		}
+	}
+	else
+	{
+		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+		{
+			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Client"));
+
+			ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector());
+
+			DoSomethingWithTargetVector();
+		}
+	}
+}
+
+void UUSAGameplayAbility::ServerRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)
+{
+	TargetVector = InVector;
+	DoSomethingWithTargetVector();
+}
+
+// ==============================================================================================================
+
+
+void UUSAGameplayAbility::CalculateTargetVector()
+{
+	// ...
+}
+
+void UUSAGameplayAbility::DoSomethingWithTargetVector()
+{
+	// ...
+}
+
+bool UUSAGameplayAbility::GetIsAbleToActivateCondition()
+{
+	return true;
+}
+
+// ==============================================================================================================
+
+//void UUSAGameplayAbility::ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+//{
+//	FVector ClientLocation = FVector::ZeroVector;
+//	CalculateTargetDataVector(ClientLocation);
+//
+//	FGameplayAbilityTargetDataHandle TargetDataHandle;
+//	FGameplayAbilityTargetData_LocationInfo* TargetData = new FGameplayAbilityTargetData_LocationInfo();
+//
+//	TargetData->TargetLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
+//	TargetData->TargetLocation.LiteralTransform = FTransform(ClientLocation);
+//
+//	TargetDataHandle.Add(TargetData);
+//
+//	// Notify self (local client) *AND* server that TargetData is ready to be processed
+//	NotifyTargetDataReady(TargetDataHandle, FGameplayTag());  // send with a gameplay tag, or empty
+//}
+//
+//void UUSAGameplayAbility::NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+//{
+//	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
+//
+//	if (ASC == nullptr)
+//	{
+//		SimpleCancelAbility();
+//		return;
+//	}
+//
+//	if (ASC->FindAbilitySpecFromHandle(CurrentSpecHandle) == nullptr)
+//	{
+//		SimpleCancelAbility();
+//		return;
+//	}
+//
+//	// if commit fails, cancel ability
+//	if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo) == false)
+//	{
+//		SimpleCancelAbility();
+//		return;
+//	}
+//
+//	// true if we need to replicate this target data to the server
+//	const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
+//
+//	// Start a scoped prediction window
+//	FScopedPredictionWindow	ScopedPrediction(ASC);
+//
+//	// Lyra does this memcopy operation; const cast paranoia is real. We'll keep it.
+//	// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
+//	const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
+//
+//	// if this isn't the local player on the server, then notify the server
+//	if (bShouldNotifyServer)
+//	{
+//		ASC->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, ASC->ScopedPredictionKey);
+//	}
+//
+//	// Execute the ability we've now successfully committed
+//	ActivateAbilityWithTargetData_ClientServer(LocalTargetDataHandle, ApplicationTag);
+//
+//	// We've processed the data, clear it from the RPC buffer
+//	ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+//}
+//
+//void UUSAGameplayAbility::ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag)
+//{
+//	// retrieve data
+//	const FGameplayAbilityTargetData* TargetData = TargetDataHandle.Get(0);
+//	if (TargetData == nullptr)
+//	{
+//		SimpleCancelAbility();
+//		return;
+//	}
+//
+//	// decode data
+//	const FVector ClientVector = TargetData->GetEndPoint();
+//
+//	//// Server: Validate data
+//	//const bool bIsServer = CurrentActorInfo->IsNetAuthority();
+//	//if (bIsServer)
+//	//{
+//	//	if (ClientVector.X < 0)  // if negative X is prohibited by server for some reason
+//	//	{
+//	//		SimpleCancelAbility();
+//	//		return;
+//	//	}
+//	//}
+//
+//	DoSomethingWithTargetDataVector(ClientVector);
+//}
+//
+//void UUSAGameplayAbility::ActivateAbilityWithTargetData(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+//{
+//	ActivateAbilityWithTargetData_Client(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+//}
+//
+//void UUSAGameplayAbility::CalculateTargetDataVector(FVector& InOut)
+//{
+//	// ...
+//}
+//
+//void UUSAGameplayAbility::DoSomethingWithTargetDataVector(const FVector& InVector)
+//{
+//	// ...
+//}
+
+
 //
 
 void UUSAGameplayAbility::SimpleCancelAbility()
@@ -77,6 +262,8 @@ void UUSAGameplayAbility::SimpleEndAbility()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
+
+
 
 //
 

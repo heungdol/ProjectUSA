@@ -25,4 +25,6 @@ public:
 
 protected:
 	virtual void SetupGAS() override;
+
+	virtual void UpdateCurrentTargetableActor() override;
 };

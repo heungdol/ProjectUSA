@@ -3,10 +3,6 @@
 
 #include "Character/USACharacterBase.h"
 
-#include "Engine/DamageEvents.h"
-
-#include "Net/UnrealNetwork.h"
-
 #include "GameFramework/DamageType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -31,13 +27,18 @@
 #include "Component/USAJellyEffectComponent.h"
 #include "Component/USACharacterPivotComponent.h"
 
-
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
+
+#include "Engine/DamageEvents.h"
+#include "Net/UnrealNetwork.h"
+#include "Kismet\KismetSystemLibrary.h"
 
 #include "GAS/GA/USAGameplayAbility.h"
 #include "GAS/AttributeSet/USAAttributeSet.h"
 #include "GameplayEffect.h"
+
+#include "Kismet/GameplayStatics.h"
 
 #include "Weapon/USAWeaponBase.h"
 
@@ -356,6 +357,55 @@ void AUSACharacterBase::EquipFinalNextWeapon()
 	EquipWeapon(NextWeapon);
 }
 
+FVector AUSACharacterBase::GetUSACharacterDirection_InputMovement()
+{
+	return USACharacterInputMovementDirection;
+}
+
+FVector AUSACharacterBase::GetUSACharacterDirection_Target()
+{
+	// 임시 타겟팅 판단 위함
+	bool bIsInstantTargeting = false;
+
+	// 우선 널 포인터라면 임시 타겟팅으로 판단
+	if (CurrentTargetableActor == nullptr)
+	{
+		bIsInstantTargeting = true;
+		UpdateCurrentTargetableActor_Instant();
+	}
+	
+	if (CurrentTargetableActor == nullptr)
+	{
+		return GetUSACharacterDirection_InputMovement();
+	}
+
+	if (Cast<AActor>(CurrentTargetableActor) == nullptr)
+	{
+		return GetUSACharacterDirection_InputMovement();
+	}
+	
+	FVector Result = FVector::ForwardVector;
+
+	FVector SourceLocation = GetActorLocation();
+	FVector TargetLocation = Cast<AActor>(CurrentTargetableActor)->GetActorLocation();
+
+	Result = TargetLocation - SourceLocation;
+	Result.Normalize();
+
+	// 임시 타겟팅인 경우, 원상복구
+	if (bIsInstantTargeting)
+	{
+		SetCurrentTargetableActorNullptr();
+	}
+
+	return Result;
+}
+
+void AUSACharacterBase::DoTarget(const struct FInputActionValue& Value)
+{
+	// ...
+}
+
 //
 
 void AUSACharacterBase::Falling()
@@ -458,7 +508,9 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) 
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AUSACharacterBase::MoveEnd);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
+		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoTarget);
 
 		for (const auto& GameplayActiveAbility : GameplayActiveAbilities)
 		{
@@ -466,8 +518,6 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			{
 				continue;
 			}
-
-			//USA_LOG(LogTemp, Log, TEXT("Binding Functions related with GAS"));
 
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Triggered,
 				this, &AUSACharacterBase::InputPressGameplayAbilityByInputID, GameplayActiveAbility.InputID);
@@ -512,7 +562,18 @@ void AUSACharacterBase::Move(const FInputActionValue& Value)
 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+
+		// 조작감 개선을 위해 사용할 변수
+		USACharacterInputMovementDirection = ForwardDirection * MovementVector.Y;
+		USACharacterInputMovementDirection += RightDirection * MovementVector.X;
 	}
+}
+
+void AUSACharacterBase::MoveEnd(const FInputActionValue& Value)
+{
+	//USA_LOG(LogTemp, Log, TEXT("End Move"));
+
+	//USACharacterInputMovementDirection = FVector::ZeroVector;
 }
 
 void AUSACharacterBase::Look(const FInputActionValue& Value)
@@ -1011,6 +1072,21 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	{
 		ServerRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
 	}
+}
+
+void AUSACharacterBase::UpdateCurrentTargetableActor()
+{
+	// ...
+}
+
+void AUSACharacterBase::UpdateCurrentTargetableActor_Instant()
+{	
+	UpdateCurrentTargetableActor();
+}
+
+void AUSACharacterBase::SetCurrentTargetableActorNullptr()
+{
+	CurrentTargetableActor = nullptr;
 }
 
 bool AUSACharacterBase::ServerRPC_ApplyDamageMomentum_Validate

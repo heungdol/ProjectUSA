@@ -21,25 +21,23 @@ class PROJECTUSA_API UGA_CharacterDash : public UUSAGameplayAbility
 public:
 	UGA_CharacterDash();
 	
-	/** Input binding stub. */
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
-	/** Input binding stub. */
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)  override;
 
-	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	void DoDash();
-
-	/** Destroys instanced-per-execution abilities. Instance-per-actor abilities should 'reset'. Any active ability state tasks receive the 'OnAbilityStateInterrupted' event. Non instance abilities - what can we do? */
 	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility) override;
-
-	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	//virtual void CalculateTargetDataVector(FVector& InOut) override;
+	//virtual void DoSomethingWithTargetDataVector(const FVector& InVector) override;
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPC_SetDashForwardDirection (const FVector& InDirection);
+
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerRPC_SetDashForwardDirection (const FVector& InDirection);
+
+	virtual void CalculateTargetVector() override;
+	virtual void DoSomethingWithTargetVector() override;
+	virtual bool GetIsAbleToActivateCondition() override;
 
 
 protected:
@@ -60,6 +58,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = GAS)
 	struct FPlayAnimMontageData DashAnimMontageData;
 
-	UPROPERTY()
-	FVector DashForwardDirection = FVector::ForwardVector;
+	//UPROPERTY()
+	//FVector DashForwardDirection = FVector::ForwardVector;
 };

@@ -9,6 +9,7 @@
 #include "Weapon/USAWeaponBase.h"
 
 #include "Interface/USACharacterInterface.h"
+#include "Interface/USATargetableInterface.h"
 
 // 어트리뷰트 접근을 위한 헤더
 #include "GameplayEffectTypes.h"
@@ -95,15 +96,9 @@ public:
 // ========================================================================================
 
 UCLASS()
-class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface
+class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface, public IUSATargetableInterface
 {
 	GENERATED_BODY()
-
-public:
-	// Sets default values for this character's properties
-	AUSACharacterBase();
-
-	//virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
 
@@ -113,7 +108,7 @@ protected:
 	UPROPERTY (VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	TObjectPtr <class USpringArmComponent> CameraSpringArmComponent;
 
-
+	//
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	TObjectPtr <class UUSAJellyEffectComponent> JellyEffectComponent;
@@ -121,7 +116,7 @@ protected:
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	//TObjectPtr <class UUSACharacterPivotComponent> PivotComponent;
 
-
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
 	TObjectPtr <class UInputMappingContext> DefaultMappingContext;
@@ -135,6 +130,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
 	TObjectPtr <class UInputAction> LookAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
+	TObjectPtr <class UInputAction> TargetAction;
+
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Widget")
 	TObjectPtr <class UWidgetComponent> NicknameWidgetComponent;
@@ -142,25 +141,55 @@ protected:
 	UPROPERTY(/*ReplicatedUsing = OnRep_HealthBarWidgetComponent, */EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Widget")
 	TObjectPtr <class UWidgetComponent> HealthBarWidgetComponent;
 
-	//UFUNCTION()
-	//void OnRep_HealthBarWidgetComponent();
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Capsule Info")
 	TMap<FName, FUSACharacterCapsuleInfo> CharacterCapsuleInfos;
 
-
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
-
 	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<class AUSAWeaponBase> NextWeapon;
-
 
 	UPROPERTY()
 	bool bIsSetNextWeaponBeforeGASSetup = false;
 
+	//
+
+	FVector USACharacterInputMovementDirection ;
+
+	//
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Targeting")
+	float TargetableActorRange = 1000.0f; 
+	
+	TObjectPtr<AActor> CurrentTargetableActor;
+	//TArray<AActor*> TargetableActors;
+
+
+
+public:
+	// Sets default values for this character's properties
+	AUSACharacterBase();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	//
+
+	virtual void Falling() override;
+
+	virtual void Landed(const FHitResult& Hit) override;
 
 public:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -189,8 +218,6 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_StopAnimMontage(class UAnimMontage* AnimMontage = nullptr);
 
-
-
 	//
 
 	UFUNCTION(BlueprintCallable)
@@ -206,28 +233,6 @@ public:
 	void OnRep_NextWeapon();
 
 	void EquipFinalNextWeapon();
-
-	//
-
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void PossessedBy(AController* NewController) override;
-
-	//
-
-	virtual void Falling() override;
-
-	virtual void Landed(const FHitResult& Hit) override;
 
 	//
 
@@ -271,22 +276,26 @@ public:
 
 	//
 
+	float GetCharacterCurrentHealth_Implementation() override;
+	float GetCharacterMaxHealth_Implementation() override;
+	float GetCharacterCurrentArmor_Implementation() override;
+	float GetCharacterCurrentHealthRatio_Implementation() override;
+
+	//
+	
+	UFUNCTION()
+	FVector GetUSACharacterDirection_InputMovement();
+
+	UFUNCTION()
+	FVector GetUSACharacterDirection_Target ();
 
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
+	virtual void MoveEnd(const struct FInputActionValue& Value);
 	virtual void Look(const struct FInputActionValue& Value);
+	virtual void DoTarget(const struct FInputActionValue& Value);
 
-	UFUNCTION(BlueprintCallable)
-	void EquipWeapon(class AUSAWeaponBase* InWeapon);
-	
-	UFUNCTION(BlueprintCallable)
-	void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
-
-	UFUNCTION(BlueprintCallable)
-	void AttachWeaponToHandSocket (class AUSAWeaponBase* InWeapon);
-
-	UFUNCTION(BlueprintCallable)
-	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+	//
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -301,12 +310,32 @@ protected:
 
 	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
 
+	//
+
+	virtual void UpdateCurrentTargetableActor();
+	virtual void UpdateCurrentTargetableActor_Instant();
+	void SetCurrentTargetableActorNullptr();
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void EquipWeapon(class AUSAWeaponBase* InWeapon);
+	
+	UFUNCTION(BlueprintCallable)
+	void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHandSocket (class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+
+
+// Gameplay Abiltiy System Secion...
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-
-	
 	// For Player State
 	UFUNCTION()
 	virtual void OnRep_ASC();
@@ -321,7 +350,7 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_bIsASCInitialized, VisibleAnywhere, Category = "Character GAS")
 	bool bIsASCInitialized = false;
 
-
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartAbilities;
@@ -332,37 +361,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
 
-
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageGroundAbilities;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TArray <TSubclassOf<class UGameplayAbility>> GameplayDeathAbilities;
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAirAbilities;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAirAbilities;
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayDeathAbilities;
+
 
 
 public:
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
 
-	float GetCharacterCurrentHealth_Implementation() override;
-	float GetCharacterMaxHealth_Implementation() override;
-	float GetCharacterCurrentArmor_Implementation() override;
-	float GetCharacterCurrentHealthRatio_Implementation() override;
-
-	//void OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
-	//void OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData);
-
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthChanged", ScriptName = "OnUSACurrentHealthChanged"))
-	//void K2_OnCurrentHealthChanged(float InValue);
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAMaxHealthChanged", ScriptName = "OnUSAMaxHealthChanged"))
-	//void K2_OnMaxHealthChanged(float InValue);
-
 	UFUNCTION()
 	void OnCurrentHealthRatioChanged(float InValue);
-	
 	void OnCurrentHealthRatioChanged(const FOnAttributeChangeData& ChangeData);
 	
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthRatioChanged", ScriptName = "OnUSACurrentHealthRatioChanged"))

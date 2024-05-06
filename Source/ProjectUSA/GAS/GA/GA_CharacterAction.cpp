@@ -15,6 +15,8 @@
 
 #include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
+#include "Character/USACharacterBase.h"
+
 #include "ProjectUSA.h"
 
 
@@ -22,143 +24,92 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	// 컴포넌트 검사
-	ACharacter* MyCharacter = nullptr;
-	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-
-	if (ActorInfo != nullptr)
+	if (GetIsAbleToActivateCondition() == false)
 	{
-		MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
+		SimpleEndAbility();
+		return;
 	}
 
-	if (MyCharacter != nullptr)
-	{
-		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-	}
+	ActivateAbilityUsingTargetVector(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-
-	// 방향 설정
-	ForwardDirection = MyCharacter->GetActorForwardVector();
-	RightDirection = MyCharacter->GetActorRightVector();
-
-	switch (DirectionType)
-	{
-
-	// 일단 인풋 특별 대우
-	case ECharacterActionDirectionType::Input:
-
-		if (MyCharacter != nullptr
-			&& MyCharacterMovementComponent != nullptr)
-		{
-			SetForwardAndRightDirection(MyCharacter->GetPendingMovementInputVector());
-
-			if (HasAuthority(&ActivationInfo))
-			{
-				if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
-					&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
-				{
-					DoAction();
-				}
-			}
-			else
-			{
-				if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-				{
-					ServerRPC_SetActionDirecitonAndDoAction(MyCharacter->GetPendingMovementInputVector());
-
-					DoAction();
-				}
-			}
-		}
-
-		break;
-
-	case ECharacterActionDirectionType::Target:
-
-		// TODO 추후 타깃 바라보는 과정 구현
-		// 월드에 존재하는 하나의 액터를 바라보는 것이기 때문에, input 처럼 RPC를 이용할 필요는 없을 것 같다.
-
-		DoAction();
-
-		break;
-
-	case ECharacterActionDirectionType::None:
-	default:
-
-		DoAction();
-
-		break;
-	}
-
-	DoSomethingInBlueprint_Activate();
+	K2_DoSomething_Activate();
 }
 
 void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
 	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
 
-	DoSomethingInBlueprint_Cancel();
+	K2_DoSomething_Cancel();
 }
 
 void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
-	DoSomethingInBlueprint_End();
+	K2_DoSomething_End();
 }
 
-
-//
-
-//bool UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Validate(const FVector& InDirection)
-//{
-//	return true;
-//}
-
-void UGA_CharacterAction::ServerRPC_SetActionDirecitonAndDoAction_Implementation(const FVector& InDirection)
+void UGA_CharacterAction::CalculateTargetVector()
 {
-	SetForwardAndRightDirection(InDirection);
+	ACharacter* MyCharacter = nullptr;
+	AUSACharacterBase* MyUSACharacter = nullptr;
 
-	DoAction();
-}
-
-//
-
-void UGA_CharacterAction::SetForwardAndRightDirection(const FVector& InDirection)
-{
-	if (InDirection.SquaredLength() > SMALL_NUMBER)
+	if (CurrentActorInfo != nullptr)
 	{
-		ForwardDirection = InDirection;
-		ForwardDirection.Normalize();
+		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	}
 
-		RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
-		RightDirection.Normalize();
+	if (MyCharacter != nullptr)
+	{
+		MyUSACharacter = Cast <AUSACharacterBase>(MyCharacter);
+
+		TargetVector = MyCharacter->GetActorForwardVector();
+	}
+
+	switch (DirectionType)
+	{
+		case ECharacterActionDirectionType::Input:
+
+		if (MyUSACharacter != nullptr
+			&& MyUSACharacter->GetUSACharacterDirection_InputMovement().Length() > SMALL_NUMBER)
+		{
+			TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+		}
+		else if (MyCharacter != nullptr
+			&& MyCharacter->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
+		{
+			TargetVector = MyCharacter->GetPendingMovementInputVector();
+		}
+
+		break;
+
+		case ECharacterActionDirectionType::Target:
+		if (MyUSACharacter != nullptr
+			&& MyUSACharacter->GetUSACharacterDirection_Target().Length() > SMALL_NUMBER)
+		{
+			TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
+		}
+
+		break;
+
+		case ECharacterActionDirectionType::None:
+		default:
+
+
+		break;
 	}
 }
 
-void UGA_CharacterAction::ServerRPC_PlayAnimMontageTask_Implementation()
+void UGA_CharacterAction::DoSomethingWithTargetVector()
 {
-	MulticastRPC_PlayAnimMontageTask();
-}
-
-void UGA_CharacterAction::MulticastRPC_PlayAnimMontageTask_Implementation()
-{
-	// 애니메이션 설정
-	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, ActionAnimMontageData);
-	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-	AbilityTaskMontage->ReadyForActivation();
-
-	//UE_LOG (LogTemp, Log, TEXT("Setted Animation Montage"));
-}
-
-//
-
-void UGA_CharacterAction::DoAction()
-{
-	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("B"));
+	if (GetIsAbleToActivateCondition() == false)
+	{
+		SimpleCancelAbility();
+		return;
+	}
 
 	// 컴포넌트 검사
+	// 이동 설정
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
 
@@ -172,14 +123,19 @@ void UGA_CharacterAction::DoAction()
 		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
 	}
 
-	// 이동 설정
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
-		MyCharacter->SetActorRotation(ForwardDirection.Rotation());
+		FVector	ForwardDirection = TargetVector;
+		ForwardDirection.Normalize();
+
+		FVector	RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
+		RightDirection.Normalize();
 
 		FVector EndLocation = FVector::ZeroVector;
 		FVector FinalLaunchVector = FVector::ZeroVector;
+		
+		MyCharacter->SetActorRotation(TargetVector.Rotation());
 
 		UAT_MoveToLocationByVelocity* AbilityTask_MoveToLocation;
 		UAT_LaunchCharacterForPeriod* AbilityTask_LaunchCharacter;
@@ -259,30 +215,48 @@ void UGA_CharacterAction::DoAction()
 
 	}
 
-	// 스폰 설정
-	UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
-	AbiltiyTaskSpawn->ReadyForActivation();
+	// 서버에서 판정 수행
+	if (GetWorld() != nullptr
+		&& GetWorld()->GetNetDriver() != nullptr 
+		&& GetWorld()->GetNetDriver()->IsServer() == true)
+	{
+		// 스폰 설정
+		UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
+		AbiltiyTaskSpawn->ReadyForActivation();
+
+		// 공격 설정
+		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
+		AbiltiyTaskAttack->ReadyForActivation();
+	}
 
 	// 애니메이션 설정
 	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, ActionAnimMontageData);
 	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 	AbilityTaskMontage->ReadyForActivation();
+}
 
-	
-	//if (HasAuthority(&CurrentActivationInfo))
-	//{		 
-	
-	// 서버에서 판정 수행
-	// TODO: 서버 관련 조건문을 재확인 할 것
-	if (GetAvatarActorFromActorInfo()->HasAuthority())
+bool UGA_CharacterAction::GetIsAbleToActivateCondition()
+{
+	// 컴포넌트 검사
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
+
+	if (CurrentActorInfo != nullptr)
 	{
-		// 공격 설정
-		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
-		AbiltiyTaskAttack->ReadyForActivation();
+		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	}
+
+	if (MyCharacter != nullptr)
+	{
+		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
+	}
+
+	if (MyCharacter == nullptr
+		|| MyCharacterMovementComponent == nullptr)
+	{
+		return false;
 	}
 	
-	//	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("C"));
-	//}
-
+	return true;
 }

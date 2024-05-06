@@ -36,31 +36,32 @@ public:
 
 
 public:
-	///** Does the commit atomically (consume resources, do cooldowns, etc) */
-	//virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
 	UUSAGameplayAbility();
 
-	/** Actually activate ability, do not call this directly */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-
-	/** Destroys instanced-per-execution abilities. Instance-per-actor abilities should 'reset'. Any active ability state tasks receive the 'OnAbilityStateInterrupted' event. Non instance abilities - what can we do? */
 	virtual void CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility) override;
-
-	/** Native function, called if an ability ends normally or abnormally. If bReplicate is set to true, try to replicate the ending to the client/server */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	//FUSAGASimpleDelegate OnReadyAbility;
+
+	// Client -(TargetData)-> Server 위한 함수
+	//void ActivateAbilityWithTargetData(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
+	//virtual void CalculateTargetDataVector(FVector& InOut);
+	//virtual void DoSomethingWithTargetDataVector(const FVector& InVector);
+
+	void ActivateAbilityUsingTargetVector(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
+	
+	virtual void CalculateTargetVector();
+	virtual void DoSomethingWithTargetVector();
+	virtual bool GetIsAbleToActivateCondition();
+
+	UPROPERTY()
+	FVector TargetVector ;
+	FORCEINLINE FVector GetTargetVector() { return TargetVector; }
+
 	FUSAGASimpleDelegate OnActivateAbility;
-	FUSAGASimpleDelegate OnCancelAbility; //-> OnGameplayAbilityCancelled
-	FUSAGASimpleDelegate OnEndAbility; //-> OnGameplayAbilityEnded
+	FUSAGASimpleDelegate OnCancelAbility;
+	FUSAGASimpleDelegate OnEndAbility;
 
-	//UPROPERTY(BlueprintAssignable)
-	//FUSAGASimpleDynamicDelegate OnDynamicCancelAbility;
-
-	//UPROPERTY(BlueprintAssignable)
-	//FUSAGASimpleDynamicDelegate OnDynamicEndAbility;
-	//
 
 	UFUNCTION()
 	void SimpleCancelAbility ();
@@ -68,6 +69,13 @@ public:
 	UFUNCTION()
 	void SimpleEndAbility();
 
+private:
+	//void ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
+	//void NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
+	//void ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
 
 protected:
 	//UFUNCTION(BlueprintCallable)

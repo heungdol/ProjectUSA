@@ -33,49 +33,22 @@ void UGA_CharacterDash::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	ACharacter* MyCharacter = nullptr;
-	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
-	
-	if (ActorInfo != nullptr)
-	{
-		MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
-	}
-
-	if (MyCharacter != nullptr)
-	{
-		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
-	}
-
-	if (MyCharacter != nullptr
-		&& MyCharacterMovementComponent != nullptr)
-	{
-		DashForwardDirection = MyCharacter->GetPendingMovementInputVector();
-
-		if (HasAuthority(&ActivationInfo) == false
-			&& GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-		{
-			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Client"));
-
-			ServerRPC_SetDashForwardDirection(MyCharacter->GetPendingMovementInputVector());
-
-			DoDash();
-		}
-		else if (HasAuthority(&ActivationInfo) == true
-			&& GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
-			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
-		{
-			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Server"));
-
-			DoDash();
-		}
-	}
-	else
-	{
-		SimpleCancelAbility();
-	}
+	ActivateAbilityUsingTargetVector(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UGA_CharacterDash::DoDash()
+void UGA_CharacterDash::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
+{
+	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+}
+
+void UGA_CharacterDash::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+// ==============================================================================================================
+
+void UGA_CharacterDash::CalculateTargetVector()
 {
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
@@ -93,68 +66,97 @@ void UGA_CharacterDash::DoDash()
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
-		FVector ForwardDirection = MyCharacter->GetActorForwardVector();
-		FVector RightDirection = MyCharacter->GetActorRightVector();
+		FVector DashForwardDirection = MyCharacter->GetPendingMovementInputVector();
 
-		if (DashForwardDirection.Length() > SMALL_NUMBER/* != FVector::ZeroVector*/)
+		if (DashForwardDirection.Length() > SMALL_NUMBER)
 		{
-			FVector InputVector = DashForwardDirection;
-
-			ForwardDirection = InputVector;
-			ForwardDirection.Normalize();
-
-			RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
-			RightDirection.Normalize();
-
-			MyCharacter->SetActorRotation(ForwardDirection.Rotation());
+			TargetVector = DashForwardDirection;
 		}
-
-		FVector EndLocation(0, 0, 0);
-		EndLocation = MyCharacter->GetActorLocation()
-			+ (ForwardDirection * DashOffsetLocation.X)
-			+ (RightDirection * DashOffsetLocation.Y)
-			+ (FVector::UpVector * DashOffsetLocation.Z);
-
-		UAT_MoveToLocationByVelocity* AbilityTask = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-		(this, TEXT("Dash"), EndLocation, DashDuration, DashCurveFloat, nullptr);
-
-		AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::SimpleEndAbility);
-		AbilityTask->ReadyForActivation();
-
-		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, DashAnimMontageData);
-		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-
-		AbilityTaskMontage->ReadyForActivation();
+		else
+		{
+			TargetVector = MyCharacter->GetActorForwardVector();
+		}
 	}
-	else
+}
+
+void UGA_CharacterDash::DoSomethingWithTargetVector()
+{
+	if (GetIsAbleToActivateCondition() == false)
 	{
 		SimpleCancelAbility();
+		return;
 	}
+
+	ACharacter* MyCharacter = nullptr;
+
+	if (CurrentActorInfo != nullptr)
+	{
+		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	}
+
+	FVector	ForwardDirection = TargetVector;
+	ForwardDirection.Normalize();
+
+	FVector	RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
+	RightDirection.Normalize();
+
+	MyCharacter->SetActorRotation(ForwardDirection.Rotation());
+
+	FVector EndLocation(0, 0, 0);
+	EndLocation = MyCharacter->GetActorLocation()
+		+ (ForwardDirection * DashOffsetLocation.X)
+		+ (RightDirection * DashOffsetLocation.Y)
+		+ (FVector::UpVector * DashOffsetLocation.Z);
+
+	UAT_MoveToLocationByVelocity* AbilityTask = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
+	(this, TEXT("Dash"), EndLocation, DashDuration, DashCurveFloat, nullptr);
+
+	AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::SimpleEndAbility);
+	AbilityTask->ReadyForActivation();
+
+	UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, DashAnimMontageData);
+	OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+	OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+
+	AbilityTaskMontage->ReadyForActivation();
 }
 
-void UGA_CharacterDash::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
+bool UGA_CharacterDash::GetIsAbleToActivateCondition()
 {
-	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
-}
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
 
-void UGA_CharacterDash::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-}
+	if (CurrentActorInfo != nullptr)
+	{
+		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
+	}
 
+	if (MyCharacter != nullptr)
+	{
+		MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
+	}
 
+	if (MyCharacter == nullptr
+		|| MyCharacterMovementComponent == nullptr)
+	{
+		return false;
+	}
 
-bool UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Validate(const FVector& InDirection)
-{
 	return true;
 }
 
-void UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Implementation(const FVector& InDirection)
-{
-	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("called in server"));
+// ==============================================================================================================
 
-	DashForwardDirection = InDirection;
-
-	DoDash();
-}
+//bool UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Validate(const FVector& InDirection)
+//{
+//	return true;
+//}
+//
+//void UGA_CharacterDash::ServerRPC_SetDashForwardDirection_Implementation(const FVector& InDirection)
+//{
+//	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("called in server"));
+//
+//	DashForwardDirection = InDirection;
+//
+//	DoDash();
+//}

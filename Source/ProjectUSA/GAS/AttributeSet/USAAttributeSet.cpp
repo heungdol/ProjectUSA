@@ -43,6 +43,11 @@ void UUSAAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, 
 	//	SetHealth(FMath::Clamp(NewValue, MinHealth, GetMaxHealth()));
 	//}
 
+	if (FMath::Abs(NewValue - OldValue) < SMALL_NUMBER)
+	{
+		return;
+	}
+
 	if (Attribute == GetDamageAttribute() && NewValue > SMALL_NUMBER)
 	{
 		SetCurrentHealth(FMath::Clamp(GetCurrentHealth() - NewValue, MinHealth, GetMaxHealth()));
