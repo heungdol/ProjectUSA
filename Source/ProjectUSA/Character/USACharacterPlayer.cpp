@@ -335,17 +335,8 @@ void AUSACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void AUSACharacterPlayer::InitTargetingCameraActor()
 {
-	if (GetWorld() == nullptr)
-	{
-		return;
-	}
-
-	if (GetWorld()->GetNetDriver() == nullptr)
-	{
-		return;
-	}
-
-	if (GetWorld()->GetNetDriver()->IsServer() == true)
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == true
+		|| UKismetSystemLibrary::IsStandalone(GetWorld()) == true)
 	{
 		if (GetLocalRole() == ENetRole::ROLE_Authority
 			&& GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)

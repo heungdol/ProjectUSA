@@ -1424,7 +1424,7 @@ void AUSACharacterBase::SetupAttributeSet()
 			ASC->GetSet <UUSAAttributeSet>()->OnMaxHealthChanged.AddDynamic
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
-			ResetAttributeSet();
+			//ResetAttributeSet();
 		}
 	}
 }

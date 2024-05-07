@@ -221,10 +221,10 @@ void UGA_CharacterSlide::CheckAndRenewEndTimerHandle()
 		}
 	}
 	
-	if (bIsGrounded == false)
-	{
-		SimpleEndAbility();
-	}
+	//if (bIsGrounded == false)
+	//{
+	//	SimpleEndAbility();
+	//}
 }
 
 bool UGA_CharacterSlide::ServerRPC_SetDirectionAndDoSlide_Validate(const FVector& InDirection)
