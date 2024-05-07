@@ -9,6 +9,8 @@
 
 //#include "GameplayAbilities/Public/Abilities/GameplayAbilityTypes.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 #include "ProjectUSA.h"
 
 //void UUSAGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
@@ -87,8 +89,7 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 		return;
 	}
 
-	if (GetWorld() == nullptr
-		|| GetWorld()->GetNetDriver() == nullptr)
+	if (GetWorld() == nullptr)
 	{
 		SimpleCancelAbility();
 		return;
@@ -96,7 +97,7 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 
 	CalculateTargetVector();
 
-	if (GetWorld()->GetNetDriver()->IsServer() == true)
+	if (UKismetSystemLibrary::IsServer(GetWorld()))
 	{
 		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
 			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)

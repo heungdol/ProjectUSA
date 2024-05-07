@@ -39,6 +39,13 @@ protected:
 	UPROPERTY(Replicated)
 	FVector PrevLocation;
 
+	UPROPERTY()
+	FVector OffsetLocation;
+
+	UPROPERTY()
+	FVector OffsetLocationDelta;
+
+
 	//UPROPERTY()
 	//FVector StartCharacterLocation;
 };

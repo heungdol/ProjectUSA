@@ -12,10 +12,13 @@
 #include "GAS/AT/AT_PlayAnimMontages.h"
 #include "GAS/AT/AT_SpawnActors.h"
 #include "GAS/AT/AT_TraceAttack.h"
+#include "GAS/AT/AT_WaitGameplayTag.h"
 
-#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
+//#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
 #include "Character/USACharacterBase.h"
+
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "ProjectUSA.h"
 
@@ -181,8 +184,8 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 	}
 
 	// Action 종료 조건 설정
-	UAbilityTask_WaitGameplayTagAdded* WaitGameplayTagAdded = nullptr;
-	UAbilityTask_WaitGameplayTagRemoved* WaitGameplayTagRemoved = nullptr;
+	UAT_WaitGameplayTagAdded* WaitGameplayTagAdded = nullptr;
+	UAT_WaitGameplayTagRemoved* WaitGameplayTagRemoved = nullptr;
 	UAT_WaitDelay* AbilityTaskDelay = nullptr;
 
 	switch (EndType)
@@ -190,7 +193,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 	case ECharacterActionEndType::WaitTagAdded:
 
-		WaitGameplayTagAdded = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, EndGameplayTag);
+		WaitGameplayTagAdded = UAT_WaitGameplayTagAdded::GetNewAbilityTask_WaitGameplayTagAdded(this, EndGameplayTag);
 		WaitGameplayTagAdded->Added.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
 		WaitGameplayTagAdded->ReadyForActivation();
 
@@ -198,7 +201,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 	case ECharacterActionEndType::WaitTagRemoved:
 
-		WaitGameplayTagRemoved = UAbilityTask_WaitGameplayTagRemoved::WaitGameplayTagRemove(this, EndGameplayTag);
+		WaitGameplayTagRemoved = UAT_WaitGameplayTagRemoved::GetNewAbilityTask_WaitGameplayTagRemoved(this, EndGameplayTag);
 		WaitGameplayTagRemoved->Removed.AddDynamic(this, &UGA_CharacterAction::SimpleEndAbility);
 		WaitGameplayTagRemoved->ReadyForActivation();
 
@@ -216,9 +219,8 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 	}
 
 	// 서버에서 판정 수행
-	if (GetWorld() != nullptr
-		&& GetWorld()->GetNetDriver() != nullptr 
-		&& GetWorld()->GetNetDriver()->IsServer() == true)
+	if (UKismetSystemLibrary::IsServer(GetWorld())
+		|| UKismetSystemLibrary::IsStandalone(GetWorld()))
 	{
 		// 스폰 설정
 		UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);

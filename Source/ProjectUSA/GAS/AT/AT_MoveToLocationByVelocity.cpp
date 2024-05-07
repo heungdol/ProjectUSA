@@ -65,13 +65,15 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 	AActor* MyActor = GetAvatarActor();
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* CharMoveComp = nullptr;
+	
 	if (MyActor)
 	{
 		MyCharacter = Cast<ACharacter>(MyActor);
-		if (MyCharacter)
-		{
-			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-		}
+	}
+
+	if (MyCharacter)
+	{
+		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
 	}
 
 	if (bIsFinished)
@@ -89,9 +91,15 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 		{
 			bIsFinished = true;
 
-			FVector OffsetLocation = (TargetLocation - PrevLocation);
-			CharMoveComp->Velocity = OffsetLocation / DeltaTime;
+			OffsetLocation = (TargetLocation - PrevLocation);
+			OffsetLocationDelta = OffsetLocation / DeltaTime;
+
+			MyCharacter->AddActorWorldOffset(OffsetLocation, true);
+
+			CharMoveComp->Velocity = OffsetLocationDelta;
 			CharMoveComp->UpdateComponentVelocity();
+
+			//MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
 
 			if (ShouldBroadcastAbilityTaskDelegates())
 			{
@@ -125,11 +133,17 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 				CurrentLocation = FMath::Lerp<FVector, float>(StartLocation, TargetLocation, MoveFraction);
 			}
 
-			FVector OffsetLocation = (CurrentLocation - PrevLocation);
+			OffsetLocation = (CurrentLocation - PrevLocation);
+			OffsetLocationDelta = OffsetLocation / DeltaTime;
+
+			MyCharacter->AddActorWorldOffset(OffsetLocation, true);
+
+			CharMoveComp->Velocity = FVector::ZeroVector;
+			CharMoveComp->UpdateComponentVelocity();
+
 			PrevLocation = CurrentLocation;
 
-			CharMoveComp->Velocity = OffsetLocation / DeltaTime;
-			CharMoveComp->UpdateComponentVelocity();
+			//MyCharacter->LaunchCharacter(OffsetLocation / DeltaTime, true, true);
 		}
 	}
 	else
@@ -140,6 +154,22 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 
 void UAT_MoveToLocationByVelocity::OnCancelTaskCallback()
 {
+	if (bIsFinished == false)
+	{
+		AActor* MyActor = GetAvatarActor();
+		ACharacter* MyCharacter = nullptr;
+
+		if (MyActor)
+		{
+			MyCharacter = Cast<ACharacter>(MyActor);
+		}
+
+		if (MyCharacter != nullptr)
+		{
+			MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
+		}
+	}
+
 	bIsFinished = true;
 
 	ExternalCancel();
@@ -147,6 +177,22 @@ void UAT_MoveToLocationByVelocity::OnCancelTaskCallback()
 
 void UAT_MoveToLocationByVelocity::OnEndTaskCallback()
 {
+	if (bIsFinished == false)
+	{
+		AActor* MyActor = GetAvatarActor();
+		ACharacter* MyCharacter = nullptr;
+
+		if (MyActor)
+		{
+			MyCharacter = Cast<ACharacter>(MyActor);
+		}
+
+		if (MyCharacter != nullptr)
+		{
+			MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
+		}
+	}
+
 	bIsFinished = true;
 
 	EndTask();

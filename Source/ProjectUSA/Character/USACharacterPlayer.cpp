@@ -223,8 +223,8 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 			// 점수 계산
 
 			// 1. 거리
-			float DistanceFromSourceToTarget = (TempActor->GetActorLocation() - SourceLocation).Length();
-			float CurrentTempActorScore_Distance = 1 - (DistanceFromSourceToTarget / TargetableActorRange);
+			float DistanceFromSourceToTarget = (TempActor->GetActorLocation() - SourceLocation).SquaredLength();
+			float CurrentTempActorScore_Distance = 1 - (DistanceFromSourceToTarget / (TargetableActorRange * TargetableActorRange));
 
 			// 2. 방향 (내적)
 			float CurrentTempActorScore_Direction = 0.1f;
@@ -291,8 +291,8 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 			// 점수 계산
 
 			// 1. 거리
-			float DistanceFromSourceToTarget = (TempActor->GetActorLocation() - SourceLocation).Length();
-			float CurrentTempActorScore_Distance = 1 - (DistanceFromSourceToTarget / TargetableActorRange);
+			float DistanceFromSourceToTarget = (TempActor->GetActorLocation() - SourceLocation).SquaredLength();
+			float CurrentTempActorScore_Distance = 1 - (DistanceFromSourceToTarget / (TargetableActorRange * TargetableActorRange));
 
 			// 2. 방향 (내적)
 			float CurrentTempActorScore_Direction = 0.1f;
@@ -440,6 +440,15 @@ void AUSACharacterPlayer::KeepTargeting()
 	}
 
 	if (CurrentTargetableActor == nullptr)
+	{
+		FinishTargeting();
+		return;
+	}
+
+	FVector SourceLocation = GetActorLocation();
+	FVector TargetLocation = CurrentTargetableActor->GetActorLocation();
+
+	if ((SourceLocation-TargetLocation).SquaredLength() > TargetableActorRange * TargetableActorRange)
 	{
 		FinishTargeting();
 		return;

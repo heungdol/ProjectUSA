@@ -54,10 +54,10 @@ void AUSAWeaponBase::Tick(float DeltaTime)
 
 void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(UAbilitySystemComponent* InASC)
 {
-	if (HasAuthority() == false)
-	{
-		return;
-	}
+	//if (HasAuthority() == false)
+	//{
+	//	return;
+	//}
 
 	if (InASC == nullptr)
 	{

@@ -316,22 +316,51 @@ void AUSACharacterBase::MulticastRPC_StopAnimMontage_Implementation(UAnimMontage
 
 //
 
-void AUSACharacterBase::SetNextWeapon(AUSAWeaponBase* InNextWeapon)
+void AUSACharacterBase::AddWaitingWeapon(AUSAWeaponBase* InNextWeapon)
 {
-	MulticastRPC_SetNextWeapon(InNextWeapon);
-}
+	//MulticastRPC_SetNextWeapon(InNextWeapon);
 
-void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
-{
-	if (HasAuthority())
+	if (UKismetSystemLibrary::IsStandalone(GetWorld())
+		|| UKismetSystemLibrary::IsServer(GetWorld()))
 	{
-		if (InNextWeapon != nullptr)
-		{
-			NextWeapon = InNextWeapon;
-			OnRep_NextWeapon ();
-		}
+
+	}
+	else
+	{
+		return;
+	}
+	
+	if (InNextWeapon != nullptr)
+	{
+		//NextWeapon = InNextWeapon;
+
+		//EUSAWeaponType WeaponType = InNextWeapon->GetWeaponType();
+
+		//if (NextWaitingWeapons.Contains(WeaponType)
+		//	&& NextWaitingWeapons[WeaponType] != nullptr)
+		//{
+		//	NextWaitingWeapons[WeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+		//}
+		//else
+		//{
+		//	NextWaitingWeapons.Add({ WeaponType, nullptr });
+		//}
+
+		//NextWaitingWeapons[WeaponType] = InNextWeapon;
+
+		NextWaitingWeapons.Add(InNextWeapon);
+
+		OnRep_NextWeapon();
 	}
 }
+
+//void AUSACharacterBase::MulticastRPC_SetNextWeapon_Implementation(AUSAWeaponBase* InNextWeapon)
+//{
+//	//if (HasAuthority())
+//	//{
+//	//	
+//	//}
+//}
 
 void AUSACharacterBase::OnRep_NextWeapon()
 {
@@ -342,20 +371,22 @@ void AUSACharacterBase::OnRep_NextWeapon()
 		return;
 	}
 
-	EquipFinalNextWeapon();
+	UpdateCurrentWeapons();
+
+	//EquipFinalNextWeapon();
 }
 
-void AUSACharacterBase::EquipFinalNextWeapon()
-{
-	EUSAWeaponType WeaponType = EUSAWeaponType::None;
-
-	if (NextWeapon != nullptr)
-	{
-		WeaponType = NextWeapon->GetWeaponType();
-	}
-
-	EquipWeapon(NextWeapon);
-}
+//void AUSACharacterBase::EquipFinalNextWeapon()
+//{
+//	//EUSAWeaponType WeaponType = EUSAWeaponType::None;
+//
+//	//if (NextWeapon != nullptr)
+//	//{
+//	//	WeaponType = NextWeapon->GetWeaponType();
+//	//}
+//
+//	EquipWeapon(NextWeapon);
+//}
 
 FVector AUSACharacterBase::GetUSACharacterDirection_InputMovement()
 {
@@ -390,6 +421,8 @@ FVector AUSACharacterBase::GetUSACharacterDirection_Target()
 	FVector TargetLocation = Cast<AActor>(CurrentTargetableActor)->GetActorLocation();
 
 	Result = TargetLocation - SourceLocation;
+	Result.Z = 0.0f;
+
 	Result.Normalize();
 
 	// 임시 타겟팅인 경우, 원상복구
@@ -903,30 +936,58 @@ void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTa
 	}
 }
 
-void AUSACharacterBase::EquipWeapon(AUSAWeaponBase* InWeapon)
+void AUSACharacterBase::UpdateCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 {
-	if (InWeapon == nullptr)
+	//if (InWeapon == nullptr)
+	//{
+	//	return;
+	//}
+
+	for (AUSAWeaponBase* NextWeapon : NextWaitingWeapons)
 	{
-		return;
+		if (NextWeapon == nullptr)
+		{
+			continue;
+		}
+
+		EUSAWeaponType WeaponType = NextWeapon->GetWeaponType();
+
+		if (CurrentEquipedWeapons.Contains(WeaponType)
+			&& CurrentEquipedWeapons[WeaponType] != nullptr)
+		{
+			CurrentEquipedWeapons[WeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+		}
+		else
+		{
+			CurrentEquipedWeapons.Add({ WeaponType, nullptr });
+		}
+
+		NextWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+
+		AttachWeaponToHolderSocket(NextWeapon);
+
+		CurrentEquipedWeapons[WeaponType] = NextWeapon;
 	}
+
+	NextWaitingWeapons.Empty();
 	
-	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
+	//EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
 
-	if (CurrentEquipedWeapons.Contains (InWeaponType)
-		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
-	{
-		CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-	}
-	else
-	{
-		CurrentEquipedWeapons.Add({ InWeaponType, nullptr });
-	}
+	//if (CurrentEquipedWeapons.Contains (InWeaponType)
+	//	&& CurrentEquipedWeapons[InWeaponType] != nullptr)
+	//{
+	//	CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+	//}
+	//else
+	//{
+	//	CurrentEquipedWeapons.Add({ InWeaponType, nullptr });
+	//}
 
-	InWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+	//InWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
 
-	AttachWeaponToHolderSocket(InWeapon);
+	//AttachWeaponToHolderSocket(InWeapon);
 
-	CurrentEquipedWeapons[InWeaponType] = InWeapon;
+	//CurrentEquipedWeapons[InWeaponType] = InWeapon;
 
 	//USA_LOG(LogTemp, Log, TEXT("Setting Weapon Complete"));
 }
@@ -1037,6 +1098,16 @@ void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmoun
 
 void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
 {
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD))
+	{
+		return;
+	}
+
 	FVector NewDirection = FVector::ForwardVector;
 	TSubclassOf<UGameplayAbility> DamageAbilityClass;
 
@@ -1111,7 +1182,7 @@ void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation
 
 	SetActorRotation(InNewDirection.Rotation());
 
-	if (HasAuthority())
+	if (/*HasAuthority()*/ UKismetSystemLibrary::IsServer(GetWorld()))
 	{
 		FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(InAbility);
 
@@ -1214,7 +1285,9 @@ void AUSACharacterBase::PostSetupGAS()
 		{
 			bIsSetNextWeaponBeforeGASSetup = false;
 
-			EquipFinalNextWeapon();
+			//EquipFinalNextWeapon();
+
+			UpdateCurrentWeapons();
 		}
 	}
 
@@ -1368,6 +1441,7 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AUSACharacterBase, ASC);
-	DOREPLIFETIME(AUSACharacterBase, NextWeapon);
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
+
+	DOREPLIFETIME(AUSACharacterBase, NextWaitingWeapons);
 }

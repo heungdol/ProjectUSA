@@ -102,10 +102,10 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 
 	//
 
-	float BetweenDistance = (SourceLocation - TargetLocation).Length();
+	float BetweenDistance = (SourceLocation - TargetLocation).SquaredLength();
 
 	float DesiredFOV = UKismetMathLibrary::MapRangeClamped
-	(BetweenDistance, MinDistanceForFOV, MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);
+	(BetweenDistance, MinDistanceForFOV * MinDistanceForFOV, MaxDistanceForFOV * MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);
 
 	CameraComponent->FieldOfView = DesiredFOV;
 }

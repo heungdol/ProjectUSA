@@ -152,7 +152,7 @@ protected:
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
 	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
-	TObjectPtr<class AUSAWeaponBase> NextWeapon;
+	TArray<TObjectPtr <class AUSAWeaponBase>> NextWaitingWeapons;
 
 	UPROPERTY()
 	bool bIsSetNextWeaponBeforeGASSetup = false;
@@ -221,18 +221,18 @@ public:
 	//
 
 	UFUNCTION(BlueprintCallable)
-	void SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+	void AddWaitingWeapon(class AUSAWeaponBase* InNextWeapon);
 
 	//UFUNCTION(Server, Reliable, WithValidation)
 	//void ServerRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
 	UFUNCTION()
 	void OnRep_NextWeapon();
 
-	void EquipFinalNextWeapon();
+	//void EquipFinalNextWeapon();
 
 	//
 
@@ -318,8 +318,8 @@ protected:
 
 	//
 
-	UFUNCTION(BlueprintCallable)
-	void EquipWeapon(class AUSAWeaponBase* InWeapon);
+	//UFUNCTION(BlueprintCallable)
+	void UpdateCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
 	
 	UFUNCTION(BlueprintCallable)
 	void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
