@@ -91,6 +91,25 @@ public:
 
 // ========================================================================================
 
+USTRUCT(BlueprintType)
+struct FUSACharacterAttributeSetInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character AttributeSet Info")
+	float StartCurrentHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character AttributeSet Info")
+	float StartMaxHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character AttributeSet Info")
+	float StartBaseArmor = 10.0f;
+
+public:
+	void RenewUSACharacterAttributeSetData(UAbilitySystemComponent* InASC);
+
+};
 
 
 // ========================================================================================
@@ -148,6 +167,12 @@ protected:
 
 	//
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character AttributeSet Info")
+	FUSACharacterAttributeSetInfo CharacterAttributeSetInfo;
+	
+
+	//
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
@@ -163,7 +188,7 @@ protected:
 
 	//
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Targeting")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Targeting Info")
 	float TargetableActorRange = 1000.0f; 
 	
 	TObjectPtr<AActor> CurrentTargetableActor;
@@ -406,6 +431,7 @@ protected:
 	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);

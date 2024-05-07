@@ -41,6 +41,7 @@ public:
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
 	mutable FUSAAttributeSimpleDynamicDelegate OnOutOfHealth;
+	mutable FUSAAttributeSimpleDynamicDelegate OnRevive;
 	mutable FUSAAttributeSimpleDynamicDelegateFloat OnCurrentHealthChanged;
 	mutable FUSAAttributeSimpleDynamicDelegateFloat OnMaxHealthChanged;
 

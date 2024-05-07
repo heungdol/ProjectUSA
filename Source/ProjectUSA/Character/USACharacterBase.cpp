@@ -149,6 +149,25 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 
 
 // ====================================================================================
+
+
+void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySystemComponent* InASC)
+{
+	if (InASC == nullptr)
+	{
+		return;
+	}
+
+	if (InASC->GetSet <UUSAAttributeSet>() != nullptr)
+	{
+		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetMaxHealthAttribute(), StartMaxHealth);
+		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentHealthAttribute(), StartCurrentHealth);
+		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetBaseArmorAttribute(), StartBaseArmor);
+		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentArmorAttribute(), StartBaseArmor);
+	}
+}
+
+
 // ====================================================================================
 
 
@@ -900,6 +919,20 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 	}
 }
 
+
+void AUSACharacterBase::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	}
+	else
+	{
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	}
+}
+
+
 void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (CurrentEquipedWeapons.Contains(EUSAWeaponType::First) == false)
@@ -1319,6 +1352,9 @@ void AUSACharacterBase::PostSetupGAS()
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Crouch);
 
+	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_DEAD, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Dead);
+
 	//
 
 	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_FIRSTWEAPON, EGameplayTagEventType::NewOrRemoved)
@@ -1365,7 +1401,7 @@ void AUSACharacterBase::SetupAttributeSet()
 	//	GetNetOwningPlayer()->GetLocalRole();
 	//}
 
-	GetLocalRole();
+	//GetLocalRole();
 
 	// 어트리뷰트 설정
 	if (ASC != nullptr)
@@ -1380,37 +1416,23 @@ void AUSACharacterBase::SetupAttributeSet()
 
 			ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::OnUSADeath);
 
+			//ASC->GetSet <UUSAAttributeSet>()->OnRevive
+
 			ASC->GetSet <UUSAAttributeSet>()->OnCurrentHealthChanged.AddDynamic
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
 			ASC->GetSet <UUSAAttributeSet>()->OnMaxHealthChanged.AddDynamic
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
-			//K2_OnMaxHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetMaxHealth());
-			//K2_OnCurrentHealthChanged(ASC->GetSet<UUSAAttributeSet>()->GetCurrentHealth());
-
-			//K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+			ResetAttributeSet();
 		}
 	}
 }
 
 void AUSACharacterBase::ResetAttributeSet()
 {
-	if (HasAuthority() == true)
-	{
-		return;
-	}
-
-	// 클라에서만 수행
 	// 어트리뷰트 설정
-	if (ASC != nullptr)
-	{
-		if (ASC->GetSet <UUSAAttributeSet>() != nullptr)
-		{
-			ASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentHealthAttribute(), 0.0f);
-			//ASC->SetNumericAttributeBase(UUSAAttributeSet::GetMaxHealthAttribute(), 0.0f);
-		}
-	}
+	CharacterAttributeSetInfo.RenewUSACharacterAttributeSetData(ASC);
 }
 
 void AUSACharacterBase::OnUSADeath()
@@ -1445,3 +1467,4 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AUSACharacterBase, NextWaitingWeapons);
 }
+
