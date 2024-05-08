@@ -447,7 +447,7 @@ FVector AUSACharacterBase::GetUSACharacterDirection_Target()
 	// 임시 타겟팅인 경우, 원상복구
 	if (bIsInstantTargeting)
 	{
-		SetCurrentTargetableActorNullptr();
+		CurrentTargetableActor = nullptr;
 	}
 
 	return Result;
@@ -1073,6 +1073,45 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHolderSocketName());
 }
 
+bool AUSACharacterBase::GetIsTargetableCurrently()
+{
+	//return false;
+
+	if (ASC == nullptr)
+	{
+		return false;
+	}
+
+	if (ASC->GetGameplayTagCount(USA_CHARACTER_STATE_DEAD) > 0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+FVector AUSACharacterBase::GetTargetablePivotlocation()
+{
+	return GetActorLocation();
+
+	//if (GetMesh() == nullptr)
+	//{
+	//	return GetActorLocation();
+	//}
+
+	//if (GetMesh()->DoesSocketExist(TargetablePivotName) == false)
+	//{
+	//	return GetActorLocation();
+	//}
+
+	//FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
+
+	//DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+
+	//return ResultLocation;
+
+}
+
 // TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
 //void AUSACharacterBase::AdjustVelocityWithVelocityZero()
 //{
@@ -1188,10 +1227,10 @@ void AUSACharacterBase::UpdateCurrentTargetableActor_Instant()
 	UpdateCurrentTargetableActor();
 }
 
-void AUSACharacterBase::SetCurrentTargetableActorNullptr()
-{
-	CurrentTargetableActor = nullptr;
-}
+//void AUSACharacterBase::SetCurrentTargetableActorNullptr()
+//{
+//	CurrentTargetableActor = nullptr;
+//}
 
 bool AUSACharacterBase::ServerRPC_ApplyDamageMomentum_Validate
 (const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
@@ -1414,7 +1453,7 @@ void AUSACharacterBase::SetupAttributeSet()
 			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetMaxHealthAttribute()).AddUObject
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
-			ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::OnUSADeath);
+			ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::DieUSACharacter);
 
 			//ASC->GetSet <UUSAAttributeSet>()->OnRevive
 
@@ -1435,14 +1474,17 @@ void AUSACharacterBase::ResetAttributeSet()
 	CharacterAttributeSetInfo.RenewUSACharacterAttributeSetData(ASC);
 }
 
-void AUSACharacterBase::OnUSADeath()
+
+
+void AUSACharacterBase::DieUSACharacter()
 {
-	//USA_LOG(LogTemp, Log, TEXT("Die"));
-
-	K2_OnUSADeath();
-
 	ServerRPC_OnUSADeath();
 }
+
+//void AUSACharacterBase::OnUSADeath()
+//{
+//	
+//}
 
 void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
 {
@@ -1451,6 +1493,8 @@ void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
 
 void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
 {
+	K2_OnUSADeath();
+
 	if (ASC != nullptr)
 	{
 		ASC->AddLooseGameplayTag(USA_CHARACTER_STATE_DEAD);

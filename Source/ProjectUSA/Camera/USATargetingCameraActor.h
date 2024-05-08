@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "Interface/USATargetableInterface.h"
+
 #include "USATargetingCameraActor.generated.h"
 
 UCLASS()
@@ -26,8 +29,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	float RotationDistanceOffset = 300.0f;
 
+	//
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float LocationHeightOffset = 80.0f;
+	float SourceHeightOffset = 30.0f;
+
+	//
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	float TargetMaxHeightOffset = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	float TargetMinHeightOffset = 0.0f;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	float TargetMaxVelocityZ = 500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	float TargetMinVelocityZ = 0.0f;
 
 	//
 
@@ -45,6 +65,22 @@ public:
 	float MinDistanceForFOV = 300;
 
 	//
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float MaxRotationPitch = 45;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float MinRotationPitch = -45;
+
+	//
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float MinUpdateRange = 200;
+
+	//
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float ResultLocationHeightOffset = -300.0f;
 
 
 	bool bIsOn = false;
@@ -70,8 +106,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	void SetOnOff(bool InBool);
+	//UFUNCTION(BlueprintCallable)
+	//void SetOnOff(bool InBool);
 	
 	UFUNCTION(BlueprintCallable)
 	void SetSourceActor(AActor* InActor);

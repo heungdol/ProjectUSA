@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/USACharacterBase.h"
+
 #include "USACharacterPlayer.generated.h"
 
 /**

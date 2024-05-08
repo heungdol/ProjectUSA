@@ -40,7 +40,7 @@ void UAT_PlayAnimMontages::Activate()
 
 
 	bool bPlayedMontage = false;
-	CurrentPlayAnimMontageIndex = -1;
+	//CurrentPlayAnimMontageIndex = -1;
 
 	//if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
 	//{
@@ -55,22 +55,17 @@ void UAT_PlayAnimMontages::Activate()
 	//	}
 	//}
 
-	ACharacter* MyCharacter = nullptr;
-
-	if (Ability != nullptr)
-	{
-		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
-	}
+	ACharacter* MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
 
 	if (MyCharacter != nullptr)
 	{
 		if (MyCharacter->PlayAnimMontage
 		(PlayAnimMontageData->AnimMontage, 
 			PlayAnimMontageData->AnimMontageRate, 
-			PlayAnimMontageData->StartAnimMontageSectionDetail.SectionName))
+			PlayAnimMontageData->StartAnimMontageSectionName))
 		{
 			bPlayedMontage = true;
-			CurrentPlayAnimMontageIndex = 0;	
+			//CurrentPlayAnimMontageIndex = 0;	
 		}
 	}
 
@@ -80,14 +75,36 @@ void UAT_PlayAnimMontages::Activate()
 		return;
 	}
 
-	if (PlayAnimMontageData->MiddleAnimMontageSectionDetails.Num() > 0)
-	{
-		float WaitTime = PlayAnimMontageData->MiddleAnimMontageSectionDetails[0].SectionPlayTime;
+	//if (PlayAnimMontageData->MiddleAnimMontageSectionDetails.Num() > 0)
+	//{
+	//	float WaitTime = PlayAnimMontageData->MiddleAnimMontageSectionDetails[0].SectionPlayTime;
 
-		GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
+	//	GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
+	//}
+
+	UAbilitySystemComponent* ASC = Ability->GetAbilitySystemComponentFromActorInfo();
+	if (ASC)
+	{
+		//DelegateHandle = ASC->RegisterGameplayTagEvent(Tag).AddUObject(this, &UAT_WaitGameplayTag::GameplayTagCallback);
+		//RegisteredCallback = true;
+
+		TArray<FGameplayTag> KeyArray;
+		PlayAnimMontageData->AnimMontageSectionMapByGameplayTagAdded.GenerateKeyArray(KeyArray);
+		for (const FGameplayTag TagAdded : KeyArray)
+		{
+			FDelegateHandle DelegateHandle = ASC->RegisterGameplayTagEvent(TagAdded).AddUObject(this, &UAT_PlayAnimMontages::OnAnimSectionGameplayTagAdded);
+			DelegateHandles.Add({TagAdded, DelegateHandle});
+		}
+
+		PlayAnimMontageData->AnimMontageSectionMapByGameplayTagRemoved.GenerateKeyArray(KeyArray);
+		for (const FGameplayTag TagRemoved : KeyArray)
+		{
+			FDelegateHandle DelegateHandle = ASC->RegisterGameplayTagEvent(TagRemoved).AddUObject(this, &UAT_PlayAnimMontages::OnAnimSectionGameplayTagRemoved);
+			DelegateHandles.Add({TagRemoved, DelegateHandle});
+		}
 	}
 
-	//SetWaitingOnAvatar();
+	SetWaitingOnAvatar();
 }
 
 void UAT_PlayAnimMontages::SimpleEndAbilityTask()
@@ -124,13 +141,13 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 	{
 		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
-			if (PlayAnimMontageData->bHasEndSection)
+			if (PlayAnimMontageData->EndAnimMontageSectionName != NAME_None)
 			{
 				MyCharacter->StopAnimMontage();
 				MyCharacter->PlayAnimMontage
 				(PlayAnimMontageData->AnimMontage, 
 					PlayAnimMontageData->AnimMontageRate, 
-					PlayAnimMontageData->EndAnimMontageSectionDetail.SectionName);
+					PlayAnimMontageData->EndAnimMontageSectionName);
 			}
 			else
 			{
@@ -149,64 +166,66 @@ void UAT_PlayAnimMontages::SimpleCancelAbilityTask()
 	Super::SimpleCancelAbilityTask();
 }
 
-void UAT_PlayAnimMontages::OnSectionTimerHandleEnd()
+void UAT_PlayAnimMontages::OnAnimSectionGameplayTagAdded(FGameplayTag InTag, int32 NewCount)
 {
-	if (PlayAnimMontageData == nullptr)
+	if (NewCount > 0)
 	{
-		return;
-	}
+		ACharacter* MyCharacter = nullptr;
 
-	//UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
-	//if (ASC)
-	//{
-	//	if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
-	//	{
-	//		ASC->CurrentMontageJumpToSection(PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
-	//	}
-	//}
-
-	ACharacter* MyCharacter = nullptr;
-
-	if (Ability != nullptr)
-	{
-		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
-	}
-
-	if (MyCharacter != nullptr)
-	{
-		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+		if (Ability != nullptr)
 		{
-			if (PlayAnimMontageData->bHasEndSection)
-			{
-				MyCharacter->StopAnimMontage();
-				MyCharacter->PlayAnimMontage
-				(PlayAnimMontageData->AnimMontage,
-					PlayAnimMontageData->AnimMontageRate,
-					PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
-			}
+			MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
 		}
-	}
 
-	CurrentPlayAnimMontageIndex += 1;
-	if (PlayAnimMontageData->MiddleAnimMontageSectionDetails.Num() <= CurrentPlayAnimMontageIndex)
+		if (MyCharacter == nullptr)
+		{
+			return;
+		}
+
+		FName SectionName = NAME_None;
+
+		if (PlayAnimMontageData->AnimMontageSectionMapByGameplayTagAdded.Contains(InTag))
+		{
+			SectionName = PlayAnimMontageData->AnimMontageSectionMapByGameplayTagAdded[InTag];
+		}
+
+		MyCharacter->StopAnimMontage();
+		MyCharacter->PlayAnimMontage
+		(PlayAnimMontageData->AnimMontage,
+			PlayAnimMontageData->AnimMontageRate,
+			SectionName);
+	}
+}
+
+void UAT_PlayAnimMontages::OnAnimSectionGameplayTagRemoved(const FGameplayTag InTag, int32 NewCount)
+{
+	if (NewCount <= 0)
 	{
-		return;
-	}
+		ACharacter* MyCharacter = nullptr;
 
-	float WaitTime = 0.0f;
-	if (CurrentPlayAnimMontageIndex == 0)
-	{
-		WaitTime = PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionPlayTime;
-	}
-	else
-	{
-		WaitTime = PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionPlayTime
-			- PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex-1].SectionPlayTime;
-	}
+		if (Ability != nullptr)
+		{
+			MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+		}
 
-	GetWorld()->GetTimerManager().ClearTimer(CallSectionTimerHandle);
-	GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
+		if (MyCharacter == nullptr)
+		{
+			return;
+		}
 
+		FName SectionName = NAME_None;
+
+		if (PlayAnimMontageData->AnimMontageSectionMapByGameplayTagRemoved.Contains(InTag))
+		{
+			SectionName = PlayAnimMontageData->AnimMontageSectionMapByGameplayTagRemoved[InTag];
+		}
+
+		MyCharacter->StopAnimMontage();
+		MyCharacter->PlayAnimMontage
+		(PlayAnimMontageData->AnimMontage,
+			PlayAnimMontageData->AnimMontageRate,
+			SectionName);
+	}
 }
 
 bool UAT_PlayAnimMontages::StopPlayingMontage()
@@ -251,18 +270,85 @@ bool UAT_PlayAnimMontages::StopPlayingMontage()
 	return false;
 }
 
+void UAT_PlayAnimMontages::OnDestroy(bool AbilityIsEnding)
+{
+	Super::OnDestroy(AbilityIsEnding);
 
-//bool UAT_PlayAnimMontages::ServerRPC_Test_Validate()
+	UAbilitySystemComponent* ASC = nullptr;
+	if (Ability != nullptr)
+	{
+		ASC = Ability->GetAbilitySystemComponentFromActorInfo();
+	}
+
+	if (ASC)
+	{
+		TArray<FGameplayTag> KeyArray;
+		DelegateHandles.GenerateKeyArray(KeyArray);
+
+		for (FGameplayTag Tag : KeyArray)
+		{
+			ASC->RegisterGameplayTagEvent(Tag).Remove(DelegateHandles[Tag]);
+		}
+	}
+}
+
+
+//void UAT_PlayAnimMontages::OnSectionTimerHandleEnd()
 //{
-//	return true;
-//}
+//	if (PlayAnimMontageData == nullptr)
+//	{
+//		return;
+//	}
 //
-//void UAT_PlayAnimMontages::ServerRPC_Test_Implementation()
-//{
-//	MulticastRPC_Test();
-//}
+//	//UAbilitySystemComponent* ASC = AbilitySystemComponent.Get();
+//	//if (ASC)
+//	//{
+//	//	if (ASC->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+//	//	{
+//	//		ASC->CurrentMontageJumpToSection(PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
+//	//	}
+//	//}
 //
-//void UAT_PlayAnimMontages::MulticastRPC_Test_Implementation()
-//{
-//	USA_LOG_ABILITYTASK(LogTemp, Log, TEXT("From Anim Montage Task"));
+//	ACharacter* MyCharacter = nullptr;
+//
+//	if (Ability != nullptr)
+//	{
+//		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+//	}
+//
+//	if (MyCharacter != nullptr)
+//	{
+//		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
+//		{
+//			if (PlayAnimMontageData->bHasEndSection)
+//			{
+//				MyCharacter->StopAnimMontage();
+//				MyCharacter->PlayAnimMontage
+//				(PlayAnimMontageData->AnimMontage,
+//					PlayAnimMontageData->AnimMontageRate,
+//					PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionName);
+//			}
+//		}
+//	}
+//
+//	CurrentPlayAnimMontageIndex += 1;
+//	if (PlayAnimMontageData->MiddleAnimMontageSectionDetails.Num() <= CurrentPlayAnimMontageIndex)
+//	{
+//		return;
+//	}
+//
+//	float WaitTime = 0.0f;
+//	if (CurrentPlayAnimMontageIndex == 0)
+//	{
+//		WaitTime = PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionPlayTime;
+//	}
+//	else
+//	{
+//		WaitTime = PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex].SectionPlayTime
+//			- PlayAnimMontageData->MiddleAnimMontageSectionDetails[CurrentPlayAnimMontageIndex-1].SectionPlayTime;
+//	}
+//
+//	GetWorld()->GetTimerManager().ClearTimer(CallSectionTimerHandle);
+//	GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
+//
 //}

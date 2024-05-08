@@ -189,6 +189,9 @@ protected:
 	//
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Targeting Info")
+	FName TargetablePivotName = TEXT ("spine_04");
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Targeting Info")
 	float TargetableActorRange = 1000.0f; 
 	
 	TObjectPtr<AActor> CurrentTargetableActor;
@@ -288,7 +291,10 @@ public:
 	//
 
 	UFUNCTION()
-	void OnUSADeath();
+	void DieUSACharacter();
+
+	//UFUNCTION()
+	//void OnUSADeath();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUnCrouch", ScriptName = "OnUSAUnCrouch"))
 	void K2_OnUSADeath();
@@ -339,7 +345,7 @@ protected:
 
 	virtual void UpdateCurrentTargetableActor();
 	virtual void UpdateCurrentTargetableActor_Instant();
-	void SetCurrentTargetableActorNullptr();
+	//void SetCurrentTargetableActorNullptr();
 
 	//
 
@@ -354,6 +360,11 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+
+
+	virtual bool GetIsTargetableCurrently() override;
+
+	virtual FVector GetTargetablePivotlocation() override;
 
 
 // Gameplay Abiltiy System Secion...

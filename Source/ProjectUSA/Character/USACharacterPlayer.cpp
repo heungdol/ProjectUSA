@@ -220,6 +220,12 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 	{
 		if (TempActor->GetClass()->ImplementsInterface(UUSATargetableInterface::StaticClass()))
 		{
+			// 만약 타겟팅이 불가능 하면 무시
+			if (Cast<IUSATargetableInterface>(TempActor)->GetIsTargetableCurrently() == false)
+			{
+				continue;
+			}
+
 			// 점수 계산
 
 			// 1. 거리
@@ -257,6 +263,10 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 	{
 		CurrentTargetableActor = TempTargetableActors_Scored[TempTargetableActors_Scored.Num() - 1].Value;
 	}
+	else
+	{
+		CurrentTargetableActor = nullptr;
+	}
 }
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
@@ -288,6 +298,12 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 	{
 		if (TempActor->GetClass()->ImplementsInterface(UUSATargetableInterface::StaticClass()))
 		{
+			// 만약 타겟팅이 불가능 하면 무시
+			if (Cast<IUSATargetableInterface>(TempActor)->GetIsTargetableCurrently() == false)
+			{
+				continue;
+			}
+
 			// 점수 계산
 
 			// 1. 거리
@@ -307,6 +323,7 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 				CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, DirectionCamera);
 			}
 
+			// 만약 정 반대의 방향을 가리키면 무시
 			if (CurrentTempActorScore_Direction < DotCutoff)
 			{
 				continue;
@@ -411,7 +428,7 @@ void AUSACharacterPlayer::StartTargeting()
 	TargetingCameraActor->SetSourceActor(this);
 	TargetingCameraActor->SetTargetActor(CurrentTargetableActor);
 
-	TargetingCameraActor->SetOnOff(true);
+	//TargetingCameraActor->SetOnOff(true);
 	bIsTargetingCamera = true;
 
 	K2_OnStartTargeting();
@@ -424,16 +441,30 @@ void AUSACharacterPlayer::KeepTargeting()
 		return;
 	}
 
-	if (PlayerController
-		&& TargetingCameraActor != nullptr)
-	{
-		PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
-	}
-
 	if (CurrentTargetableActor == nullptr)
 	{
 		FinishTargeting();
 		return;
+	}
+
+
+	IUSATargetableInterface* Targetable = Cast<IUSATargetableInterface>(CurrentTargetableActor);
+	if (Targetable == nullptr)
+	{
+		ChangeTargeting();
+		return;
+	}
+
+	if (Targetable != nullptr && Targetable->GetIsTargetableCurrently() == false)
+	{
+		ChangeTargeting();
+		return;
+	}
+
+	if (PlayerController
+		&& TargetingCameraActor != nullptr)
+	{
+		PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
 	}
 
 	FVector SourceLocation = GetActorLocation();
@@ -450,7 +481,21 @@ void AUSACharacterPlayer::KeepTargeting()
 
 void AUSACharacterPlayer::ChangeTargeting()
 {
-	// ...
+	if (TargetingCameraActor == nullptr)
+	{
+		return;
+	}
+
+	UpdateCurrentTargetableActor();
+
+	if (CurrentTargetableActor == nullptr)
+	{
+		FinishTargeting();
+		return;
+	}
+
+	TargetingCameraActor->SetSourceActor(this);
+	TargetingCameraActor->SetTargetActor(CurrentTargetableActor);
 }
 
 void AUSACharacterPlayer::FinishTargeting()
@@ -460,11 +505,14 @@ void AUSACharacterPlayer::FinishTargeting()
 		return;
 	}
 
-	TargetingCameraActor->SetOnOff(false);
+	TargetingCameraActor->SetSourceActor(nullptr);
+	TargetingCameraActor->SetTargetActor(nullptr);
+
+	//TargetingCameraActor->SetOnOff(false);
 	bIsTargetingCamera = false;
 
 	TargetingCameraActor->SetTargetActor(nullptr);
-	SetCurrentTargetableActorNullptr();
+	CurrentTargetableActor = nullptr;
 
 	if (CameraSpringArmComponent != nullptr
 		&& TargetingCameraActor != nullptr)

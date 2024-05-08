@@ -70,15 +70,15 @@ void UAT_CheckCharacterSlope::TickTask(float DeltaTime)
 	FVector GroundFowardVector = FVector::CrossProduct(GroundRightVector, GroundNormal);
 	GroundFowardVector.Normalize();
 
-	APawn* Pawn = Cast <APawn>(GetAvatarActor());
+	//APawn* Pawn = Cast <APawn>(GetAvatarActor());
 
-	if (Pawn != nullptr && Pawn->IsLocallyControlled())
-	{
-		FVector CharacterLocation = MyCharacter->GetActorLocation();
-		DrawDebugLine(GetWorld(), CharacterLocation, CharacterLocation + GroundFowardVector * 500, FColor::Red, false, -1.0f, 0U, 10.0f);
-		DrawDebugLine(GetWorld(), CharacterLocation, CharacterLocation + GroundRightVector * 500, FColor::Green, false, -1.0f, 0U, 10.0f);
-		DrawDebugLine(GetWorld(), CharacterLocation, CharacterLocation + GroundNormal * 500, FColor::Blue, false, -1.0f, 0U, 10.0f);
-	}
+	//if (Pawn != nullptr && Pawn->IsLocallyControlled())
+	//{
+	//	FVector CharacterLocation = MyCharacter->GetActorLocation();
+	//	DrawDebugLine(GetWorld(), CharacterLocation, CharacterLocation + GroundFowardVector * 500, FColor::Red, false, -1.0f, 0U, 10.0f);
+	//	DrawDebugLine(GetWorld(), CharacterLocation, CharacterLocation + GroundRightVector * 500, FColor::Green, false, -1.0f, 0U, 10.0f);
+	//	DrawDebugLine(GetWorld(), CharacterLocation, CharacterLocation + GroundNormal * 500, FColor::Blue, false, -1.0f, 0U, 10.0f);
+	//}
 
 	float Dot = FVector::DotProduct(GroundFowardVector, FVector::DownVector);
 	float MinDot = FMath::Cos(StartSlopeAngle);

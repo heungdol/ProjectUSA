@@ -7,19 +7,24 @@
 #include "AT_PlayAnimMontages.generated.h"
 
 
-USTRUCT(BlueprintType)
-struct FPlayAnimMontageSectionDetail
-{
-	GENERATED_BODY()
-
-	public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
-	float SectionPlayTime = -1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
-	FName SectionName = NAME_None;
-};
-
+//USTRUCT(BlueprintType)
+//struct FPlayAnimMontageSectionDetail
+//{
+//	GENERATED_BODY()
+//
+//public:
+//	//float SectionPlayTime = -1.0f;
+//	
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
+//	FGameplayTag SectionGameplayTagAdded;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
+//	FGameplayTag SectionGameplayTagRemoved;
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
+//	FName SectionName = NAME_None;
+//};
+//
 
 USTRUCT(BlueprintType)
 struct FPlayAnimMontageData
@@ -35,21 +40,30 @@ public:
 
 	//
 
+	//FPlayAnimMontageSectionDetail StartAnimMontageSectionDetail;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	FPlayAnimMontageSectionDetail StartAnimMontageSectionDetail;
+	FName StartAnimMontageSectionName = NAME_None;
 
 	//
 
+	//TArray <FPlayAnimMontageSectionDetail> MiddleAnimMontageSectionDetails;
+	// <GameplayTag, SectionName>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	TArray <FPlayAnimMontageSectionDetail> MiddleAnimMontageSectionDetails;
+	TMap<FGameplayTag, FName> AnimMontageSectionMapByGameplayTagAdded;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	TMap<FGameplayTag, FName> AnimMontageSectionMapByGameplayTagRemoved;
+
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	bool bHasEndSection = false;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	//bool bHasEndSection = false;
 
+	//FPlayAnimMontageSectionDetail EndAnimMontageSectionDetail;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	FPlayAnimMontageSectionDetail EndAnimMontageSectionDetail;
+	FName EndAnimMontageSectionName = NAME_None;
+
 
 };
 
@@ -90,17 +104,28 @@ public:
 	virtual void SimpleEndAbilityTask() override;
 	virtual void SimpleCancelAbilityTask() override;
 
-	FTimerHandle CallSectionTimerHandle;
-	void OnSectionTimerHandleEnd();
+	UFUNCTION()
+	void OnAnimSectionGameplayTagAdded(const FGameplayTag InTag, int32 NewCount);
+
+	UFUNCTION()
+	void OnAnimSectionGameplayTagRemoved(const FGameplayTag InTag, int32 NewCount);
+
+
+	//FTimerHandle CallSectionTimerHandle;
+	//void OnSectionTimerHandleEnd();
 
 protected:
+	virtual void OnDestroy(bool AbilityIsEnding) override;
+	
 	/** Checks if the ability is playing a montage and stops that montage, returns true if a montage was stopped, false if not. */
 	bool StopPlayingMontage();
 
 	const FPlayAnimMontageData* PlayAnimMontageData;
-	int CurrentPlayAnimMontageIndex = 0;
+	//int CurrentPlayAnimMontageIndex = 0;
 
 	FOnMontageBlendingOutStarted BlendingOutDelegate;
 	FOnMontageEnded MontageEndedDelegate;
 	FDelegateHandle InterruptedHandle;
+
+	TMap<FGameplayTag, FDelegateHandle> DelegateHandles;
 };

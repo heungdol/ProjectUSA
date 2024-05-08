@@ -37,12 +37,12 @@ void AUSATargetingCameraActor::Tick(float DeltaTime)
 	CalculateTargetingCameraTransform();
 }
 
-void AUSATargetingCameraActor::SetOnOff(bool InBool)
-{
-	bIsOn = InBool;
-
-	CalculateTargetingCameraTransform();
-}
+//void AUSATargetingCameraActor::SetOnOff(bool InBool)
+//{
+//	bIsOn = InBool;
+//
+//	CalculateTargetingCameraTransform();
+//}
 
 void AUSATargetingCameraActor::SetSourceActor(AActor* InActor)
 {
@@ -56,23 +56,30 @@ void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 
 void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 {
-	if (bIsOn == false)
-	{
-		return;
-	}
+	//if (bIsOn == false)
+	//{
+	//	return;
+	//}
 
 	if (SourceActor == nullptr
-		|| TargetActor == nullptr)
+		|| Cast<IUSATargetableInterface>(SourceActor) == nullptr
+
+		|| TargetActor == nullptr
+		|| Cast<IUSATargetableInterface>(TargetActor) == nullptr)
 	{
 		return;
 	}
 
-	FVector SourceLocation = SourceActor->GetActorLocation();
-	FVector TargetLocation = TargetActor->GetActorLocation();
+	FVector SourceLocation = Cast<IUSATargetableInterface>(SourceActor)->GetTargetablePivotlocation();
+	FVector TargetLocation = Cast<IUSATargetableInterface>(TargetActor)->GetTargetablePivotlocation();
 
 	FVector ResultLocation = ((SourceLocation * LocationWeightRatio) + (TargetLocation * (1.0f - LocationWeightRatio)));
-	ResultLocation.Z = TargetLocation.Z;/*FMath::Min(SourceLocation.Z, TargetLocation.Z);*/
-	ResultLocation.Z += LocationHeightOffset;
+	ResultLocation.Z = FMath::Max(SourceLocation.Z + ResultLocationHeightOffset, TargetLocation.Z);
+	ResultLocation.Z += SourceHeightOffset;
+
+	//
+
+	float BetweenDistance = (SourceLocation - TargetLocation).SquaredLength();
 
 	//
 
@@ -84,25 +91,34 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	
 	//
 
-	//FVector DirectionFromOffsetToSource = SourceLocation - OffsetLocation;
+	//FVector DirectionFromOffsetToSource = SourceLocation - OffsetLocation;`
 	//FVector DirectionFromOffsetToTarget = TargetLocation - OffsetLocation;
 	//DirectionFromOffsetToSource.Normalize();
 	//DirectionFromOffsetToTarget.Normalize();
 
-	FVector ResultDirection = TargetLocation - OffsetLocation;
+	//float CurrentTargetHeightOffset = UKismetMathLibrary::MapRangeClamped
+	//(TargetActor->GetVelocity().Z, TargetMinVelocityZ, TargetMaxVelocityZ, TargetMinHeightOffset, TargetMaxHeightOffset);
+	
+	float CurrentTargetHeightOffset = TargetMaxHeightOffset;
+
+	FVector ResultDirection = (TargetLocation + FVector::UpVector * CurrentTargetHeightOffset) - OffsetLocation;
 	ResultDirection.Normalize();
 
 	FRotator ResultRotation = ResultDirection.Rotation();
 	ResultRotation.Roll = 0.0f;
+	ResultRotation.Pitch = FMath::Clamp(ResultRotation.Pitch, MinRotationPitch, MaxRotationPitch);
 
 	//
 
 	SetActorLocation(ResultLocation);
-	SetActorRotation(ResultRotation);
+	
+	if (BetweenDistance > MinUpdateRange * MinUpdateRange)
+	{
+		SetActorRotation(ResultRotation);
+	}
 
 	//
-
-	float BetweenDistance = (SourceLocation - TargetLocation).SquaredLength();
+	
 
 	float DesiredFOV = UKismetMathLibrary::MapRangeClamped
 	(BetweenDistance, MinDistanceForFOV * MinDistanceForFOV, MaxDistanceForFOV * MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);

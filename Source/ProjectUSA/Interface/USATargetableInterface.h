@@ -22,4 +22,10 @@ class PROJECTUSA_API IUSATargetableInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	virtual bool GetIsTargetableCurrently() = 0;
+	
+	virtual FVector GetTargetablePivotlocation() = 0;
+
+
+
 };
