@@ -190,6 +190,8 @@ void AUSACharacterPlayer::OnRep_ASC()
 	BeginStartAbilities();
 
 	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+
+	CheckCharacterByGameplayTags();
 }
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor()

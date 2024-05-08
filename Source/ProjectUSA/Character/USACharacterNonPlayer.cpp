@@ -40,6 +40,8 @@ void AUSACharacterNonPlayer::OnRep_bIsASCInitialized()
 	BeginStartAbilities();
 
 	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+
+	CheckCharacterByGameplayTags();
 }
 
 void AUSACharacterNonPlayer::SetupGAS()

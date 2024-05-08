@@ -14,6 +14,9 @@
 // 어트리뷰트 접근을 위한 헤더
 #include "GameplayEffectTypes.h"
 
+// 체크할 태그를 가져오기 위한 헤더
+#include "Tag/USAGameplayTags.h"
+
 #include "USACharacterBase.generated.h"
 
 // ========================================================================================
@@ -296,7 +299,7 @@ public:
 	//UFUNCTION()
 	//void OnUSADeath();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUnCrouch", ScriptName = "OnUSAUnCrouch"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSADeath", ScriptName = "OnUSADeath"))
 	void K2_OnUSADeath();
 
 	UFUNCTION(Server, Reliable)
@@ -408,7 +411,23 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayDeathAbilities;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayAbilities_ETC;
 
+	
+	// 중간 접속 시, 태그를 이용하여 캐릭터 상태를 갱신하고자 함
+	//const TArray <FGameplayTag> CheckGameplayTagList =
+	//{
+	//	USA_CHARACTER_STATE_CROUCH,
+	//	USA_CHARACTER_STATE_WALK,
+	//	USA_CHARACTER_STATE_RUN,
+	//	USA_CHARACTER_STATE_FALL,
+	//	USA_CHARACTER_STATE_DEAD,
+	//	USA_CHARACTER_ACTION_SLIDE
+	//};
+
+	UPROPERTY()
+	TMap<FGameplayTag, FDelegateHandle> RegisteredGameplayTagEvents;
 
 public:
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
@@ -446,6 +465,8 @@ protected:
 
 	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
+
+	virtual void CheckCharacterByGameplayTags();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; 
 

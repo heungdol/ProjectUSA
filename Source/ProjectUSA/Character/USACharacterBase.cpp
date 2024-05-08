@@ -158,6 +158,8 @@ void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySy
 		return;
 	}
 
+	// 아래 구문은 잘 수행시킬 것
+
 	if (InASC->GetSet <UUSAAttributeSet>() != nullptr)
 	{
 		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetMaxHealthAttribute(), StartMaxHealth);
@@ -925,6 +927,8 @@ void AUSACharacterBase::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTa
 	if (NewCount > 0)
 	{
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+		K2_OnUSADeath();
 	}
 	else
 	{
@@ -967,6 +971,18 @@ void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTa
 	{
 		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::Second]);
 	}
+}
+
+void AUSACharacterBase::CheckCharacterByGameplayTags()
+{
+	int32 Count = 0;
+
+	if (ASC != nullptr)
+	{
+		Count = ASC->GetGameplayTagCount(USA_CHARACTER_STATE_DEAD);
+	}
+
+	OnGameplayTagCallback_Dead(USA_CHARACTER_STATE_DEAD, Count);
 }
 
 void AUSACharacterBase::UpdateCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
@@ -1170,14 +1186,25 @@ void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmoun
 
 void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
 {
-	if (ASC == nullptr)
-	{
-		return;
-	}
+	//if (ASC == nullptr)
+	//{
+	//	return;
+	//}
 
-	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD))
+	//if (ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD))
+	//{
+	//	return;
+	//}
+
+	float CheckCurrentHealth = 0.0f;
+	bool CheckIsAttributeFound = false;
+
+	CheckCurrentHealth = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentHealthAttribute(), CheckIsAttributeFound);
+
+	if (CheckIsAttributeFound == true 
+		&& CheckCurrentHealth <= 0.0f)
 	{
-		return;
+
 	}
 
 	FVector NewDirection = FVector::ForwardVector;
@@ -1271,7 +1298,7 @@ UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 }
 
 void AUSACharacterBase::OnRep_ASC()
-{
+{	
 	// ... 
 }
 
@@ -1363,44 +1390,90 @@ void AUSACharacterBase::PostSetupGAS()
 		}
 	}
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREMOVEINPUT, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_VELOCITYZERO, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_VelocityZero);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREROTATETOMOVE, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove)
+	);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ADJUST_IGNOREMOVEINPUT,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_IGNOREMOVEINPUT, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput)
+	);
+
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ADJUST_VELOCITYZERO,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_VELOCITYZERO, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_VelocityZero)
+	);
+
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge)
+	);
 
 	//
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_WALK, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Walk);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_STATE_WALK,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_WALK, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Walk)
+	);
 
 	//
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FALL, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Fall);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_STATE_FALL,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_FALL, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Fall)
+	);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Slide);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ACTION_SLIDE,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION_SLIDE, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Slide)
+	);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Crouch);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_STATE_CROUCH,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_CROUCH, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Crouch)
+	);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_DEAD, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Dead);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_STATE_DEAD,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_STATE_DEAD, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Dead)
+	);
 
 	//
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_FIRSTWEAPON, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_HAND_FIRSTWEAPON,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_FIRSTWEAPON, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon)
+	);
 
-	ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon);
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_HAND_SECONDWEAPON,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon)
+	);
 }
 
 void AUSACharacterBase::BeginStartAbilities()
@@ -1493,11 +1566,12 @@ void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
 
 void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
 {
-	K2_OnUSADeath();
-
 	if (ASC != nullptr)
 	{
-		ASC->AddLooseGameplayTag(USA_CHARACTER_STATE_DEAD);
+		for (TSubclassOf<UGameplayAbility> GameplayDeathAbility : GameplayDeathAbilities)
+		{
+			ASC->TryActivateAbilityByClass(GameplayDeathAbility);
+		}
 	}
 }
 
