@@ -592,6 +592,8 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 
 	SetupAttributeSet();
 
+	ResetAttributeSet();
+
 	BeginStartAbilities();
 
 	// 시작할 때 자동으로 콘솔 입력
@@ -1108,24 +1110,14 @@ bool AUSACharacterBase::GetIsTargetableCurrently()
 
 FVector AUSACharacterBase::GetTargetablePivotlocation()
 {
+	if (GetMesh() != nullptr 
+		&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
+	{
+		FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
+		DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+	}
+
 	return GetActorLocation();
-
-	//if (GetMesh() == nullptr)
-	//{
-	//	return GetActorLocation();
-	//}
-
-	//if (GetMesh()->DoesSocketExist(TargetablePivotName) == false)
-	//{
-	//	return GetActorLocation();
-	//}
-
-	//FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
-
-	//DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
-
-	//return ResultLocation;
-
 }
 
 // TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
@@ -1551,8 +1543,6 @@ void AUSACharacterBase::SetupAttributeSet()
 
 			ASC->GetSet <UUSAAttributeSet>()->OnMaxHealthChanged.AddDynamic
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
-
-			//ResetAttributeSet();
 		}
 	}
 }
