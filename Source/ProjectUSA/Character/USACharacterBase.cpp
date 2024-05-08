@@ -566,7 +566,7 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
 		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoTarget);
 
-		for (const auto& GameplayActiveAbility : GameplayActiveAbilities)
+		for (const auto& GameplayActiveAbility : GameplayAbilities_Active)
 		{
 			if (GameplayActiveAbility.InputID < 0)
 			{
@@ -1186,25 +1186,27 @@ void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmoun
 
 void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
 {
-	//if (ASC == nullptr)
-	//{
-	//	return;
-	//}
+	if (ASC == nullptr)
+	{
+		return;
+	}
 
-	//if (ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD))
-	//{
-	//	return;
-	//}
+	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD))
+	{
+		return;
+	}
 
 	float CheckCurrentHealth = 0.0f;
 	bool CheckIsAttributeFound = false;
+
+	bool bIsPlayingDeathAbility = false;
 
 	CheckCurrentHealth = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentHealthAttribute(), CheckIsAttributeFound);
 
 	if (CheckIsAttributeFound == true 
 		&& CheckCurrentHealth <= 0.0f)
 	{
-
+		bIsPlayingDeathAbility = true;
 	}
 
 	FVector NewDirection = FVector::ForwardVector;
@@ -1222,18 +1224,25 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 
 	DamageType = DamageEvent.DamageTypeClass;
 
-	if (GetMovementComponent()->IsFalling())
+	if (bIsPlayingDeathAbility)
 	{
-		if (GameplayDamageGroundAbilities.Contains(DamageType))
+		if (GameplayAbilities_Death.Contains(DamageType))
 		{
-			DamageAbilityClass = GameplayDamageAirAbilities[DamageType];
+			DamageAbilityClass = GameplayAbilities_Death[DamageType];
+		}
+	}
+	else if (GetMovementComponent()->IsFalling())
+	{
+		if (GameplayAbilities_DamageGround.Contains(DamageType))
+		{
+			DamageAbilityClass = GameplayAbilities_DamageAir[DamageType];
 		}
 	}
 	else
 	{
-		if (GameplayDamageGroundAbilities.Contains(DamageType))
+		if (GameplayAbilities_DamageGround.Contains(DamageType))
 		{
-			DamageAbilityClass = GameplayDamageGroundAbilities[DamageType];
+			DamageAbilityClass = GameplayAbilities_DamageGround[DamageType];
 		}
 	}
 
@@ -1334,13 +1343,13 @@ void AUSACharacterBase::PostSetupGAS()
 	// 게임 어빌리티 부여
 	if (HasAuthority() == true)
 	{
-		for (const auto& GameplayTriggerAbility : GameplayTriggerAbilities)
+		for (const auto& GameplayTriggerAbility : GameplayAbilities_Trigger)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
-		for (const auto& GameplayActionAbility : GameplayActiveAbilities)
+		for (const auto& GameplayActionAbility : GameplayAbilities_Active)
 		{
 			FGameplayAbilitySpec GameplayAbilityActionSpec(GameplayActionAbility.GameplayAbility);
 
@@ -1353,27 +1362,34 @@ void AUSACharacterBase::PostSetupGAS()
 		}
 
 		// 게임 시작 어빌리티
-		for (const auto& GameplayStartAbility : GameplayStartAbilities)
+		for (const auto& GameplayStartAbility : GameplayAbilities_Start)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayStartAbility);
 			ASC->GiveAbility(GameplayStartAbility);
 		}
 
 		// 데미지 어빌리티
-		for (const auto& GameplayDamageAbility : GameplayDamageGroundAbilities)
+		for (const auto& GameplayDamageAbility : GameplayAbilities_DamageGround)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
-		for (const auto& GameplayDamageAbility : GameplayDamageAirAbilities)
+		for (const auto& GameplayDamageAbility : GameplayAbilities_DamageAir)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
 		// 죽음 어빌리티
-		for (const auto& GameplayTriggerAbility : GameplayDeathAbilities)
+		for (const auto& GameplayTriggerAbility : GameplayAbilities_Death)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
+
+		// 기타 어빌리티
+		for (const auto& GameplayTriggerAbility : GameplayAbilities_ETC)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
 			ASC->GiveAbility(GameplayAbilitySpec);
@@ -1480,7 +1496,7 @@ void AUSACharacterBase::BeginStartAbilities()
 {
 	if (ASC != nullptr)
 	{
-		for (const auto& GameplayStartAbility : GameplayStartAbilities)
+		for (const auto& GameplayStartAbility : GameplayAbilities_Start)
 		{
 			if (GameplayStartAbility == nullptr)
 			{
@@ -1526,7 +1542,7 @@ void AUSACharacterBase::SetupAttributeSet()
 			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetMaxHealthAttribute()).AddUObject
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
 
-			ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::DieUSACharacter);
+			//ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::DieUSACharacter);
 
 			//ASC->GetSet <UUSAAttributeSet>()->OnRevive
 
@@ -1566,13 +1582,7 @@ void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
 
 void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
 {
-	if (ASC != nullptr)
-	{
-		for (TSubclassOf<UGameplayAbility> GameplayDeathAbility : GameplayDeathAbilities)
-		{
-			ASC->TryActivateAbilityByClass(GameplayDeathAbility);
-		}
-	}
+	
 }
 
 

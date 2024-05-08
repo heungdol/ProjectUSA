@@ -392,24 +392,24 @@ public:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TArray <TSubclassOf<class UGameplayAbility>> GameplayStartAbilities;
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayAbilities_Start;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TArray <TSubclassOf<class UGameplayAbility>> GameplayTriggerAbilities;
+	TArray <TSubclassOf<class UGameplayAbility>> GameplayAbilities_Trigger;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TArray <FUSAGameplayAbilityHandle> GameplayActiveAbilities;
+	TArray <FUSAGameplayAbilityHandle> GameplayAbilities_Active;
 
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageGroundAbilities;
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_DamageGround;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayDamageAirAbilities;
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_DamageAir;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TArray <TSubclassOf<class UGameplayAbility>> GameplayDeathAbilities;
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayAbilities_ETC;
@@ -426,7 +426,7 @@ public:
 	//	USA_CHARACTER_ACTION_SLIDE
 	//};
 
-	UPROPERTY()
+	//UPROPERTY()
 	TMap<FGameplayTag, FDelegateHandle> RegisteredGameplayTagEvents;
 
 public:
