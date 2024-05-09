@@ -1160,19 +1160,24 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmount)
 {
-	UUSAAttributeSet* USAAttributeSet = nullptr;
-
-	if (ASC != nullptr)
+	if (ASC == nullptr)
 	{
-		USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+		return;
 	}
+
+	// 패리 중일 때는 데미지 무시
+	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY))
+	{
+		return;
+	}
+
+	// 데미지 적용
+	UUSAAttributeSet* USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
 
 	if (USAAttributeSet != nullptr)
 	{
 		USAAttributeSet->SetDamage(DamageAmount);
 	}
-
-	// 죽음인 경우 델리게이트로 처리
 }
 
 
@@ -1183,23 +1188,38 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		return;
 	}
 
+	// 죽은 상태인 경우 넉백 무시
 	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD))
 	{
 		return;
 	}
 
+	// bIsJustDead 
+	// 데미지 적용 후 죽었는지 판단하기 위한 변수
+
 	float CheckCurrentHealth = 0.0f;
 	bool CheckIsAttributeFound = false;
-
-	bool bIsPlayingDeathAbility = false;
-
 	CheckCurrentHealth = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentHealthAttribute(), CheckIsAttributeFound);
 
-	if (CheckIsAttributeFound == true 
+	bool bIsJustDead = false;
+	if (CheckIsAttributeFound == true
 		&& CheckCurrentHealth <= 0.0f)
 	{
-		bIsPlayingDeathAbility = true;
+		bIsJustDead = true;
 	}
+	
+	// bIsParrying
+	// 현재 팩링 중인지 판단하기 위한 변수
+
+	bool bIsParrying = false;
+	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY))
+	{
+		bIsParrying = true;
+	}
+
+	// bIsFalling
+	// 현재 공중에 있는지 판단하기 위한 변수
+	bool bIsFalling = GetMovementComponent()->IsFalling();
 
 	FVector NewDirection = FVector::ForwardVector;
 	TSubclassOf<UGameplayAbility> DamageAbilityClass;
@@ -1216,25 +1236,48 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 
 	DamageType = DamageEvent.DamageTypeClass;
 
-	if (bIsPlayingDeathAbility)
+	// 죽음
+	if (bIsJustDead)
 	{
 		if (GameplayAbilities_Death.Contains(DamageType))
 		{
 			DamageAbilityClass = GameplayAbilities_Death[DamageType];
 		}
 	}
-	else if (GetMovementComponent()->IsFalling())
+	// 패리
+	else if (bIsParrying)
 	{
-		if (GameplayAbilities_DamageGround.Contains(DamageType))
+		if (bIsFalling)
 		{
-			DamageAbilityClass = GameplayAbilities_DamageAir[DamageType];
+			if (GameplayAbilities_ParryMomentumAir.Contains(DamageType))
+			{
+				DamageAbilityClass = GameplayAbilities_ParryMomentumAir[DamageType];
+			}
+		}
+		else
+		{
+			if (GameplayAbilities_ParryMomentumGround.Contains(DamageType))
+			{
+				DamageAbilityClass = GameplayAbilities_ParryMomentumGround[DamageType];
+			}
 		}
 	}
+	// 데미지
 	else
 	{
-		if (GameplayAbilities_DamageGround.Contains(DamageType))
+		if (bIsFalling)
 		{
-			DamageAbilityClass = GameplayAbilities_DamageGround[DamageType];
+			if (GameplayAbilities_DamageAir.Contains(DamageType))
+			{
+				DamageAbilityClass = GameplayAbilities_DamageAir[DamageType];
+			}
+		}
+		else
+		{
+			if (GameplayAbilities_DamageGround.Contains(DamageType))
+			{
+				DamageAbilityClass = GameplayAbilities_DamageGround[DamageType];
+			}
 		}
 	}
 
@@ -1368,6 +1411,19 @@ void AUSACharacterBase::PostSetupGAS()
 		}
 
 		for (const auto& GameplayDamageAbility : GameplayAbilities_DamageAir)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
+
+		// 패리 모멘텀 어빌리티
+		for (const auto& GameplayDamageAbility : GameplayAbilities_ParryMomentumGround)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
+
+		for (const auto& GameplayDamageAbility : GameplayAbilities_ParryMomentumAir)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
 			ASC->GiveAbility(GameplayAbilitySpec);
