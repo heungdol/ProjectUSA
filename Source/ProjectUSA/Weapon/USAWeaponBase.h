@@ -4,10 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-
-//#include "AbilitySystemInterface.h"
-
 #include "USAWeaponBase.generated.h"
+
+// ========================================================================
 
 UENUM(BlueprintType)
 enum class EUSAWeaponType : uint8
@@ -17,10 +16,10 @@ enum class EUSAWeaponType : uint8
 	Second UMETA(DisplayName = "Second"),
 };
 
-
+// ========================================================================
 
 UCLASS()
-class PROJECTUSA_API AUSAWeaponBase : public AActor/*, public IAbilitySystemInterface*/
+class PROJECTUSA_API AUSAWeaponBase : public AActor
 {
 	GENERATED_BODY()
 	
@@ -29,14 +28,27 @@ public:
 	AUSAWeaponBase();
 
 public:
-	//UPROPERTY(EditDefaultsOnly, Category = "Weapon Info")
-	//TObjectPtr <class UAbilitySystemComponent> ASC;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	TObjectPtr <class USceneComponent> WeaponMeshHolder;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr <class USkeletalMeshComponent> WeaponMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr <class UStaticMeshComponent> WeaponStaticMesh;
+
+	//
+	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
-	TObjectPtr <class USkeletalMeshComponent> WeaponMesh;
+	EUSAWeaponType WeaponType = EUSAWeaponType::First;
+
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayWeaponAbilities;
+
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
 	FName WeaponHolderSocketName;
@@ -44,8 +56,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
 	FName WeaponHandSocketName;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
-	EUSAWeaponType WeaponType = EUSAWeaponType::First;
+	//
 
 protected:
 	// Called when the game starts or when spawned
@@ -55,13 +66,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
-	//UFUNCTION(BlueprintCallable)
-	//void SetAbilitySystemComponent(class UAbilitySystemComponent* InASC);
-
-	//void EquipWeapon();
-
-	//void UnequipWeapon();
-
 	UFUNCTION(BlueprintCallable)
 	void GiveGameplayWeaponAbilitesToASC(class UAbilitySystemComponent* InASC);
 
