@@ -44,7 +44,7 @@ public:
 
 
 	// Client -(TargetData)-> Server 위한 함수
-	//void ActivateAbilityWithTargetData(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
+	void ActivateAbilityWithTargetData(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
 	//virtual void CalculateTargetDataVector(FVector& InOut);
 	//virtual void DoSomethingWithTargetDataVector(const FVector& InVector);
 
@@ -70,12 +70,16 @@ public:
 	void SimpleEndAbility();
 
 private:
-	//void ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
-	//void NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
-	//void ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
+	void ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
+	void NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
+	void ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
+
 
 protected:
 	//UFUNCTION(BlueprintCallable)

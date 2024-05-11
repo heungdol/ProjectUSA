@@ -27,6 +27,8 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	//CommitAbility
+
 	if (GetIsAbleToActivateCondition() == false)
 	{
 		SimpleEndAbility();

@@ -38,6 +38,8 @@ void UAT_TraceAttack::Activate()
 	Super::Activate();
 
 	AttackTraceAndSetNextTimer();
+	
+	SetWaitingOnAvatar();
 }
 
 void UAT_TraceAttack::AttackTraceAndSetNextTimer()

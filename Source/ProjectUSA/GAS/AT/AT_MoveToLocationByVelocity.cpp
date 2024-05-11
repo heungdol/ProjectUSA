@@ -58,6 +58,27 @@ void UAT_MoveToLocationByVelocity::Activate()
 	{
 		AbilitySystemComponent->GenericLocalCancelCallbacks.AddDynamic(this, &UAT_MoveToLocationByVelocity::OnCancelTaskCallback);
 	}
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* CharMoveComp = nullptr;
+
+	if (MyActor)
+	{
+		MyCharacter = Cast<ACharacter>(MyActor);
+	}
+
+	if (MyCharacter)
+	{
+		CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+	}
+
+	if (CharMoveComp != nullptr)
+	{
+		//CharMoveComp->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
+	SetWaitingOnAvatar();
 }
 
 void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
@@ -95,6 +116,8 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 			OffsetLocationDelta = OffsetLocation / DeltaTime;
 
 			MyCharacter->AddActorWorldOffset(OffsetLocation, true);
+
+			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
 
 			CharMoveComp->Velocity = OffsetLocationDelta;
 			CharMoveComp->UpdateComponentVelocity();
@@ -158,10 +181,21 @@ void UAT_MoveToLocationByVelocity::OnCancelTaskCallback()
 	{
 		AActor* MyActor = GetAvatarActor();
 		ACharacter* MyCharacter = nullptr;
+		UCharacterMovementComponent* CharMoveComp = nullptr;
 
 		if (MyActor)
 		{
 			MyCharacter = Cast<ACharacter>(MyActor);
+		}
+
+		if (MyCharacter != nullptr)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+
+		if (CharMoveComp)
+		{
+			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
 		}
 
 		if (MyCharacter != nullptr)
@@ -181,10 +215,21 @@ void UAT_MoveToLocationByVelocity::OnEndTaskCallback()
 	{
 		AActor* MyActor = GetAvatarActor();
 		ACharacter* MyCharacter = nullptr;
+		UCharacterMovementComponent* CharMoveComp = nullptr;
 
 		if (MyActor)
 		{
 			MyCharacter = Cast<ACharacter>(MyActor);
+		}
+
+		if (MyCharacter != nullptr)
+		{
+			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
+		}
+
+		if (CharMoveComp)
+		{
+			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
 		}
 
 		if (MyCharacter != nullptr)

@@ -578,6 +578,17 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			EnhancedInputComponent->BindAction(GameplayActiveAbility.InputAction, ETriggerEvent::Completed,
 				this, &AUSACharacterBase::InputReleaseGameplayAbilityByInputID, GameplayActiveAbility.InputID);
 		}
+
+		//TArray<UInputAction*> InputKeys;
+		//GameplayTagInputInfos.GenerateKeyArray(InputKeys);
+
+		//for (UInputAction* Key : InputKeys)
+		//{
+		//		EnhancedInputComponent->BindAction(Key, ETriggerEvent::Triggered,
+		//			this, &AUSACharacterBase::ActiveGameplayTagInput_Pressed, Key);
+		//		EnhancedInputComponent->BindAction(Key, ETriggerEvent::Completed,
+		//			this, &AUSACharacterBase::ActiveGameplayTagInput_Released, Key);
+		//}
 	}
 }
 
@@ -645,13 +656,25 @@ void AUSACharacterBase::Look(const FInputActionValue& Value)
 
 void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 {
+	if (bIsCurrentInputPressedIDMap.Contains(InputID) == false)
+	{
+		bIsCurrentInputPressedIDMap.Add({ InputID , false });
+	}
+
+	if (bIsCurrentInputPressedIDMap[InputID] == true)
+	{
+		return;
+	}
+
 	if (ASC == nullptr)
 	{
 		return;
 	}
 
-	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
+	//USA_LOG(LogTemp, Log, TEXT("Input Pressed Gameplay Ability Activate"));
 
+	FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromInputID(InputID);
+	
 	if (GameplayAbilitySpec == nullptr)
 	{
 		return;
@@ -665,10 +688,22 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 	{
 		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 	}
+
+	bIsCurrentInputPressedIDMap[InputID] = true;
 }
 
 void AUSACharacterBase::InputReleaseGameplayAbilityByInputID(int32 InputID)
 {
+	if (bIsCurrentInputPressedIDMap.Contains(InputID) == false)
+	{
+		bIsCurrentInputPressedIDMap.Add({ InputID , true });
+	}
+
+	if (bIsCurrentInputPressedIDMap[InputID] == false)
+	{
+		return;
+	}
+
 	if (ASC == nullptr)
 	{
 		return;
@@ -685,7 +720,130 @@ void AUSACharacterBase::InputReleaseGameplayAbilityByInputID(int32 InputID)
 	{
 		ASC->AbilitySpecInputReleased(*GameplayAbilitySpec);
 	}
+
+	bIsCurrentInputPressedIDMap[InputID] = false;
 }
+
+void AUSACharacterBase::ActiveGameplayTagInput_Pressed(UInputAction* InInput)
+{
+	if (bIsCurrentInputPressedMap.Contains(InInput) == false)
+	{
+		bIsCurrentInputPressedMap.Add({ InInput, false });
+	}
+
+	if (bIsCurrentInputPressedMap[InInput] == true)
+	{
+		return;
+	}
+	
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	if (GameplayTagInputInfos.Contains(InInput) == false)
+	{
+		return;
+	}
+
+	USA_LOG(LogTemp, Log, TEXT("Input Pressed "));
+
+	//ASC->AddLooseGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding);
+	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, true);
+	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding, true);
+	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
+
+	if (CurrentInputTimerHandleMap.Contains(InInput) == false)
+	{
+		CurrentInputTimerHandleMap.Add({ InInput , FTimerHandle()});
+	}
+	else
+	{
+		CurrentInputTimerHandleMap[InInput].Invalidate();
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(CurrentInputTimerHandleMap[InInput], FTimerDelegate::CreateLambda([=]()
+		{
+			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
+			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
+		}
+	), CurrentInputMaintainTime, false);
+
+	bIsCurrentInputPressedMap[InInput] = true;
+}
+
+void AUSACharacterBase::ActiveGameplayTagInput_Released(UInputAction* InInput)
+{
+	if (bIsCurrentInputPressedMap.Contains(InInput) == false)
+	{
+		bIsCurrentInputPressedMap.Add({ InInput, true });
+	}
+
+	if (bIsCurrentInputPressedMap[InInput] == false)
+	{
+		return;
+	}
+
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	if (GameplayTagInputInfos.Contains(InInput) == false)
+	{
+		return;
+	}
+
+	USA_LOG(LogTemp, Log, TEXT("Input Released"));
+
+	//ASC->RemoveLooseGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding);
+	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
+	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding, false);
+	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, true);
+
+	if (CurrentInputTimerHandleMap.Contains(InInput) == false)
+	{
+		CurrentInputTimerHandleMap.Add({ InInput , FTimerHandle() });
+	}
+	else
+	{
+		CurrentInputTimerHandleMap[InInput].Invalidate();
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(CurrentInputTimerHandleMap[InInput], FTimerDelegate::CreateLambda([=]()
+		{
+			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
+			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
+		}
+	), CurrentInputMaintainTime, false);
+
+	bIsCurrentInputPressedMap[InInput] = false;
+}
+
+void AUSACharacterBase::ServerRPC_AddRemovedGameplayTag_Implementation(const FGameplayTag InTag, bool InAdded)
+{
+	MulticastRPC_AddRemovedGameplayTag(InTag, InAdded);
+}
+
+void AUSACharacterBase::MulticastRPC_AddRemovedGameplayTag_Implementation(const FGameplayTag InTag, bool InAdded)
+{
+	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	if (InAdded)
+	{
+		ASC->AddLooseGameplayTag(InTag);
+
+		TryGameplayAbilityByGameplayTag(InTag.GetTagName());
+	}
+	else
+	{
+		ASC->RemoveLooseGameplayTag(InTag);
+	}
+}
+
 
 void AUSACharacterBase::TryGameplayAbilityByGameplayTag(FName GameplayTag)
 {

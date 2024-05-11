@@ -42,6 +42,23 @@ void UUSAGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Activate Try Ability"));
+
+	//AActor* MyASCActor = nullptr;
+	//if (GetAbilitySystemComponentFromActorInfo() != nullptr)
+	//{
+	//	MyASCActor = GetAbilitySystemComponentFromActorInfo()->GetAvatarActor();
+	//}
+
+	//if (UKismetSystemLibrary::IsServer(GetWorld()) == false
+	//	&& MyASCActor != nullptr	
+	//	&& MyASCActor->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//{
+	//	USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Server Try Ability"));
+
+	//	GetAbilitySystemComponentFromActorInfo()->ServerTryActivateAbility_Validate(Handle, true, FPredictionKey());
+	//}
+
 	ApplyEffectsViaArray(ActivateAbilityEffects, Handle, ActorInfo, ActivationInfo);
 
 	OnActivateAbility.Broadcast();
@@ -115,16 +132,22 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 
 			ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector());
 
-			DoSomethingWithTargetVector();
+			//DoSomethingWithTargetVector();
 		}
 	}
 }
 
 void UUSAGameplayAbility::ServerRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)
 {
+	MulticastRPC_SetTargetVectorAndDoSomething(InVector);
+}
+
+void UUSAGameplayAbility::MulticastRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)
+{
 	TargetVector = InVector;
 	DoSomethingWithTargetVector();
 }
+
 
 // ==============================================================================================================
 
@@ -146,101 +169,115 @@ bool UUSAGameplayAbility::GetIsAbleToActivateCondition()
 
 // ==============================================================================================================
 
-//void UUSAGameplayAbility::ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
-//{
-//	FVector ClientLocation = FVector::ZeroVector;
-//	CalculateTargetDataVector(ClientLocation);
-//
-//	FGameplayAbilityTargetDataHandle TargetDataHandle;
-//	FGameplayAbilityTargetData_LocationInfo* TargetData = new FGameplayAbilityTargetData_LocationInfo();
-//
-//	TargetData->TargetLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
-//	TargetData->TargetLocation.LiteralTransform = FTransform(ClientLocation);
-//
-//	TargetDataHandle.Add(TargetData);
-//
-//	// Notify self (local client) *AND* server that TargetData is ready to be processed
-//	NotifyTargetDataReady(TargetDataHandle, FGameplayTag());  // send with a gameplay tag, or empty
-//}
-//
-//void UUSAGameplayAbility::NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
-//{
-//	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
-//
-//	if (ASC == nullptr)
-//	{
-//		SimpleCancelAbility();
-//		return;
-//	}
-//
-//	if (ASC->FindAbilitySpecFromHandle(CurrentSpecHandle) == nullptr)
-//	{
-//		SimpleCancelAbility();
-//		return;
-//	}
-//
-//	// if commit fails, cancel ability
-//	if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo) == false)
-//	{
-//		SimpleCancelAbility();
-//		return;
-//	}
-//
-//	// true if we need to replicate this target data to the server
-//	const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
-//
-//	// Start a scoped prediction window
-//	FScopedPredictionWindow	ScopedPrediction(ASC);
-//
-//	// Lyra does this memcopy operation; const cast paranoia is real. We'll keep it.
-//	// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
-//	const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
-//
-//	// if this isn't the local player on the server, then notify the server
-//	if (bShouldNotifyServer)
-//	{
-//		ASC->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, ASC->ScopedPredictionKey);
-//	}
-//
-//	// Execute the ability we've now successfully committed
-//	ActivateAbilityWithTargetData_ClientServer(LocalTargetDataHandle, ApplicationTag);
-//
-//	// We've processed the data, clear it from the RPC buffer
-//	ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
-//}
-//
-//void UUSAGameplayAbility::ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag)
-//{
-//	// retrieve data
-//	const FGameplayAbilityTargetData* TargetData = TargetDataHandle.Get(0);
-//	if (TargetData == nullptr)
-//	{
-//		SimpleCancelAbility();
-//		return;
-//	}
-//
-//	// decode data
-//	const FVector ClientVector = TargetData->GetEndPoint();
-//
-//	//// Server: Validate data
-//	//const bool bIsServer = CurrentActorInfo->IsNetAuthority();
-//	//if (bIsServer)
-//	//{
-//	//	if (ClientVector.X < 0)  // if negative X is prohibited by server for some reason
-//	//	{
-//	//		SimpleCancelAbility();
-//	//		return;
-//	//	}
-//	//}
-//
-//	DoSomethingWithTargetDataVector(ClientVector);
-//}
-//
-//void UUSAGameplayAbility::ActivateAbilityWithTargetData(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
-//{
-//	ActivateAbilityWithTargetData_Client(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-//}
-//
+void UUSAGameplayAbility::ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	CalculateTargetVector();
+
+	FGameplayAbilityTargetDataHandle TargetDataHandle;
+	FGameplayAbilityTargetData_LocationInfo* TargetData = new FGameplayAbilityTargetData_LocationInfo();
+
+	TargetData->TargetLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
+	TargetData->TargetLocation.LiteralTransform = FTransform(TargetVector);
+
+	TargetDataHandle.Add(TargetData);
+
+	// Notify self (local client) *AND* server that TargetData is ready to be processed
+	NotifyTargetDataReady(TargetDataHandle, FGameplayTag());  // send with a gameplay tag, or empty
+}
+
+void UUSAGameplayAbility::NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+{
+	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
+
+	if (ASC == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	if (ASC->FindAbilitySpecFromHandle(CurrentSpecHandle) == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	// if commit fails, cancel ability
+	if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo) == false)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	// true if we need to replicate this target data to the server
+	const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
+
+	// Start a scoped prediction window
+	FScopedPredictionWindow	ScopedPrediction(ASC);
+
+	// Lyra does this memcopy operation; const cast paranoia is real. We'll keep it.
+	// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
+	const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
+
+	// if this isn't the local player on the server, then notify the server
+	if (bShouldNotifyServer)
+	{
+		ASC->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, ASC->ScopedPredictionKey);
+	}
+
+	// Execute the ability we've now successfully committed
+	ActivateAbilityWithTargetData_ClientServer(LocalTargetDataHandle, ApplicationTag);
+
+	// We've processed the data, clear it from the RPC buffer
+	ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+}
+
+void UUSAGameplayAbility::ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag)
+{
+	// retrieve data
+	const FGameplayAbilityTargetData* TargetData = TargetDataHandle.Get(0);
+	if (TargetData == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	// decode data
+	//const FVector ClientVector = TargetData->GetEndPoint();
+	TargetVector = TargetData->GetEndPoint();
+
+	//// Server: Validate data
+	//const bool bIsServer = CurrentActorInfo->IsNetAuthority();
+	//if (bIsServer)
+	//{
+	//	if (ClientVector.X < 0)  // if negative X is prohibited by server for some reason
+	//	{
+	//		SimpleCancelAbility();
+	//		return;
+	//	}
+	//}
+
+	DoSomethingWithTargetVector();
+}
+
+void UUSAGameplayAbility::ActivateAbilityWithTargetData(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	if (UKismetSystemLibrary::IsServer(GetWorld()))
+	{
+		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+		{
+
+		}
+	}
+	else
+	{
+		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+		{
+			ActivateAbilityWithTargetData_Client(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+		}
+	}
+}
+
 //void UUSAGameplayAbility::CalculateTargetDataVector(FVector& InOut)
 //{
 //	// ...

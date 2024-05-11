@@ -117,6 +117,24 @@ public:
 
 // ========================================================================================
 
+USTRUCT(BlueprintType)
+struct FUSAGameplayTagInputInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Input GameplayTag Info")
+	FGameplayTag InputGameplayTag_Pressed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Input GameplayTag Info")
+	FGameplayTag InputGameplayTag_Holding;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Input GameplayTag Info")
+	FGameplayTag InputGameplayTag_Released;
+};
+
+// ========================================================================================
+
 UCLASS()
 class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface, public IUSATargetableInterface
 {
@@ -400,6 +418,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayAbilities_Active;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TMap <class UInputAction*, FUSAGameplayTagInputInfo> GameplayTagInputInfos;
+
+	TMap <class UInputAction*, bool> bIsCurrentInputPressedMap;
+
+	TMap <int32, bool> bIsCurrentInputPressedIDMap;
+
+	TMap <class UInputAction*, FTimerHandle> CurrentInputTimerHandleMap;
+
+	const float CurrentInputMaintainTime = 0.3f;
+
+
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
@@ -461,6 +491,16 @@ protected:
 
 	void InputPressGameplayAbilityByInputID(int32 InputID);
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);
+
+	void ActiveGameplayTagInput_Pressed(class UInputAction* InInput);
+	void ActiveGameplayTagInput_Released(class UInputAction* InInput);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
+
 
 	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_IgnoreMoveInput(const struct FGameplayTag CallbackTag, int32 NewCount);

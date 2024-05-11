@@ -25,6 +25,8 @@ void UAT_SpawnActors::Activate()
 	Super::Activate();
 
 	SpawnActorAndSetNextTimer();
+
+	SetWaitingOnAvatar();
 }
 
 
