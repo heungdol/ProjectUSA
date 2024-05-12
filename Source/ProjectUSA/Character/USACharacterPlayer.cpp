@@ -129,31 +129,8 @@ void AUSACharacterPlayer::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	//bool bIsMovable = false;
-	//FRotator MoveRotation = FRotator::ZeroRotator;
-
-	//if (bIsTargetingCamera != 0
-	//	&& TargetingCameraActor != nullptr)
-	//{
-	//	bIsMovable = true;
-
-	//	MoveRotation = TargetingCameraActor->GetActorRotation();
-	//	MoveRotation.Pitch = 0.0f;
-	//	MoveRotation.Roll = 0.0f;
-	//}
-	//else if (Controller != nullptr)
-	//{
-	//	bIsMovable = true;
-
-	//	MoveRotation = Controller->GetControlRotation();
-	//}
-
-	//if (bIsMovable == false)
-	//{
-	//	return;
-	//}
-
-	if (PlayerController == nullptr)
+	if (PlayerController == nullptr
+		|| PlayerController->PlayerCameraManager == nullptr)
 	{
 		return;
 	}
@@ -196,82 +173,23 @@ void AUSACharacterPlayer::OnRep_ASC()
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 {
-	// 오버랩으로 모든 액터 가져오기
-	FVector SourceLocation = GetActorLocation();
-	//float DistanceFromSourceToTarget = 0.0f;
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> TraceObjectTypes;
-	TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Visibility));
-	TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
-
-	UClass* SeekClass = AActor::StaticClass();
-
-	TArray<AActor*> IgnoreActors;
-	IgnoreActors.Init(this, 1);
-
-	TArray<AActor*> TempTargetableActors_Overlap;
-
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), SourceLocation, TargetableActorRange, TraceObjectTypes, SeekClass, IgnoreActors, TempTargetableActors_Overlap);
-
-	// 인터페이스를 이용하여 타깃 가능한 액터 가져오기
-	TArray<TPair<float, AActor*>> TempTargetableActors_Scored;
-	const float ScoreWeight = 0.6f;
-	const float DotCutoff = 0.0f;
-
-	for (AActor* TempActor : TempTargetableActors_Overlap)
+	if (PlayerController == nullptr
+		|| PlayerController->PlayerCameraManager == nullptr)
 	{
-		if (TempActor->GetClass()->ImplementsInterface(UUSATargetableInterface::StaticClass()))
-		{
-			// 만약 타겟팅이 불가능 하면 무시
-			if (Cast<IUSATargetableInterface>(TempActor)->GetIsTargetableCurrently() == false)
-			{
-				continue;
-			}
-
-			// 점수 계산
-
-			// 1. 거리
-			float DistanceFromSourceToTarget = (TempActor->GetActorLocation() - SourceLocation).SquaredLength();
-			float CurrentTempActorScore_Distance = 1 - (DistanceFromSourceToTarget / (TargetableActorRange * TargetableActorRange));
-
-			// 2. 방향 (내적)
-			float CurrentTempActorScore_Direction = 0.1f;
-			
-			if (PlayerController != nullptr)
-			{
-				FVector DirectionFromSourceToTarget = TempActor->GetActorLocation() - SourceLocation;
-				DirectionFromSourceToTarget.Normalize();
-
-				FVector DirectionCamera = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
-				CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, DirectionCamera);
-			}
-
-			if (CurrentTempActorScore_Direction < DotCutoff)
-			{
-				continue;
-			}
-
-			// ...
-			float CurrentTempActorScore = (CurrentTempActorScore_Distance * ScoreWeight) + (CurrentTempActorScore_Direction * (1 - ScoreWeight));
-
-			TempTargetableActors_Scored.Add({ CurrentTempActorScore, TempActor });
-		}
+		return;
 	}
 
-	TempTargetableActors_Scored.Sort();
-
-	// 가장 가까운 액터를 타깃으로 
-	if (TempTargetableActors_Scored.IsEmpty() == false)
-	{
-		CurrentTargetableActor = TempTargetableActors_Scored[TempTargetableActors_Scored.Num() - 1].Value;
-	}
-	else
-	{
-		CurrentTargetableActor = nullptr;
-	}
+	// 카메라 방향 기준으로 타깃 설정
+	SetCurrentTargetableActorUsingForwardVector(PlayerController->PlayerCameraManager->GetCameraRotation().Vector());
 }
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
+{
+	// 플레이어 방향 기준으로 타깃 설정
+	SetCurrentTargetableActorUsingForwardVector(GetActorForwardVector());
+}
+
+void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection)
 {
 	// 오버랩으로 모든 액터 가져오기
 	FVector SourceLocation = GetActorLocation();
@@ -281,7 +199,6 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 	TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Visibility));
 	TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 
-
 	UClass* SeekClass = AActor::StaticClass();
 
 	TArray<AActor*> IgnoreActors;
@@ -314,16 +231,13 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 
 			// 2. 방향 (내적)
 			float CurrentTempActorScore_Direction = 0.1f;
+	
+			FVector DirectionFromSourceToTarget = TempActor->GetActorLocation() - SourceLocation;
+			DirectionFromSourceToTarget.Normalize();
 
-			if (PlayerController != nullptr)
-			{
-				FVector DirectionFromSourceToTarget = TempActor->GetActorLocation() - SourceLocation;
-				DirectionFromSourceToTarget.Normalize();
-
-				// 임시와 포커스의 차이점
-				FVector DirectionCamera = GetActorForwardVector();
-				CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, DirectionCamera);
-			}
+			// 임시와 포커스의 차이점
+			CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, InDirection);
+		
 
 			// 만약 정 반대의 방향을 가리키면 무시
 			if (CurrentTempActorScore_Direction < DotCutoff)
@@ -344,6 +258,10 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 	if (TempTargetableActors_Scored.IsEmpty() == false)
 	{
 		CurrentTargetableActor = TempTargetableActors_Scored[TempTargetableActors_Scored.Num() - 1].Value;
+	}
+	else
+	{
+		CurrentTargetableActor = nullptr;
 	}
 }
 

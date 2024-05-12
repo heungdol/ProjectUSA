@@ -64,7 +64,9 @@ protected:
 	virtual void SetupGAS() override;
 	virtual void OnRep_ASC() override;
 
-	virtual void UpdateCurrentTargetableActor() override;
-	virtual void UpdateCurrentTargetableActor_Instant() override;
+	void UpdateCurrentTargetableActor() override;
+	void UpdateCurrentTargetableActor_Instant() override;
+
+	void SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection);
 
 };
