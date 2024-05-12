@@ -115,7 +115,11 @@ void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(UAbilitySystemComponent* I
 		}
 
 		FGameplayAbilitySpec* GameplayAbilitySpec = InASC->FindAbilitySpecFromClass(Ability);
-		InASC->ClearAbility(GameplayAbilitySpec->Handle);
+
+		if (GameplayAbilitySpec != nullptr)
+		{
+			InASC->ClearAbility(GameplayAbilitySpec->Handle);
+		}
 
 		//USA_LOG(LogTemp, Log, TEXT("Clear Ability"));
 	}
@@ -152,7 +156,7 @@ void AUSAWeaponBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 
 	if (USACharacter != nullptr)
 	{
-		USACharacter->AddStartWeapon(this);
+		USACharacter->AddNextWaitingWeapon(this);
 	}
 }
 

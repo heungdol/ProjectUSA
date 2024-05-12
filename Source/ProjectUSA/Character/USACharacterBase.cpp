@@ -337,25 +337,30 @@ void AUSACharacterBase::MulticastRPC_StopAnimMontage_Implementation(UAnimMontage
 
 //
 
-void AUSACharacterBase::AddStartWeapon(AUSAWeaponBase* InStartWeapon)
+void AUSACharacterBase::AddNextWaitingWeapon(AUSAWeaponBase* InWeapon)
 {
 	//MulticastRPC_SetNextWeapon(InNextWeapon);
+	
+	//if (UKismetSystemLibrary::IsStandalone(GetWorld())
+	//	|| UKismetSystemLibrary::IsServer(GetWorld()))
+	//{
 
-	if (UKismetSystemLibrary::IsStandalone(GetWorld())
-		|| UKismetSystemLibrary::IsServer(GetWorld()))
-	{
+	//}
+	//else
+	//{
+	//	return;
+	//}
 
-	}
-	else
+	if (HasAuthority() == false)
 	{
 		return;
 	}
 	
-	if (InStartWeapon != nullptr)
+	if (InWeapon != nullptr)
 	{
-		StartWeapons.Add(InStartWeapon);
+		NextWaitingWeapons.Add(InWeapon);
 
-		OnRep_StartWeapon();
+		OnRep_NextWaitingWeapon();
 	}
 }
 
@@ -367,7 +372,7 @@ void AUSACharacterBase::AddStartWeapon(AUSAWeaponBase* InStartWeapon)
 //	//}
 //}
 
-void AUSACharacterBase::OnRep_StartWeapon()
+void AUSACharacterBase::OnRep_NextWaitingWeapon()
 {
 	if (ASC == nullptr)
 	{
@@ -376,7 +381,10 @@ void AUSACharacterBase::OnRep_StartWeapon()
 		return;
 	}
 
-	InitCurrentWeapons();
+	if (HasAuthority() == true)
+	{
+		UpdateCurrentWeapons();
+	}
 
 	//EquipFinalNextWeapon();
 }
@@ -535,6 +543,16 @@ void AUSACharacterBase::BeginPlay()
 	//ResetAttributeSet();
 
 	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+}
+
+void AUSACharacterBase::Destroyed()
+{
+	if (ASC != nullptr)
+	{
+		ASC->ClearAllAbilities ();
+	}
+
+	Super::Destroyed();
 }
 
 // Called every frame
@@ -1138,9 +1156,9 @@ void AUSACharacterBase::CheckCharacterByGameplayTags()
 	OnGameplayTagCallback_Dead(USA_CHARACTER_STATE_DEAD, Count);
 }
 
-void AUSACharacterBase::InitCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
+void AUSACharacterBase::UpdateCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 {
-	for (AUSAWeaponBase* StartWeapon : StartWeapons)
+	for (AUSAWeaponBase* StartWeapon : NextWaitingWeapons)
 	{
 		if (StartWeapon == nullptr)
 		{
@@ -1159,6 +1177,11 @@ void AUSACharacterBase::InitCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 			CurrentEquipedWeapons.Add({ WeaponType, nullptr });
 		}
 
+		if (CurrentEquipedWeapons[WeaponType] != nullptr)
+		{
+			continue;
+		}
+
 		StartWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
 
 		AttachWeaponToHolderSocket(StartWeapon);
@@ -1166,7 +1189,7 @@ void AUSACharacterBase::InitCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 		CurrentEquipedWeapons[WeaponType] = StartWeapon;
 	}
 
-	StartWeapons.Empty();
+	NextWaitingWeapons.Empty();
 }
 
 //void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
@@ -1613,7 +1636,7 @@ void AUSACharacterBase::PostSetupGAS()
 
 			//EquipFinalNextWeapon();
 
-			InitCurrentWeapons();
+			UpdateCurrentWeapons();
 		}
 	}
 
@@ -1802,6 +1825,6 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
 
-	DOREPLIFETIME(AUSACharacterBase, StartWeapons);
+	DOREPLIFETIME(AUSACharacterBase, NextWaitingWeapons);
 }
 

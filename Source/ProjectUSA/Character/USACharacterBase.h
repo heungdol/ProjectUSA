@@ -200,8 +200,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
-	UPROPERTY(ReplicatedUsing = OnRep_StartWeapon, EditDefaultsOnly, BlueprintReadWrite)
-	TArray<TObjectPtr <class AUSAWeaponBase>> StartWeapons;
+	UPROPERTY(ReplicatedUsing = OnRep_NextWaitingWeapon, EditDefaultsOnly, BlueprintReadWrite)
+	TArray<TObjectPtr <class AUSAWeaponBase>> NextWaitingWeapons;
 
 	UPROPERTY()
 	bool bIsSetStartWeaponBeforeGASSetup = false;
@@ -227,8 +227,9 @@ public:
 	// Sets default values for this character's properties
 	AUSACharacterBase();
 
-protected:
 	virtual void BeginPlay() override;
+
+	virtual void Destroyed() override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -273,16 +274,10 @@ public:
 	//
 
 	UFUNCTION(BlueprintCallable)
-	void AddStartWeapon(class AUSAWeaponBase* InStartWeapon);
-
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
-
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MulticastRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
+	void AddNextWaitingWeapon(class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION()
-	void OnRep_StartWeapon();
+	void OnRep_NextWaitingWeapon();
 
 	//void EquipFinalNextWeapon();
 
@@ -375,7 +370,7 @@ protected:
 	//
 
 	//UFUNCTION(BlueprintCallable)
-	void InitCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
+	void UpdateCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
 	
 	//UFUNCTION(BlueprintCallable)
 	//void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
