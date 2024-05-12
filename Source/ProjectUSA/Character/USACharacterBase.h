@@ -173,6 +173,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
 	TObjectPtr <class UInputAction> TargetAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
+	TObjectPtr <class UInputAction> DropAction;
+
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Widget")
@@ -270,7 +273,7 @@ public:
 	//
 
 	UFUNCTION(BlueprintCallable)
-	void AddWaitingWeapon(class AUSAWeaponBase* InNextWeapon);
+	void AddStartWeapon(class AUSAWeaponBase* InStartWeapon);
 
 	//UFUNCTION(Server, Reliable, WithValidation)
 	//void ServerRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
@@ -346,6 +349,7 @@ protected:
 	virtual void MoveEnd(const struct FInputActionValue& Value);
 	virtual void Look(const struct FInputActionValue& Value);
 	virtual void DoTarget(const struct FInputActionValue& Value);
+	virtual void DoDrop(const struct FInputActionValue& Value);
 
 	//
 
@@ -373,14 +377,24 @@ protected:
 	//UFUNCTION(BlueprintCallable)
 	void InitCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
 	
-	UFUNCTION(BlueprintCallable)
-	void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
+	//UFUNCTION(BlueprintCallable)
+	//void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHandSocket (class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void DropWeapons ();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_DropWeapons();
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_DropWeapons();
+
 
 
 	virtual bool GetIsTargetableCurrently() override;

@@ -40,6 +40,8 @@ public:
 	void InitPlayerController();
 	void InitTargetingCameraActor();
 
+	//
+
 	int8 bIsTargetingCamera : 1;
 	virtual void DoTarget(const struct FInputActionValue& Value) override;
 	
@@ -56,6 +58,10 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishTargeting", ScriptName = "OnFinishTargeting"))
 	void K2_OnFinishTargeting();
+
+	//
+
+	virtual void DoDrop(const struct FInputActionValue& Value) override;
 
 
 protected:

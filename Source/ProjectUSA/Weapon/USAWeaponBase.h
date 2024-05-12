@@ -37,6 +37,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
 	TObjectPtr <class UStaticMeshComponent> WeaponStaticMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr <class UBoxComponent> WeaponBoxComponent;
+
 	//
 	
 
@@ -58,6 +61,13 @@ public:
 
 	//
 
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
+	class UAbilitySystemComponent* WeaponOwnerASC = nullptr;
+
+	//UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	//bool bHasWeaponOwener = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -66,11 +76,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
+	//
+
 	UFUNCTION(BlueprintCallable)
 	void GiveGameplayWeaponAbilitesToASC(class UAbilitySystemComponent* InASC);
 
 	UFUNCTION(BlueprintCallable)
 	void ClearGameplayWeaponAbilitesToASC(class UAbilitySystemComponent* InASC);
+
+	//
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FName GetWeaponHolderSocketName() const {return WeaponHolderSocketName;}
@@ -78,6 +92,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FName GetWeaponHandSocketName() const { return WeaponHandSocketName; }
 
+	//
+
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EUSAWeaponType GetWeaponType() const { return WeaponType; }
+
+protected:
+	UFUNCTION()
+	void OnWeaponOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 };

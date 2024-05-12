@@ -82,6 +82,13 @@ void AUSACharacterPlayer::Tick(float DeltaTime)
 }
 
 
+void AUSACharacterPlayer::DoDrop(const FInputActionValue& Value)
+{
+	Super::DoDrop(Value);
+
+	DropWeapons();
+}
+
 void AUSACharacterPlayer::Look(const FInputActionValue& Value)
 {
 	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();

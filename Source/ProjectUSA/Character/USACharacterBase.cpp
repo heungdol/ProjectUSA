@@ -337,7 +337,7 @@ void AUSACharacterBase::MulticastRPC_StopAnimMontage_Implementation(UAnimMontage
 
 //
 
-void AUSACharacterBase::AddWaitingWeapon(AUSAWeaponBase* InNextWeapon)
+void AUSACharacterBase::AddStartWeapon(AUSAWeaponBase* InStartWeapon)
 {
 	//MulticastRPC_SetNextWeapon(InNextWeapon);
 
@@ -351,25 +351,9 @@ void AUSACharacterBase::AddWaitingWeapon(AUSAWeaponBase* InNextWeapon)
 		return;
 	}
 	
-	if (InNextWeapon != nullptr)
+	if (InStartWeapon != nullptr)
 	{
-		//NextWeapon = InNextWeapon;
-
-		//EUSAWeaponType WeaponType = InNextWeapon->GetWeaponType();
-
-		//if (NextWaitingWeapons.Contains(WeaponType)
-		//	&& NextWaitingWeapons[WeaponType] != nullptr)
-		//{
-		//	NextWaitingWeapons[WeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-		//}
-		//else
-		//{
-		//	NextWaitingWeapons.Add({ WeaponType, nullptr });
-		//}
-
-		//NextWaitingWeapons[WeaponType] = InNextWeapon;
-
-		StartWeapons.Add(InNextWeapon);
+		StartWeapons.Add(InStartWeapon);
 
 		OnRep_StartWeapon();
 	}
@@ -456,6 +440,11 @@ FVector AUSACharacterBase::GetUSACharacterDirection_Target()
 }
 
 void AUSACharacterBase::DoTarget(const struct FInputActionValue& Value)
+{
+	// ...
+}
+
+void AUSACharacterBase::DoDrop(const FInputActionValue& Value)
 {
 	// ...
 }
@@ -563,8 +552,12 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Move);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AUSACharacterBase::MoveEnd);
+
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
+
 		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoTarget);
+
+		EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoDrop);
 
 		for (const auto& GameplayActiveAbility : GameplayAbilities_Active)
 		{
@@ -1176,17 +1169,17 @@ void AUSACharacterBase::InitCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 	StartWeapons.Empty();
 }
 
-void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
-{
-	if (CurrentEquipedWeapons.Contains(InWeaponType)
-		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
-	{
-		CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-		CurrentEquipedWeapons[InWeaponType] = nullptr;
-	}
-
-	// TODO: 드롭 혹은 파괴 과정 수행할 것
-}
+//void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
+//{
+//	if (CurrentEquipedWeapons.Contains(InWeaponType)
+//		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
+//	{
+//		CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+//		CurrentEquipedWeapons[InWeaponType] = nullptr;
+//	}
+//
+//	// TODO: 드롭 혹은 파괴 과정 수행할 것
+//}
 
 void AUSACharacterBase::AttachWeaponToHandSocket(AUSAWeaponBase* InWeapon)
 {
@@ -1222,6 +1215,43 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 	(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 
 	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHolderSocketName());
+}
+
+void AUSACharacterBase::DropWeapons()
+{
+	//TArray<TObjectPtr <AUSAWeaponBase>> CurrentEquipedWeaponValues;
+	//CurrentEquipedWeapons.GenerateValueArray(CurrentEquipedWeaponValues);
+
+	ServerRPC_DropWeapons();
+}
+
+void AUSACharacterBase::ServerRPC_DropWeapons_Implementation()
+{
+	// 서버 클라 모두 수행
+	MulticastRPC_DropWeapons();
+}
+
+void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
+{
+	//USA_LOG(LogTemp, Log, TEXT("Drop Weapon!!!!"));
+
+	TArray<EUSAWeaponType> CurrentEquipedWeaponKeys;
+	CurrentEquipedWeapons.GenerateKeyArray(CurrentEquipedWeaponKeys);
+
+	for (EUSAWeaponType CurrentEquipedWeaponKey : CurrentEquipedWeaponKeys)
+	{
+		if (CurrentEquipedWeapons[CurrentEquipedWeaponKey] == nullptr)
+		{
+			continue;
+		}
+
+		CurrentEquipedWeapons[CurrentEquipedWeaponKey]->ClearGameplayWeaponAbilitesToASC(ASC);
+
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
+		CurrentEquipedWeapons[CurrentEquipedWeaponKey]->DetachFromActor(DetachmentTransformRules);
+
+		CurrentEquipedWeapons[CurrentEquipedWeaponKey] = nullptr;
+	}
 }
 
 bool AUSACharacterBase::GetIsTargetableCurrently()
