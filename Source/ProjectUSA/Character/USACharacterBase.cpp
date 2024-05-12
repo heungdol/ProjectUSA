@@ -232,7 +232,7 @@ AUSACharacterBase::AUSACharacterBase()
 
 	ASC = nullptr;
 
-	bIsSetNextWeaponBeforeGASSetup = false;
+	bIsSetStartWeaponBeforeGASSetup = false;
 
 	//NetUpdateFrequency = 200.0f;
 }
@@ -369,9 +369,9 @@ void AUSACharacterBase::AddWaitingWeapon(AUSAWeaponBase* InNextWeapon)
 
 		//NextWaitingWeapons[WeaponType] = InNextWeapon;
 
-		NextWaitingWeapons.Add(InNextWeapon);
+		StartWeapons.Add(InNextWeapon);
 
-		OnRep_NextWeapon();
+		OnRep_StartWeapon();
 	}
 }
 
@@ -383,16 +383,16 @@ void AUSACharacterBase::AddWaitingWeapon(AUSAWeaponBase* InNextWeapon)
 //	//}
 //}
 
-void AUSACharacterBase::OnRep_NextWeapon()
+void AUSACharacterBase::OnRep_StartWeapon()
 {
 	if (ASC == nullptr)
 	{
-		bIsSetNextWeaponBeforeGASSetup = true;
+		bIsSetStartWeaponBeforeGASSetup = true;
 
 		return;
 	}
 
-	UpdateCurrentWeapons();
+	InitCurrentWeapons();
 
 	//EquipFinalNextWeapon();
 }
@@ -1145,60 +1145,35 @@ void AUSACharacterBase::CheckCharacterByGameplayTags()
 	OnGameplayTagCallback_Dead(USA_CHARACTER_STATE_DEAD, Count);
 }
 
-void AUSACharacterBase::UpdateCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
+void AUSACharacterBase::InitCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 {
-	//if (InWeapon == nullptr)
-	//{
-	//	return;
-	//}
-
-	for (AUSAWeaponBase* NextWeapon : NextWaitingWeapons)
+	for (AUSAWeaponBase* StartWeapon : StartWeapons)
 	{
-		if (NextWeapon == nullptr)
+		if (StartWeapon == nullptr)
 		{
 			continue;
 		}
 
-		EUSAWeaponType WeaponType = NextWeapon->GetWeaponType();
+		EUSAWeaponType WeaponType = StartWeapon->GetWeaponType();
 
 		if (CurrentEquipedWeapons.Contains(WeaponType)
 			&& CurrentEquipedWeapons[WeaponType] != nullptr)
 		{
-			CurrentEquipedWeapons[WeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+			//CurrentEquipedWeapons[WeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
 		}
 		else
 		{
 			CurrentEquipedWeapons.Add({ WeaponType, nullptr });
 		}
 
-		NextWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
+		StartWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
 
-		AttachWeaponToHolderSocket(NextWeapon);
+		AttachWeaponToHolderSocket(StartWeapon);
 
-		CurrentEquipedWeapons[WeaponType] = NextWeapon;
+		CurrentEquipedWeapons[WeaponType] = StartWeapon;
 	}
 
-	NextWaitingWeapons.Empty();
-	
-	//EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
-
-	//if (CurrentEquipedWeapons.Contains (InWeaponType)
-	//	&& CurrentEquipedWeapons[InWeaponType] != nullptr)
-	//{
-	//	CurrentEquipedWeapons[InWeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-	//}
-	//else
-	//{
-	//	CurrentEquipedWeapons.Add({ InWeaponType, nullptr });
-	//}
-
-	//InWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-
-	//AttachWeaponToHolderSocket(InWeapon);
-
-	//CurrentEquipedWeapons[InWeaponType] = InWeapon;
-
-	//USA_LOG(LogTemp, Log, TEXT("Setting Weapon Complete"));
+	StartWeapons.Empty();
 }
 
 void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
@@ -1602,13 +1577,13 @@ void AUSACharacterBase::PostSetupGAS()
 		}
 
 		// 첫 스폰 시, 딜레이를 고려한 무기 장착 과정
-		if (bIsSetNextWeaponBeforeGASSetup)
+		if (bIsSetStartWeaponBeforeGASSetup)
 		{
-			bIsSetNextWeaponBeforeGASSetup = false;
+			bIsSetStartWeaponBeforeGASSetup = false;
 
 			//EquipFinalNextWeapon();
 
-			UpdateCurrentWeapons();
+			InitCurrentWeapons();
 		}
 	}
 
@@ -1797,6 +1772,6 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
 
-	DOREPLIFETIME(AUSACharacterBase, NextWaitingWeapons);
+	DOREPLIFETIME(AUSACharacterBase, StartWeapons);
 }
 

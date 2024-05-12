@@ -30,16 +30,22 @@ void UAT_PlayAnimMontages::Activate()
 {
 	if (Ability == nullptr)
 	{
+		SimpleCancelAbilityTask();
 		return;
 	}
 
 	if (PlayAnimMontageData == nullptr)
 	{
+		SimpleCancelAbilityTask();
 		return;
 	}
 
+	if (PlayAnimMontageData->AnimMontage == nullptr)
+	{
+		SimpleCancelAbilityTask();
+		return;
+	}
 
-	bool bPlayedMontage = false;
 	//CurrentPlayAnimMontageIndex = -1;
 
 	//if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
@@ -54,6 +60,7 @@ void UAT_PlayAnimMontages::Activate()
 	//		CurrentPlayAnimMontageIndex = 0;	
 	//	}
 	//}
+	bool bPlayedMontage = false;
 
 	ACharacter* MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
 
@@ -137,7 +144,8 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 		MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
 	}
 	
-	if (MyCharacter != nullptr)
+	if (MyCharacter != nullptr
+		&& PlayAnimMontageData->AnimMontage != nullptr)
 	{
 		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
@@ -231,6 +239,11 @@ void UAT_PlayAnimMontages::OnAnimSectionGameplayTagRemoved(const FGameplayTag In
 bool UAT_PlayAnimMontages::StopPlayingMontage()
 {
 	if (PlayAnimMontageData == nullptr)
+	{
+		return false;
+	}
+
+	if (PlayAnimMontageData->AnimMontage == nullptr)
 	{
 		return false;
 	}

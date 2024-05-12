@@ -77,8 +77,8 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
 	
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
 
 
 protected:

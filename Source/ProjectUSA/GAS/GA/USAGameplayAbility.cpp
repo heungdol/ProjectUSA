@@ -132,21 +132,24 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 
 			ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector());
 
-			//DoSomethingWithTargetVector();
+			DoSomethingWithTargetVector();
 		}
 	}
 }
 
 void UUSAGameplayAbility::ServerRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)
 {
-	MulticastRPC_SetTargetVectorAndDoSomething(InVector);
-}
-
-void UUSAGameplayAbility::MulticastRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)
-{
+	//MulticastRPC_SetTargetVectorAndDoSomething(InVector);
+	
 	TargetVector = InVector;
 	DoSomethingWithTargetVector();
 }
+
+//void UUSAGameplayAbility::MulticastRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)
+//{
+//	TargetVector = InVector;
+//	DoSomethingWithTargetVector();
+//}
 
 
 // ==============================================================================================================

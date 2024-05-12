@@ -197,11 +197,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
-	UPROPERTY(ReplicatedUsing = OnRep_NextWeapon, EditDefaultsOnly, BlueprintReadWrite)
-	TArray<TObjectPtr <class AUSAWeaponBase>> NextWaitingWeapons;
+	UPROPERTY(ReplicatedUsing = OnRep_StartWeapon, EditDefaultsOnly, BlueprintReadWrite)
+	TArray<TObjectPtr <class AUSAWeaponBase>> StartWeapons;
 
 	UPROPERTY()
-	bool bIsSetNextWeaponBeforeGASSetup = false;
+	bool bIsSetStartWeaponBeforeGASSetup = false;
 
 	//
 
@@ -279,7 +279,7 @@ public:
 	//void MulticastRPC_SetNextWeapon(class AUSAWeaponBase* InNextWeapon);
 
 	UFUNCTION()
-	void OnRep_NextWeapon();
+	void OnRep_StartWeapon();
 
 	//void EquipFinalNextWeapon();
 
@@ -371,7 +371,7 @@ protected:
 	//
 
 	//UFUNCTION(BlueprintCallable)
-	void UpdateCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
+	void InitCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
 	
 	UFUNCTION(BlueprintCallable)
 	void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
