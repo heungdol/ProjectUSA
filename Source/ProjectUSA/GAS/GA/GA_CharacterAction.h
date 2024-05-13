@@ -27,7 +27,6 @@ enum class ECharacterActionEndType : uint8
 	WaitTagRemoved UMETA(DisplayName = "WaitTagRemoved"),
 };
 
-
 UENUM(BlueprintType)
 enum class ECharacterActionMoveType : uint8
 {
@@ -127,6 +126,11 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
 	struct FAttackTraceData AttackTraceData;
+
+	//
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: USA Jelly Effect")
+	//TMap<float, TSubclassOf<class UUSAJellyEffectData>*>  USAJellyEffectData;
 
 	//
 

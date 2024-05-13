@@ -17,9 +17,14 @@ class PROJECTUSA_API UUSAJellyEffectData : public UPrimaryDataAsset
 public:
 	UUSAJellyEffectData();
 
-public:
+protected:
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
+	//float JellyEffectActiveTime;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
 	float JellyEffectTime;
+
+	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
 	TObjectPtr<class UCurveVector> LerpCurveLocationVector;
@@ -32,6 +37,7 @@ public:
 
 
 public:
+	//FORCEINLINE float GetJellyEffectActiveTime() { return JellyEffectActiveTime; }
 	FORCEINLINE float GetJellyEffectTime() { return JellyEffectTime; }
 
 	UFUNCTION()
@@ -44,3 +50,16 @@ public:
 	FVector GetScaleVectorByRatio(float InRatio);
 	
 };
+
+
+//USTRUCT(BlueprintType)
+//struct FUSAJellyEffectData
+//{
+//GENERATED_BODY()
+//
+//	public:
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Data")
+//	TArray <UUSAJellyEffectData> USAJellyEffectDataList;
+//
+//};

@@ -78,6 +78,8 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 		return;
 	}
 
+	// 위치 갱신
+	
 	UCharacterMovementComponent* CharacterMovementComponent = InCharacter->GetCharacterMovement();
 
 	if (CharacterMovementComponent == nullptr)
@@ -127,6 +129,7 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 
 	InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
 
+	// 메쉬 위치 갱신
 
 	FVector NewUpdatedComponentsLocation = FVector::ZeroVector;
 
@@ -143,40 +146,40 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 	case EUSACharacterCapsulePivot::Bottom:
 		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleHaflHeight);
 		break;
-	}
-
-	//InCharacter->BaseTranslationOffset = NewUpdatedComponentsLocation;
+	};
 
 	// Authority or Automonous Mesh
 	InCharacter->GetMesh()->SetRelativeLocation(NewUpdatedComponentsLocation);
 	
 	// Simulated Mesh
 	InCharacter->CacheInitialMeshOffset(NewUpdatedComponentsLocation, FRotator(0.0f, -90.0f, 0.0f));
+}
 
-	//InCharacter->GetMesh()->UpdateChildTransforms();
-	//InCharacter->GetCharacterMovement()
+void FUSACharacterCapsuleInfo::RenewJellyEffectMeshLocation(UUSAJellyEffectComponent* InJellyEffect)
+{
+	if (InJellyEffect == nullptr)
+	{
+		return;
+	}
 
-	//// Intentionally not using MoveUpdatedComponent, where a horizontal plane constraint would prevent the base of the capsule from staying at the same spot.
-	//InCharacter->GetCharacterMovement()->UpdatedComponent->MoveComponent
-	//(NewUpdatedComponentsLocation, InCharacter->GetCharacterMovement()->UpdatedComponent->GetComponentQuat(), true, nullptr, EMoveComponentFlags::MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
+	FVector NewUpdatedComponentsLocation = FVector::ZeroVector;
 
-	////// OnStartCrouch takes the change from the Default size, not the current one (though they are usually the same).
-	//////const float MeshAdjust = ScaledHalfHeightAdjust;
-	////ACharacter* DefaultCharacter = InCharacter->GetClass()->GetDefaultObject<ACharacter>();
-	//////float HalfHeightAdjust = (DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() - CapsuleHaflHeight);
-	//////ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
+	switch (CapsulePivot)
+	{
+	case EUSACharacterCapsulePivot::Top:
+		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
+		break;
 
-	//// Don't smooth this change in mesh position
-	//if ((InCharacter->GetLocalRole() == ROLE_SimulatedProxy)
-	//	|| (InCharacter->IsNetMode(NM_ListenServer) && InCharacter->GetRemoteRole() == ROLE_AutonomousProxy))
-	//{
-	//	FNetworkPredictionData_Client_Character* ClientData = InCharacter->GetCharacterMovement()->GetPredictionData_Client_Character();
-	//	if (ClientData)
-	//	{
-	//		ClientData->MeshTranslationOffset = NewUpdatedComponentsLocation;
-	//		ClientData->OriginalMeshTranslationOffset = ClientData->MeshTranslationOffset;
-	//	}
-	//}
+	case EUSACharacterCapsulePivot::Center:
+		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
+		break;
+
+	case EUSACharacterCapsulePivot::Bottom:
+		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleHaflHeight);
+		break;
+	};
+
+	InJellyEffect->SetMeshStartLocation(NewUpdatedComponentsLocation);
 }
 
 
@@ -242,9 +245,10 @@ AUSACharacterBase::AUSACharacterBase()
 	//GetMesh()->bSimulationUpdatesChildTransforms = true;
 	//GetMesh()->SetOwner
 	
-	//JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
+	JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
+	JellyEffectComponent->SetActive(true);
 	//JellyEffectComponent->SetMeshComponent(GetMesh());
-
+	//JellyEffectComponent->SetAutoActivate(true);
 
 	NicknameWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Nickname Widget Component"));
 	NicknameWidgetComponent->SetupAttachment(RootComponent);
@@ -282,22 +286,22 @@ AUSACharacterBase::AUSACharacterBase()
 //	CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
 //}
 
-bool AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Validate(ACharacter* InCharacter, const FName& InKeyName)
+bool AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Validate(/*ACharacter* InCharacter, */const FName& InKeyName)
 {
 	return true;
 }
 
-void AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Implementation(ACharacter* InCharacter, const FName& InKeyName)
+void AUSACharacterBase::ServerRPC_RenewCharacterCapsule_Implementation(/*ACharacter* InCharacter, */const FName& InKeyName)
 {
-	MulticastRPC_RenewCharacterCapsule(InCharacter, InKeyName);
+	MulticastRPC_RenewCharacterCapsule(/*InCharacter, */InKeyName);
 }
 
-void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(ACharacter* InCharacter, const FName& InKeyName)
+void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(/*ACharacter* InCharacter, */const FName& InKeyName)
 {
-	if (InCharacter == nullptr)
-	{
-		return;
-	}
+	//if (InCharacter == nullptr)
+	//{
+	//	return;
+	//}
 
 	if (CharacterCapsuleInfos.Num() <= 0)
 	{
@@ -309,8 +313,8 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 		return;
 	}
 
-	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(InCharacter);
-
+	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(this);
+	CharacterCapsuleInfos[InKeyName].RenewJellyEffectMeshLocation(JellyEffectComponent);
 	//TestStaticMeshComponent->SetRelativeLocation(CharacterCapsuleInfos[InKeyName].CapsuleHaflHeight * FVector::RightVector);
 }
 
@@ -505,7 +509,7 @@ void AUSACharacterBase::Falling()
 	if (GetLocalRole() == ENetRole::ROLE_Authority
 		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
-		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
 	}
 }
 
@@ -516,7 +520,7 @@ void AUSACharacterBase::Landed(const FHitResult& Hit)
 	if (GetLocalRole() == ENetRole::ROLE_Authority
 		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
-		ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 	}
 }
 
@@ -580,6 +584,12 @@ void AUSACharacterBase::BeginPlay()
 	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
 
 	//ResetAttributeSet();
+
+	if (JellyEffectComponent != nullptr)
+	{
+		JellyEffectComponent->SetMeshComponent(this, GetMesh());
+	}
+	
 
 	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
 }
@@ -1105,7 +1115,7 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 		if (GetLocalRole() == ENetRole::ROLE_Authority
 			|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 		{
-			ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_CROUCH);
+			ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_CROUCH);
 		}
 	}
 	else
@@ -1117,7 +1127,7 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 			if (GetLocalRole() == ENetRole::ROLE_Authority
 				|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)	
 			{
-				ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_FALL);
+				ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
 			}
 		}
 		else
@@ -1125,7 +1135,7 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 			if (GetLocalRole() == ENetRole::ROLE_Authority
 				|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 			{
-				ServerRPC_RenewCharacterCapsule(this, KEYNAME_CAPSULEINFO_WALK);
+				ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 			}
 		}
 	}

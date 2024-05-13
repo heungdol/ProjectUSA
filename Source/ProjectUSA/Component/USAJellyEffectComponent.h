@@ -16,30 +16,6 @@ public:
 	// Sets default values for this component's properties
 	UUSAJellyEffectComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-public:
-	virtual void SetMeshComponent(class UMeshComponent* InMeshComponent);
-
-	FORCEINLINE class UMeshComponent* GetMeshComponent() const { return MeshComponent; }
-
-
-	virtual void PlayJellyEffect(class UUSAJellyEffectData* InJellyEffectData);
-
-	virtual void StopJellyEffect();
-
-	void TickJellyEffect();
-	void TickJellyEffectByGravity();
-	void TickJellyEffectByCapsuleOffset();
-
-	void TickJellyEffectFinal();
-
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jelly Effect")
 	TObjectPtr <class UMeshComponent> MeshComponent;
@@ -48,6 +24,51 @@ public:
 	TObjectPtr <class UUSAJellyEffectData> CurrentJellyEffectData;
 
 	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
+	bool bIsUsingJellyEffectByGravity = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
+	float MaxGravityForScale = 3000;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
+	//float GravityInterpSpeed = 5;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
+	TObjectPtr <class UCurveVector> ScaleByGravityRatio;
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	//
+
+	virtual void SetMeshComponent(class ACharacter* InCharacter, class UMeshComponent* InMeshComponent);
+
+	FORCEINLINE class UMeshComponent* GetMeshComponent() const { return MeshComponent; }
+
+	//
+
+	void SetMeshStartLocation(FVector InVector);
+
+	//
+	UFUNCTION(BlueprintCallable)
+	virtual void PlayJellyEffect(class UUSAJellyEffectData* InJellyEffectData);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StopJellyEffect();
+
+	void TickJellyEffect();
+	void TickJellyEffectByGravity();
+	//void TickJellyEffectByCapsuleOffset();
+
+	void TickJellyEffectFinal();
+
+protected:
 
 	bool bIsPlayingJellyEffect;
 
@@ -64,19 +85,5 @@ public:
 
 	FVector CurrentJellyEffectCapsuleOffsetLocation;
 	FVector CurrentJellyEffectGravityScale;
-
-public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect Character")
-	bool bIsUsingJellyEffectByGravity = false;
-		
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect Character")
-	float MaxGravityForScale = 3000;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect Character")
-	//float GravityInterpSpeed = 5;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect Character")
-	TObjectPtr <class UCurveVector> ScaleByGravityRatio;
 
 };

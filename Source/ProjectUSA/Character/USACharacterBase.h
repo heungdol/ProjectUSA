@@ -89,6 +89,9 @@ public:
 	void RenewCharacterCapsuleSize(class ACharacter* InCharacter);	
 	void RenewCharacterCapsuleLocation(class ACharacter* InCharacter);
 
+	//
+
+	void RenewJellyEffectMeshLocation(class UUSAJellyEffectComponent* InJellyEffect);
 };
 
 
@@ -249,10 +252,10 @@ public:
 
 public:
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
+	void ServerRPC_RenewCharacterCapsule(/*class ACharacter* InCharacter, */const FName& InKeyName);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_RenewCharacterCapsule(class ACharacter* InCharacter, const FName& InKeyName);
+	void MulticastRPC_RenewCharacterCapsule(/*class ACharacter* InCharacter, */const FName& InKeyName);
 
 	//
 

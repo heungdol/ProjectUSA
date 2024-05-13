@@ -138,6 +138,7 @@ void AUSAWeaponBase::OnRep_WeaponOwnerASC()
 		DetachFromActor(DetachmentTransformRules);
 
 		SetActorRotation(FRotator::ZeroRotator);
+		SetActorScale3D(FVector::OneVector);
 	}
 }
 
