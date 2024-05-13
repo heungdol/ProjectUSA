@@ -68,6 +68,7 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter
 	}
 
 	InCharacter->GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHaflHeight);
+	//InCharacter->GetCharacterMovement()->AdjustProxyCapsuleSize();
 }
 
 void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InCharacter)
@@ -144,7 +145,38 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 		break;
 	}
 
+	//InCharacter->BaseTranslationOffset = NewUpdatedComponentsLocation;
+
+	// Authority or Automonous Mesh
 	InCharacter->GetMesh()->SetRelativeLocation(NewUpdatedComponentsLocation);
+	
+	// Simulated Mesh
+	InCharacter->CacheInitialMeshOffset(NewUpdatedComponentsLocation, FRotator(0.0f, -90.0f, 0.0f));
+
+	//InCharacter->GetMesh()->UpdateChildTransforms();
+	//InCharacter->GetCharacterMovement()
+
+	//// Intentionally not using MoveUpdatedComponent, where a horizontal plane constraint would prevent the base of the capsule from staying at the same spot.
+	//InCharacter->GetCharacterMovement()->UpdatedComponent->MoveComponent
+	//(NewUpdatedComponentsLocation, InCharacter->GetCharacterMovement()->UpdatedComponent->GetComponentQuat(), true, nullptr, EMoveComponentFlags::MOVECOMP_NoFlags, ETeleportType::TeleportPhysics);
+
+	////// OnStartCrouch takes the change from the Default size, not the current one (though they are usually the same).
+	//////const float MeshAdjust = ScaledHalfHeightAdjust;
+	////ACharacter* DefaultCharacter = InCharacter->GetClass()->GetDefaultObject<ACharacter>();
+	//////float HalfHeightAdjust = (DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() - CapsuleHaflHeight);
+	//////ScaledHalfHeightAdjust = HalfHeightAdjust * ComponentScale;
+
+	//// Don't smooth this change in mesh position
+	//if ((InCharacter->GetLocalRole() == ROLE_SimulatedProxy)
+	//	|| (InCharacter->IsNetMode(NM_ListenServer) && InCharacter->GetRemoteRole() == ROLE_AutonomousProxy))
+	//{
+	//	FNetworkPredictionData_Client_Character* ClientData = InCharacter->GetCharacterMovement()->GetPredictionData_Client_Character();
+	//	if (ClientData)
+	//	{
+	//		ClientData->MeshTranslationOffset = NewUpdatedComponentsLocation;
+	//		ClientData->OriginalMeshTranslationOffset = ClientData->MeshTranslationOffset;
+	//	}
+	//}
 }
 
 
@@ -207,9 +239,11 @@ AUSACharacterBase::AUSACharacterBase()
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
-
-	JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
-	JellyEffectComponent->SetMeshComponent(GetMesh());
+	//GetMesh()->bSimulationUpdatesChildTransforms = true;
+	//GetMesh()->SetOwner
+	
+	//JellyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
+	//JellyEffectComponent->SetMeshComponent(GetMesh());
 
 
 	NicknameWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Nickname Widget Component"));
@@ -218,6 +252,9 @@ AUSACharacterBase::AUSACharacterBase()
 	HealthBarWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Health Bar Widget Component"));
 	HealthBarWidgetComponent->SetupAttachment(RootComponent);
 
+
+	//TestStaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Test Static Mesh"));
+	//TestStaticMeshComponent->SetupAttachment(RootComponent);
 
 	//PivotComponent = CreateDefaultSubobject <UUSACharacterPivotComponent>(TEXT("Character Pivot Component"));
 	//PivotComponent->SetupAttachment(RootComponent);
@@ -273,6 +310,8 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(AChara
 	}
 
 	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(InCharacter);
+
+	//TestStaticMeshComponent->SetRelativeLocation(CharacterCapsuleInfos[InKeyName].CapsuleHaflHeight * FVector::RightVector);
 }
 
 //

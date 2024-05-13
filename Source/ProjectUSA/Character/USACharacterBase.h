@@ -148,6 +148,10 @@ protected:
 	UPROPERTY (VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	TObjectPtr <class USpringArmComponent> CameraSpringArmComponent;
 
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
+	//TObjectPtr <class UStaticMeshComponent> TestStaticMeshComponent;
+
+
 	//
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
@@ -218,9 +222,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Targeting Info")
 	float TargetableActorRange = 1000.0f; 
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Targeting Info")
 	TObjectPtr<AActor> CurrentTargetableActor;
-	//TArray<AActor*> TargetableActors;
-
 
 
 public:
