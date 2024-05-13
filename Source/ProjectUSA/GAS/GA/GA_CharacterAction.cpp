@@ -144,6 +144,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 		UAT_MoveToLocationByVelocity* AbilityTask_MoveToLocation;
 		UAT_LaunchCharacterForPeriod* AbilityTask_LaunchCharacter;
+		UAT_ChangeCharacterMovementInfo* AbilityTask_ChangeMovementInfo;
 
 		switch (MoveType)
 		{
@@ -162,8 +163,11 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 		case ECharacterActionMoveType::Walk:
 
-			// Gameplay Tag로 구현
-
+			AbilityTask_ChangeMovementInfo = UAT_ChangeCharacterMovementInfo::GetNewAbilityTask_ChangeCharacterMovementInfo
+			(this, MyCharacter, WalkMovementInfo);
+			OnEndAbility.AddUObject(AbilityTask_ChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleEndAbilityTask);
+			OnCancelAbility.AddUObject(AbilityTask_ChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleCancelAbilityTask);
+			AbilityTask_ChangeMovementInfo->ReadyForActivation();
 			break;
 
 		case ECharacterActionMoveType::Launch:

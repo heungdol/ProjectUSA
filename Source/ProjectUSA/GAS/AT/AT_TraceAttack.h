@@ -44,7 +44,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
 	float AttackTraceRadius = 100.0f;
-	//FVector TraceSize = FVector::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
 	float AttackTime = -1.0f;
@@ -54,9 +53,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
 	TSubclassOf<UDamageType> AttackDamageType;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
-	//TSubclassOf<UGameplayEffect> AttackDamageGameplayEffect;
 };
 
 

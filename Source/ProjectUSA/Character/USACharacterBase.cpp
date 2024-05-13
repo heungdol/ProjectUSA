@@ -1268,10 +1268,13 @@ void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 			continue;
 		}
 
-		CurrentEquipedWeapons[CurrentEquipedWeaponKey]->ClearGameplayWeaponAbilitesToASC(ASC);
+		CurrentEquipedWeapons[CurrentEquipedWeaponKey]->ClearGameplayWeaponAbilitesToASC(/*ASC*/);
 
-		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
-		CurrentEquipedWeapons[CurrentEquipedWeaponKey]->DetachFromActor(DetachmentTransformRules);
+		// 방향 설정
+		if (UKismetSystemLibrary::IsServer(GetWorld()))
+		{
+			CurrentEquipedWeapons[CurrentEquipedWeaponKey]->OnRep_WeaponOwnerASC();
+		}
 
 		CurrentEquipedWeapons[CurrentEquipedWeaponKey] = nullptr;
 	}
@@ -1382,7 +1385,6 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 
 	// bIsJustDead 
 	// 데미지 적용 후 죽었는지 판단하기 위한 변수
-
 	float CheckCurrentHealth = 0.0f;
 	bool CheckIsAttributeFound = false;
 	CheckCurrentHealth = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentHealthAttribute(), CheckIsAttributeFound);
@@ -1406,6 +1408,18 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	// bIsFalling
 	// 현재 공중에 있는지 판단하기 위한 변수
 	bool bIsFalling = GetMovementComponent()->IsFalling();
+
+	// bIsBiggerDamageThanArmor
+	// 현재 들어온 데미지가 아머보다 높은지 판단하기 위한 변수
+	bool bIsBiggerDamageThanArmor = true;
+
+	float CurrentArmor = 0.0f;
+	bool CheckIsCurrentArmorFound = false;
+	CurrentArmor = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentArmorAttribute(), CheckIsCurrentArmorFound);
+	if (DamageTaken < CurrentArmor)
+	{
+		bIsBiggerDamageThanArmor = false;
+	}
 
 	FVector NewDirection = FVector::ForwardVector;
 	TSubclassOf<UGameplayAbility> DamageAbilityClass;
@@ -1451,18 +1465,25 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	// 데미지
 	else
 	{
-		if (bIsFalling)
+		if (bIsBiggerDamageThanArmor == false)
 		{
-			if (GameplayAbilities_DamageAir.Contains(DamageType))
-			{
-				DamageAbilityClass = GameplayAbilities_DamageAir[DamageType];
-			}
+			DamageAbilityClass = nullptr;
 		}
 		else
 		{
-			if (GameplayAbilities_DamageGround.Contains(DamageType))
+			if (bIsFalling)
 			{
-				DamageAbilityClass = GameplayAbilities_DamageGround[DamageType];
+				if (GameplayAbilities_DamageAir.Contains(DamageType))
+				{
+					DamageAbilityClass = GameplayAbilities_DamageAir[DamageType];
+				}
+			}
+			else
+			{
+				if (GameplayAbilities_DamageGround.Contains(DamageType))
+				{
+					DamageAbilityClass = GameplayAbilities_DamageGround[DamageType];
+				}
 			}
 		}
 	}

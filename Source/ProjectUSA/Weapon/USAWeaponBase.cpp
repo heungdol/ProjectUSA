@@ -15,6 +15,8 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Character/USACharacterBase.h"
+#include "Character/USACharacterPlayer.h"
+
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -26,6 +28,7 @@ AUSAWeaponBase::AUSAWeaponBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
+	SetReplicateMovement(true);
 
 	// 메쉬 홀더를 루트로 설정 -> 메쉬의 중심을 바꾸기 위함
 	WeaponMeshHolder = CreateDefaultSubobject <USkeletalMeshComponent>(TEXT("Weapon Mesh Holder"));
@@ -90,14 +93,14 @@ void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(UAbilitySystemComponent* In
 	WeaponOwnerASC = InASC;
 }
 
-void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(UAbilitySystemComponent* InASC)
+void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(/*UAbilitySystemComponent* InASC*/)
 {
 	if (HasAuthority() == false)
 	{
 		return;
 	}
 
-	if (InASC == nullptr)
+	if (WeaponOwnerASC == nullptr)
 	{
 		return;
 	}
@@ -114,17 +117,28 @@ void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(UAbilitySystemComponent* I
 			continue;
 		}
 
-		FGameplayAbilitySpec* GameplayAbilitySpec = InASC->FindAbilitySpecFromClass(Ability);
+		FGameplayAbilitySpec* GameplayAbilitySpec = WeaponOwnerASC->FindAbilitySpecFromClass(Ability);
 
 		if (GameplayAbilitySpec != nullptr)
 		{
-			InASC->ClearAbility(GameplayAbilitySpec->Handle);
+			WeaponOwnerASC->ClearAbility(GameplayAbilitySpec->Handle);
 		}
 
 		//USA_LOG(LogTemp, Log, TEXT("Clear Ability"));
 	}
 
 	WeaponOwnerASC = nullptr;
+}
+
+void AUSAWeaponBase::OnRep_WeaponOwnerASC()
+{
+	if (WeaponOwnerASC == nullptr)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
+		DetachFromActor(DetachmentTransformRules);
+
+		SetActorRotation(FRotator::ZeroRotator);
+	}
 }
 
 void AUSAWeaponBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -142,7 +156,7 @@ void AUSAWeaponBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 
 	IAbilitySystemInterface* InASCInterface = Cast <IAbilitySystemInterface>(OtherActor);
 	UAbilitySystemComponent* InASC = nullptr;
-	AUSACharacterBase* USACharacter = nullptr;
+	AUSACharacterPlayer* USACharacter = nullptr;
 
 	if (InASCInterface != nullptr)
 	{
@@ -151,7 +165,7 @@ void AUSAWeaponBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 
 	if (InASC != nullptr)
 	{
-		USACharacter = Cast <AUSACharacterBase>(InASC->GetAvatarActor());
+		USACharacter = Cast <AUSACharacterPlayer>(InASC->GetAvatarActor());
 	}
 
 	if (USACharacter != nullptr)

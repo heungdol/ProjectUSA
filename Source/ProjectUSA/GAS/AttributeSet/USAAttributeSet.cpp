@@ -121,4 +121,7 @@ void UUSAAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UUSAAttributeSet, CurrentHealth);
 	DOREPLIFETIME(UUSAAttributeSet, MaxHealth);
+	DOREPLIFETIME(UUSAAttributeSet, CurrentArmor);
+	DOREPLIFETIME(UUSAAttributeSet, BaseArmor);
+	DOREPLIFETIME(UUSAAttributeSet, Damage);
 }

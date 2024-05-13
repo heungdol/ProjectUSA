@@ -8,7 +8,7 @@
 #include "GAS/AT/AT_PlayAnimMontages.h"
 #include "GAS/AT/AT_SpawnActors.h"
 #include "GAS/AT/AT_TraceAttack.h"
-
+#include "GAS/AT/AT_ChangeCharacterMovementInfo.h"
 
 #include "GA_CharacterAction.generated.h"
 
@@ -107,6 +107,11 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
 	bool bMoveLaunchZOverride;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	FCharacterMovementWalkInfo WalkMovementInfo;
 
 	//
 

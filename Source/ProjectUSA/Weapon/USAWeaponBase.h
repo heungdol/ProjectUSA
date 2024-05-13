@@ -62,7 +62,7 @@ public:
 	//
 
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwnerASC, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
 	class UAbilitySystemComponent* WeaponOwnerASC = nullptr;
 
 	//UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
@@ -82,7 +82,16 @@ public:
 	void GiveGameplayWeaponAbilitesToASC(class UAbilitySystemComponent* InASC);
 
 	UFUNCTION(BlueprintCallable)
-	void ClearGameplayWeaponAbilitesToASC(class UAbilitySystemComponent* InASC);
+	void ClearGameplayWeaponAbilitesToASC(/*class UAbilitySystemComponent* InASC*/);
+
+	//UFUNCTION(BlueprintCallable)
+	//void ClearWeaponOwner();
+
+	UFUNCTION()
+	void OnRep_WeaponOwnerASC();
+
+	//UFUNCTION(BlueprintCallable)
+	//void SetWeapon
 
 	//
 
