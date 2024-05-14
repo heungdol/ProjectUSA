@@ -85,4 +85,7 @@ protected:
 
 	void SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection);
 
+	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
+
 };

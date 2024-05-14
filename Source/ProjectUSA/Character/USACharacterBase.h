@@ -200,15 +200,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character AttributeSet Info")
 	FUSACharacterAttributeSetInfo CharacterAttributeSetInfo;
-	
 
 	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Weapon")
+	TObjectPtr <class UBoxComponent> WeaponDetectBoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
-	UPROPERTY(ReplicatedUsing = OnRep_NextWaitingWeapon, EditDefaultsOnly, BlueprintReadWrite)
-	TArray<TObjectPtr <class AUSAWeaponBase>> NextWaitingWeapons;
+	//UPROPERTY(ReplicatedUsing = OnRep_NextWaitingWeapon, EditDefaultsOnly, BlueprintReadWrite)
+	//TArray<TObjectPtr <class AUSAWeaponBase>> NextWaitingWeapons;
 
 	UPROPERTY()
 	bool bIsSetStartWeaponBeforeGASSetup = false;
@@ -227,6 +229,8 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Targeting Info")
 	TObjectPtr<AActor> CurrentTargetableActor;
+
+	//
 
 public:
 	// Sets default values for this character's properties
@@ -275,16 +279,6 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_StopAnimMontage(class UAnimMontage* AnimMontage = nullptr);
-
-	//
-
-	UFUNCTION(BlueprintCallable)
-	void AddNextWaitingWeapon(class AUSAWeaponBase* InWeapon);
-
-	UFUNCTION()
-	void OnRep_NextWaitingWeapon();
-
-	//void EquipFinalNextWeapon();
 
 	//
 
@@ -348,6 +342,19 @@ public:
 
 	virtual void StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType);
 
+	//
+
+	// Weapon의 OnRep을 통해 호출
+	void SetCurrentWeapon(EUSAWeaponType InWeaponType, class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHandSocket(class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+	
+	//
+
 
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
@@ -355,6 +362,9 @@ protected:
 	virtual void Look(const struct FInputActionValue& Value);
 	virtual void DoTarget(const struct FInputActionValue& Value);
 	virtual void DoDrop(const struct FInputActionValue& Value);
+
+	UFUNCTION()
+	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	//
 
@@ -379,20 +389,9 @@ protected:
 
 	//
 
-	//UFUNCTION(BlueprintCallable)
-	void UpdateCurrentWeapons(/*class AUSAWeaponBase* InWeapon*/);
-	
-	//UFUNCTION(BlueprintCallable)
-	//void UnequipWeapon(/*class AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType);
+	void PickupWeapon(class AUSAWeaponBase* InWeapon);
 
-	UFUNCTION(BlueprintCallable)
-	void AttachWeaponToHandSocket (class AUSAWeaponBase* InWeapon);
-
-	UFUNCTION(BlueprintCallable)
-	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
-
-	UFUNCTION(BlueprintCallable)
-	void DropWeapons ();
+	void DropWeapons();
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_DropWeapons();
@@ -400,17 +399,17 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_DropWeapons();
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
+	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
 
+	//
 
 	virtual bool GetIsTargetableCurrently() override;
 
 	virtual FVector GetTargetablePivotlocation() override;
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
-	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
 
-
-// Gameplay Abiltiy System Secion...
+// Gameplay Abiltiy System Section...
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;

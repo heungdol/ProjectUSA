@@ -66,37 +66,38 @@ public:
 
 	//
 
-
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwnerASC, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
-	class UAbilitySystemComponent* WeaponOwnerASC = nullptr;
-
-	//UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
-	//bool bHasWeaponOwener = false;
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
+	class AUSACharacterBase* WeaponOwner = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//
+
+	//UFUNCTION()
+	//void OnRep_WeaponOwnerASC(class UAbilitySystemComponent* PrevASC);
+
+	UFUNCTION()
+	void OnRep_WeaponOwner(class AUSACharacterBase* PrevCharacter);
+
+
+	UFUNCTION(BlueprintCallable)
+	void GiveGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
+
+	UFUNCTION(BlueprintCallable)
+	void ClearGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+
 	//
 
-	UFUNCTION(BlueprintCallable)
-	void GiveGameplayWeaponAbilitesToASC(class UAbilitySystemComponent* InASC);
+	void SetWeaponOwner(class AUSACharacterBase* InCharacter);
 
-	UFUNCTION(BlueprintCallable)
-	void ClearGameplayWeaponAbilitesToASC(/*class UAbilitySystemComponent* InASC*/);
-
-	//UFUNCTION(BlueprintCallable)
-	//void ClearWeaponOwner();
-
-	UFUNCTION()
-	void OnRep_WeaponOwnerASC();
-
-	//UFUNCTION(BlueprintCallable)
-	//void SetWeapon
+	FORCEINLINE class AUSACharacterBase* GetWeaponOwner() { return WeaponOwner; }
 
 	//
 
@@ -115,9 +116,4 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UTexture2D* GetWeaponTexture() const { return WeaponTexture; }
-
-protected:
-	UFUNCTION()
-	void OnWeaponOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 };

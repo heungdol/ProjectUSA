@@ -50,89 +50,146 @@ AUSAWeaponBase::AUSAWeaponBase()
 void AUSAWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (WeaponBoxComponent != nullptr)
-	{
-		WeaponBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUSAWeaponBase::OnWeaponOverlapBegin);
-	}
 }
 
 // Called every frame
 void AUSAWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	
-
 }
 
-void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(UAbilitySystemComponent* InASC)
+void AUSAWeaponBase::SetWeaponOwner(AUSACharacterBase* InCharacter)
 {
+	if (UKismetSystemLibrary::IsServer (GetWorld()) == false
+		&& UKismetSystemLibrary::IsStandalone (GetWorld()) == false)
+	{
+		return;
+	}
+
+	AUSACharacterBase* PrevCharacter = WeaponOwner;
+	WeaponOwner = InCharacter;
+
+	OnRep_WeaponOwner(PrevCharacter);
+}
+
+
+void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
+{
+	IAbilitySystemInterface* ASCInterface = Cast <IAbilitySystemInterface>(InCharacter);
+
+	if (ASCInterface == nullptr)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* InASC = ASCInterface->GetAbilitySystemComponent();
+
 	if (InASC == nullptr)
 	{
-		USA_LOG(LogTemp, Log, TEXT("No ASC"));
 		return;
 	}
 
-	for (const auto& Ability : GameplayWeaponAbilities)
+	if (InCharacter == nullptr)
 	{
-		if (Ability == nullptr)
-		{
-			continue;
-		}
-
-		if (IsValid(Ability) == false)
-		{
-			continue;
-		}
-
-		FGameplayAbilitySpec GameplayAbilitySpec(Ability);
-		InASC->GiveAbility(GameplayAbilitySpec);
+		return;
 	}
 
-	WeaponOwnerASC = InASC;
+	if (HasAuthority() == true)
+	{
+		for (const auto& Ability : GameplayWeaponAbilities)
+		{
+			if (Ability == nullptr)
+			{
+				continue;
+			}
+
+			if (IsValid(Ability) == false)
+			{
+				continue;
+			}
+
+			FGameplayAbilitySpec GameplayAbilitySpec(Ability);
+			InASC->GiveAbility(GameplayAbilitySpec);
+		}
+	}
+
+	InCharacter->SetCurrentWeapon(WeaponType, this);
 }
 
-void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(/*UAbilitySystemComponent* InASC*/)
+void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
 {
-	if (HasAuthority() == false)
+	IAbilitySystemInterface* ASCInterface = Cast <IAbilitySystemInterface>(InCharacter);
+
+	if (ASCInterface == nullptr)
 	{
 		return;
 	}
 
-	if (WeaponOwnerASC == nullptr)
+	UAbilitySystemComponent* InASC = ASCInterface->GetAbilitySystemComponent();
+
+	if (InASC == nullptr)
 	{
 		return;
 	}
 
-	for (const auto& Ability : GameplayWeaponAbilities)
+	if (InCharacter == nullptr)
 	{
-		if (Ability == nullptr)
-		{
-			continue;
-		}
-
-		if (IsValid(Ability) == false)
-		{
-			continue;
-		}
-
-		FGameplayAbilitySpec* GameplayAbilitySpec = WeaponOwnerASC->FindAbilitySpecFromClass(Ability);
-
-		if (GameplayAbilitySpec != nullptr)
-		{
-			WeaponOwnerASC->ClearAbility(GameplayAbilitySpec->Handle);
-		}
-
-		//USA_LOG(LogTemp, Log, TEXT("Clear Ability"));
+		return;
 	}
 
-	WeaponOwnerASC = nullptr;
+	if (HasAuthority() == true)
+	{
+		for (const auto& Ability : GameplayWeaponAbilities)
+		{
+
+			if (Ability == nullptr)
+			{
+				continue;
+			}
+
+			if (IsValid(Ability) == false)
+			{
+				continue;
+			}
+
+			FGameplayAbilitySpec* GameplayAbilitySpec = InASC->FindAbilitySpecFromClass(Ability);
+
+			if (GameplayAbilitySpec != nullptr)
+			{
+				InASC->ClearAbility(GameplayAbilitySpec->Handle);
+			}
+		}
+	}
+
+	InCharacter->SetCurrentWeapon(WeaponType, nullptr);
 }
 
-void AUSAWeaponBase::OnRep_WeaponOwnerASC()
+void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 {
-	if (WeaponOwnerASC == nullptr)
+	//
+
+	//USA_LOG(LogTemp, Log, TEXT("OnRep Weapon Owner"));
+
+
+	if (WeaponOwner != nullptr)
+	{
+		//USA_LOG(LogTemp, Log, TEXT("OnRep Weapon Owner: Give"));
+
+		GiveGameplayWeaponAbilitesToASC(WeaponOwner);
+	}
+	else
+	{
+		if (PrevCharacter != nullptr)
+		{
+			//USA_LOG(LogTemp, Log, TEXT("OnRep Weapon Owner: Clear"));
+
+			ClearGameplayWeaponAbilitesToASC(PrevCharacter);
+		}
+	}
+
+	//
+
+	if (WeaponOwner == nullptr)
 	{
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 		DetachFromActor(DetachmentTransformRules);
@@ -140,38 +197,9 @@ void AUSAWeaponBase::OnRep_WeaponOwnerASC()
 		SetActorRotation(FRotator::ZeroRotator);
 		SetActorScale3D(FVector::OneVector);
 	}
-}
-
-void AUSAWeaponBase::OnWeaponOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	else
 	{
-		return;
-	}
-
-	if (WeaponOwnerASC != nullptr)
-	{
-		return;
-	}
-
-	IAbilitySystemInterface* InASCInterface = Cast <IAbilitySystemInterface>(OtherActor);
-	UAbilitySystemComponent* InASC = nullptr;
-	AUSACharacterPlayer* USACharacter = nullptr;
-
-	if (InASCInterface != nullptr)
-	{
-		InASC = InASCInterface->GetAbilitySystemComponent();
-	}
-
-	if (InASC != nullptr)
-	{
-		USACharacter = Cast <AUSACharacterPlayer>(InASC->GetAvatarActor());
-	}
-
-	if (USACharacter != nullptr)
-	{
-		USACharacter->AddNextWaitingWeapon(this);
+		WeaponOwner->AttachWeaponToHolderSocket(this);
 	}
 }
 
@@ -179,6 +207,7 @@ void AUSAWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AUSAWeaponBase, WeaponOwnerASC);
+	// DOREPLIFETIME(AUSAWeaponBase, WeaponOwnerASC);
+	DOREPLIFETIME(AUSAWeaponBase, WeaponOwner);
 }
 
