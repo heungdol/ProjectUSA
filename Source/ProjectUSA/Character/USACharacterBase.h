@@ -352,6 +352,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
+	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
 	
 	//
 
@@ -399,8 +402,6 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_DropWeapons();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
-	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
 
 	//
 

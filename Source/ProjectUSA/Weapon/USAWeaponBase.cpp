@@ -114,6 +114,7 @@ void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharac
 	}
 
 	InCharacter->SetCurrentWeapon(WeaponType, this);
+	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, this);
 }
 
 void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
@@ -162,6 +163,7 @@ void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 	}
 
 	InCharacter->SetCurrentWeapon(WeaponType, nullptr);
+	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, nullptr);
 }
 
 void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
