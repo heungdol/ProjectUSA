@@ -41,6 +41,11 @@ public:
 	TObjectPtr <class UBoxComponent> WeaponBoxComponent;
 
 	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr <class UTexture2D> WeaponTexture;
+
+	//
 	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
@@ -105,6 +110,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE EUSAWeaponType GetWeaponType() const { return WeaponType; }
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UTexture2D* GetWeaponTexture() const { return WeaponTexture; }
 
 protected:
 	UFUNCTION()

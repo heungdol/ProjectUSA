@@ -384,20 +384,20 @@ void AUSACharacterBase::AddNextWaitingWeapon(AUSAWeaponBase* InWeapon)
 {
 	//MulticastRPC_SetNextWeapon(InNextWeapon);
 	
-	//if (UKismetSystemLibrary::IsStandalone(GetWorld())
-	//	|| UKismetSystemLibrary::IsServer(GetWorld()))
-	//{
+	if (UKismetSystemLibrary::IsStandalone(GetWorld())
+		|| UKismetSystemLibrary::IsServer(GetWorld()))
+	{
 
-	//}
-	//else
-	//{
-	//	return;
-	//}
-
-	if (HasAuthority() == false)
+	}
+	else
 	{
 		return;
 	}
+
+	//if (HasAuthority() == false)
+	//{
+	//	return;
+	//}
 	
 	if (InWeapon != nullptr)
 	{
@@ -429,7 +429,16 @@ void AUSACharacterBase::OnRep_NextWaitingWeapon()
 		UpdateCurrentWeapons();
 	}
 
-	//EquipFinalNextWeapon();
+	// 무기 UI 업데이트
+	TArray<EUSAWeaponType> CurrentEquipedWeaponKeys;
+	CurrentEquipedWeapons.GenerateKeyArray(CurrentEquipedWeaponKeys);
+
+	for (EUSAWeaponType WeaponType : CurrentEquipedWeaponKeys)
+	{
+		K2_OnUSACurrentWeaponChanged(WeaponType, CurrentEquipedWeapons[WeaponType]);
+	}
+
+	USA_LOG(LogTemp, Log, TEXT("Weapon Updated On Rep"));
 }
 
 //void AUSACharacterBase::EquipFinalNextWeapon()
@@ -1244,6 +1253,7 @@ void AUSACharacterBase::UpdateCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
 	}
 
 	NextWaitingWeapons.Empty();
+
 }
 
 //void AUSACharacterBase::UnequipWeapon(/*AUSAWeaponBase* InWeapon*/EUSAWeaponType InWeaponType)
@@ -1331,6 +1341,8 @@ void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 		}
 
 		CurrentEquipedWeapons[CurrentEquipedWeaponKey] = nullptr;
+
+		//K2_OnUSACurrentWeaponChanged(CurrentEquipedWeaponKey, nullptr);
 	}
 }
 

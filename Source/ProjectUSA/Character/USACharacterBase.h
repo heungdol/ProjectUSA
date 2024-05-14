@@ -406,6 +406,9 @@ protected:
 
 	virtual FVector GetTargetablePivotlocation() override;
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
+	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
+
 
 // Gameplay Abiltiy System Secion...
 

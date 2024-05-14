@@ -69,6 +69,8 @@ void AUSACharacterPlayer::BeginPlay()
 
 	InitPlayerController();
 	InitTargetingCameraActor();
+
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
 }
 
 void AUSACharacterPlayer::Tick(float DeltaTime)
