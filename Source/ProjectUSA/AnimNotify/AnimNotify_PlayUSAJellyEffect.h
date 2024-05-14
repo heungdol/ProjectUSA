@@ -9,7 +9,8 @@
 /**
  * 
  */
-UCLASS()
+
+UCLASS(const, hidecategories = Object, collapsecategories, Config = Game, meta = (DisplayName = "Play USA Jelly Effect"))
 class PROJECTUSA_API UAnimNotify_PlayUSAJellyEffect : public UAnimNotify
 {
 	GENERATED_BODY()
@@ -19,6 +20,7 @@ public:
 	TObjectPtr<class UUSAJellyEffectData> USAJellyEffectData;
 
 public:
+	
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 };

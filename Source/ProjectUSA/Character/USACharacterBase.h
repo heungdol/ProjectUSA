@@ -228,7 +228,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Targeting Info")
 	TObjectPtr<AActor> CurrentTargetableActor;
 
-
 public:
 	// Sets default values for this character's properties
 	AUSACharacterBase();
@@ -345,6 +344,11 @@ public:
 	UFUNCTION()
 	FVector GetUSACharacterDirection_Target ();
 
+	//
+
+	virtual void StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType);
+
+
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
 	virtual void MoveEnd(const struct FInputActionValue& Value);
@@ -357,7 +361,7 @@ protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_TakeDamage(float DamageAmount);
+	void MulticastRPC_TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);

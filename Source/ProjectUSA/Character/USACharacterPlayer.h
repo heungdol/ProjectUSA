@@ -27,6 +27,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr <class APlayerController> PlayerController;
 
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Camera Shake")
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UCameraShakeBase>> HitSuccessCameraShakes;
+
+
 public:
 	AUSACharacterPlayer();
 	
@@ -62,6 +68,10 @@ public:
 	//
 
 	virtual void DoDrop(const struct FInputActionValue& Value) override;
+
+	//
+
+	virtual void StartCameraShake_HitSuccess (TSubclassOf<class UDamageType> DamageType) override;
 
 
 protected:

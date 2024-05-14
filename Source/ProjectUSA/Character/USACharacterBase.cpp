@@ -490,6 +490,11 @@ FVector AUSACharacterBase::GetUSACharacterDirection_Target()
 	return Result;
 }
 
+void AUSACharacterBase::StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType)
+{
+	// ...
+}
+
 void AUSACharacterBase::DoTarget(const struct FInputActionValue& Value)
 {
 	// ...
@@ -1388,7 +1393,7 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	//USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
 
 	// 데미지
-	MulticastRPC_TakeDamage(ResultDamageAmount);
+	MulticastRPC_TakeDamage(ResultDamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// 넉백 어빌리티 수행
 	ApplyDamageMomentum(ResultDamageAmount, DamageEvent, EventInstigator->GetPawn(), DamageCauser);
@@ -1396,7 +1401,7 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	return ResultDamageAmount;
 }
 
-void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmount)
+void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (ASC == nullptr)
 	{
@@ -1416,6 +1421,13 @@ void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmoun
 	{
 		USAAttributeSet->SetDamage(DamageAmount);
 	}
+
+	// 가해자의 카메라 쉐이크 수행 
+	if (AUSACharacterBase* CharacterCauser = Cast<AUSACharacterBase>(DamageCauser))
+	{
+		CharacterCauser->StartCameraShake_HitSuccess(DamageEvent.DamageTypeClass);
+	}
+
 }
 
 

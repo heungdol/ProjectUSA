@@ -89,6 +89,24 @@ void AUSACharacterPlayer::DoDrop(const FInputActionValue& Value)
 	DropWeapons();
 }
 
+void AUSACharacterPlayer::StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType)
+{
+	Super::StartCameraShake_HitSuccess(DamageType);
+
+	if (HitSuccessCameraShakes.Contains(DamageType) == false)
+	{
+		return;
+	}
+
+	if (PlayerController == nullptr
+		|| PlayerController->PlayerCameraManager == nullptr)
+	{
+		return;
+	}
+
+	PlayerController->PlayerCameraManager->StartCameraShake(HitSuccessCameraShakes[DamageType]);
+}
+
 void AUSACharacterPlayer::Look(const FInputActionValue& Value)
 {
 	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
