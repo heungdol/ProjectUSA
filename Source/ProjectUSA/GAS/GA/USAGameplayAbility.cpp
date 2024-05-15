@@ -11,6 +11,11 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 
+#include "GameFramework/PlayerController.h"
+//#include "AIModule/Classes/AIController.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/Character.h"
+
 #include "ProjectUSA.h"
 
 //void UUSAGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
@@ -112,29 +117,77 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 		return;
 	}
 
+	ACharacter* AvatarCharacter = Cast <ACharacter>(GetAvatarActorFromActorInfo());
+	
+	AController* Controller = nullptr;
+	APlayerController* PlayerController = nullptr;
+
+	if (AvatarCharacter != nullptr)
+	{
+		Controller = AvatarCharacter->GetController();
+	}
+
+	if (Controller != nullptr)
+	{
+		PlayerController = Cast <APlayerController>(Controller);
+	}
+
+	if (Controller == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	//
+
 	CalculateTargetVector();
 
-	if (UKismetSystemLibrary::IsServer(GetWorld()))
+	if (PlayerController != nullptr)
 	{
-		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
-			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+		if (PlayerController->IsLocalController())
 		{
-			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Server"));
+			if (UKismetSystemLibrary::IsServer(GetWorld()))
+			{
+				DoSomethingWithTargetVector();
+			}
+			else
+			{
+				ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector());
 
-			DoSomethingWithTargetVector();
+				DoSomethingWithTargetVector();
+			}
 		}
 	}
 	else
 	{
-		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-		{
-			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Client"));
-
-			ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector());
-
-			DoSomethingWithTargetVector();
-		}
+		DoSomethingWithTargetVector();
 	}
+
+	//if (UKismetSystemLibrary::IsServer(GetWorld()))
+	//{
+	//	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Show your Roles"));
+
+	//	if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+	//		&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+	//	{
+	//		//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Server"));
+
+	//		DoSomethingWithTargetVector();
+	//	}
+	//}
+	//else
+	//{
+	//	//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Show your Roles"));
+
+	//	if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//	{
+	//		//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("Only Client"));
+
+	//		ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector());
+
+	//		DoSomethingWithTargetVector();
+	//	}
+	//}
 }
 
 void UUSAGameplayAbility::ServerRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector)

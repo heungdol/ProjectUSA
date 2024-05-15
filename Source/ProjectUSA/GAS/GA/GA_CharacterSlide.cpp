@@ -16,6 +16,8 @@
 
 #include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 #include "TimerManager.h"
 #include "Engine/World.h"
 
@@ -35,27 +37,68 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 
 	SlideForwardDirection = Character->GetPendingMovementInputVector();
 
-	if (HasAuthority(&ActivationInfo))
-	{
-		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
-			&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+	//if (HasAuthority(&ActivationInfo))
+	//{
+	//	if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_Authority
+	//		&& GetAvatarActorFromActorInfo()->GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
 
+	//	{
+	//		DoSlide();
+	//	}
+	//}
+	//else
+	//{
+	//	if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//	{
+	//		ServerRPC_SetDirectionAndDoSlide(Character->GetPendingMovementInputVector());
+
+	//		DoSlide();
+	//	}
+	//}
+
+	//
+
+	ACharacter* AvatarCharacter = Cast <ACharacter>(GetAvatarActorFromActorInfo());
+
+	AController* Controller = nullptr;
+	APlayerController* PlayerController = nullptr;
+
+	if (AvatarCharacter != nullptr)
+	{
+		Controller = AvatarCharacter->GetController();
+	}
+
+	if (Controller != nullptr)
+	{
+		PlayerController = Cast <APlayerController>(Controller);
+	}
+
+	if (Controller == nullptr)
+	{
+		SimpleCancelAbility();
+		return;
+	}
+
+	if (PlayerController != nullptr)
+	{
+		if (PlayerController->IsLocalController())
 		{
-			DoSlide();
+			if (UKismetSystemLibrary::IsServer(GetWorld()))
+			{
+				DoSlide();
+			}
+			else
+			{
+				ServerRPC_SetDirectionAndDoSlide(Character->GetPendingMovementInputVector());
+
+				DoSlide();
+			}
 		}
 	}
 	else
 	{
-		if (GetAvatarActorFromActorInfo()->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-		{
-			ServerRPC_SetDirectionAndDoSlide(Character->GetPendingMovementInputVector());
-
-			DoSlide();
-		}
+		DoSlide();
 	}
-
-	//
-
 }
 
 void UGA_CharacterSlide::DoSlide()

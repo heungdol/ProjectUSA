@@ -317,29 +317,39 @@ void AUSACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void AUSACharacterPlayer::InitTargetingCameraActor()
 {
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == true
-		|| UKismetSystemLibrary::IsStandalone(GetWorld()) == true)
+	//if (UKismetSystemLibrary::IsServer(GetWorld()) == true
+	//	|| UKismetSystemLibrary::IsStandalone(GetWorld()) == true)
+	//{
+	//	if (GetLocalRole() == ENetRole::ROLE_Authority
+	//		&& GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+	//	{
+	//		// 리슨 서버의 클라이언트
+	//	}
+	//	else
+	//	{
+	//		return;
+	//	}
+	//}
+	//else
+	//{
+	//	if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//	{
+	//		// 클라이언트
+	//	}
+	//	else
+	//	{
+	//		return;
+	//	}
+	//}
+
+	if (PlayerController == nullptr)
 	{
-		if (GetLocalRole() == ENetRole::ROLE_Authority
-			&& GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
-		{
-			// 리슨 서버의 클라이언트
-		}
-		else
-		{
-			return;
-		}
+		return;
 	}
-	else
+
+	if (PlayerController->IsLocalController() == false)
 	{
-		if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-		{
-			// 클라이언트
-		}
-		else
-		{
-			return;
-		}
+		return;
 	}
 
 	TargetingCameraActor = GetWorld()->SpawnActor<AUSATargetingCameraActor>(TargetingCameraActorClass, GetActorTransform());
