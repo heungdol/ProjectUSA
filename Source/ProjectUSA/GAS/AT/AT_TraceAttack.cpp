@@ -101,7 +101,7 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 			true,
 			FLinearColor::Red,
 			FLinearColor::Green,
-			0.5f);
+			0.1f);
 
 		for (FHitResult HitResult : HitResults)
 		{

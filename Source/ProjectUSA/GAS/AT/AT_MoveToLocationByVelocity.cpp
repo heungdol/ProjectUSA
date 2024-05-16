@@ -115,12 +115,22 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 			OffsetLocation = (TargetLocation - PrevLocation);
 			OffsetLocationDelta = OffsetLocation / DeltaTime;
 
-			MyCharacter->AddActorWorldOffset(OffsetLocation, true);
+			if (OffsetLocation.Z > SMALL_NUMBER)
+			{
+				MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
+			}
+			else
+			{
+				CharMoveComp->Velocity = OffsetLocationDelta;
+				CharMoveComp->UpdateComponentVelocity();
+			}
+
+			//MyCharacter->AddActorWorldOffset(OffsetLocation, true);
 
 			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
 
-			CharMoveComp->Velocity = OffsetLocationDelta;
-			CharMoveComp->UpdateComponentVelocity();
+			//CharMoveComp->Velocity = OffsetLocationDelta;
+			//CharMoveComp->UpdateComponentVelocity();
 
 			//MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
 
@@ -159,13 +169,23 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 			OffsetLocation = (CurrentLocation - PrevLocation);
 			OffsetLocationDelta = OffsetLocation / DeltaTime;
 
-			MyCharacter->AddActorWorldOffset(OffsetLocation, true);
-
-			CharMoveComp->Velocity = FVector::ZeroVector;
-			CharMoveComp->UpdateComponentVelocity();
+			if (OffsetLocation.Z > SMALL_NUMBER)
+			{
+				MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
+			}
+			else
+			{
+				CharMoveComp->Velocity = OffsetLocationDelta;
+				CharMoveComp->UpdateComponentVelocity();
+			}
 
 			PrevLocation = CurrentLocation;
 
+			//MyCharacter->AddActorWorldOffset(OffsetLocation, true);
+
+			//CharMoveComp->Velocity = FVector::ZeroVector;
+			//CharMoveComp->UpdateComponentVelocity()
+			// ;
 			//MyCharacter->LaunchCharacter(OffsetLocation / DeltaTime, true, true);
 		}
 	}

@@ -28,18 +28,20 @@ void UUSASpringArmComponent::BeginPlay()
 
 void UUSASpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLocationLag, bool bDoRotationLag, float DeltaTime)
 {
-	Super::UpdateDesiredArmLocation(bDoTrace, bDoLocationLag, bDoRotationLag, DeltaTime);
-
 	if (bIsUsingCustomLag == false)
 	{
+		Super::UpdateDesiredArmLocation(bDoTrace, bDoLocationLag, bDoRotationLag, DeltaTime);
 		return;
 	}
 
 	ACharacter* Character = Cast<ACharacter> (GetOwner());
 	if (Character == nullptr)
 	{
+		Super::UpdateDesiredArmLocation(bDoTrace, bDoLocationLag, bDoRotationLag, DeltaTime);
 		return;
 	}
+
+
 
 	bIsCharacterFalling = Character->GetMovementComponent()->IsFalling();
 	if (bIsCharacterFalling == false)
@@ -58,7 +60,27 @@ void UUSASpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLoc
 
 	//UE_LOG(LogTemp, Log, TEXT("Z: %f"), CurrentCameraLocation.Z);
 	
-	SetWorldLocation(CurrentCameraLocation + OffsetLocation);
+	//SetWorldLocation(CurrentCameraLocation + OffsetLocation);
+
+	//
+
+	PreviousArmOrigin = GetComponentLocation() + TargetOffset;
+	PreviousDesiredLoc = CurrentCameraLocation;
+
+	FVector InLocation = CurrentCameraLocation - GetTargetRotation().Vector() * TargetArmLength + FVector::UpVector * OffsetLocation;
+	FRotator InRotation = GetTargetRotation();
+
+	FTransform WorldCamTM(InRotation, InLocation);
+	FTransform RelCamTM = WorldCamTM.GetRelativeTransform(GetComponentTransform());
+
+	RelativeSocketLocation = RelCamTM.GetLocation();
+	RelativeSocketRotation = RelCamTM.GetRotation();
+
+	UpdateChildTransforms();
+
 	PrevCameraLocation = CurrentCameraLocation;
+
+	//
+
 	//bWasCharacterFalling = bIsCharacterFalling;
 }

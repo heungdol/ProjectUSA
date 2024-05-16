@@ -107,11 +107,13 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 	}
 
 	FVector NewLocation = InCharacter->GetActorLocation();
+	//FVector OffsetLocation = FVector::ZeroVector;
 
 	switch (CapsulePivot)
 	{
 	case EUSACharacterCapsulePivot::Top:
 		NewLocation.Z += -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		//OffsetLocation.Z = -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 		break;
 
 	case EUSACharacterCapsulePivot::Center:
@@ -119,6 +121,7 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 
 	case EUSACharacterCapsulePivot::Bottom:
 		NewLocation.Z += (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		//OffsetLocation.Z = (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 		break;
 	}
 
@@ -256,6 +259,8 @@ AUSACharacterBase::AUSACharacterBase()
 
 	HealthBarWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Health Bar Widget Component"));
 	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+
+	
 
 
 	//TestStaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Test Static Mesh"));
@@ -683,11 +688,11 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	BeginStartAbilities();
 
 	// 시작할 때 자동으로 콘솔 입력
-	APlayerController* PlayerController = Cast <APlayerController>(NewController);
-	if (PlayerController != nullptr)
-	{
-		PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
-	}
+	//APlayerController* PlayerController = Cast <APlayerController>(NewController);
+	//if (PlayerController != nullptr)
+	//{
+	//	PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
+	//}
 }
 
 void AUSACharacterBase::Move(const FInputActionValue& Value)
