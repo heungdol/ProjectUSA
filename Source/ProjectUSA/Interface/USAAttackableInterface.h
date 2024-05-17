@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "USADamageableInterface.generated.h"
+#include "USAAttackableInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UUSADamageableInterface : public UInterface
+class UUSAAttackableInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,11 +16,19 @@ class UUSADamageableInterface : public UInterface
 /**
  * 
  */
-class PROJECTUSA_API IUSADamageableInterface
+class PROJECTUSA_API IUSAAttackableInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+
+	virtual bool GetIsTargeting() = 0;
+	
+	virtual FVector GetTargetingDirection() = 0;
+
+	virtual FVector GetTargetingDirection2D() = 0;
+
+	virtual FVector GetTargetableActorLocation() = 0;
 
 };

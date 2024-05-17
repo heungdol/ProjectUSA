@@ -10,6 +10,7 @@
 
 #include "Interface/USACharacterInterface.h"
 #include "Interface/USATargetableInterface.h"
+#include "Interface/USAAttackableInterface.h"
 
 // 어트리뷰트 접근을 위한 헤더
 #include "GameplayEffectTypes.h"
@@ -139,7 +140,7 @@ public:
 // ========================================================================================
 
 UCLASS()
-class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface, public IUSATargetableInterface
+class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface, public IUSATargetableInterface, public IUSAAttackableInterface
 {
 	GENERATED_BODY()
 
@@ -233,6 +234,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Targeting Info")
 	TObjectPtr<AActor> CurrentTargetableActor;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Targeting Info")
+	TObjectPtr<AActor> CurrentTargetableActor_Instant;
+
 	//
 
 public:
@@ -249,6 +253,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void PossessedBy(AController* NewController) override;
+
+	//
+
+	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
 
 	//
 
@@ -341,6 +349,14 @@ public:
 	UFUNCTION()
 	FVector GetUSACharacterDirection_Target ();
 
+	virtual void UpdateCurrentTargetableActor_Instant();
+	virtual void UpdateCurrentTargetableActor();
+
+	virtual bool GetIsTargeting() override;
+	virtual FVector GetTargetingDirection() override;
+	virtual FVector GetTargetingDirection2D() override;
+	virtual FVector GetTargetableActorLocation() override;
+
 	//
 
 	virtual void StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType);
@@ -369,6 +385,7 @@ protected:
 	virtual void DoTarget(const struct FInputActionValue& Value);
 	virtual void DoDrop(const struct FInputActionValue& Value);
 
+
 	UFUNCTION()
 	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -389,8 +406,6 @@ protected:
 
 	//
 
-	virtual void UpdateCurrentTargetableActor();
-	virtual void UpdateCurrentTargetableActor_Instant();
 	//void SetCurrentTargetableActorNullptr();
 
 	//
@@ -412,6 +427,7 @@ protected:
 
 	virtual FVector GetTargetablePivotlocation() override;
 
+	virtual float GetTargetableCapsuleRadius() override;
 
 // Gameplay Abiltiy System Section...
 
@@ -494,6 +510,14 @@ public:
 	//UPROPERTY()
 	TMap<FGameplayTag, FDelegateHandle> RegisteredGameplayTagEvents;
 
+	//bool bIsAction;
+
+	//bool bIsSliding;
+
+	//bool bIsFalling;
+
+	//bool bIsWalking;
+
 public:
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);
 
@@ -537,6 +561,7 @@ protected:
 	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_Action(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);

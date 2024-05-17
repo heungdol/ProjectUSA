@@ -474,40 +474,51 @@ FVector AUSACharacterBase::GetUSACharacterDirection_InputMovement()
 FVector AUSACharacterBase::GetUSACharacterDirection_Target()
 {
 	// 임시 타겟팅 판단 위함
-	bool bIsInstantTargeting = false;
+	//bool bIsInstantTargeting = false;
 
 	// 우선 널 포인터라면 임시 타겟팅으로 판단
-	if (CurrentTargetableActor == nullptr)
-	{
-		bIsInstantTargeting = true;
-		UpdateCurrentTargetableActor_Instant();
-	}
+	//if (CurrentTargetableActor == nullptr)
+	//{
+	//	bIsInstantTargeting = true;
+	//	UpdateCurrentTargetableActor_Instant();
+	//}
 	
-	if (CurrentTargetableActor == nullptr)
+	if (IsValid(CurrentTargetableActor) == false && IsValid(CurrentTargetableActor_Instant) == false)
 	{
 		return GetUSACharacterDirection_InputMovement();
 	}
 
-	if (Cast<AActor>(CurrentTargetableActor) == nullptr)
+	if (Cast<AActor>(CurrentTargetableActor) == nullptr && Cast<AActor>(CurrentTargetableActor_Instant) == nullptr)
 	{
 		return GetUSACharacterDirection_InputMovement();
 	}
 	
 	FVector Result = FVector::ForwardVector;
 
-	FVector SourceLocation = GetActorLocation();
-	FVector TargetLocation = Cast<AActor>(CurrentTargetableActor)->GetActorLocation();
+	if (IsValid(CurrentTargetableActor) == true)
+	{
+		FVector SourceLocation = GetActorLocation();
+		FVector TargetLocation = Cast<AActor>(CurrentTargetableActor)->GetActorLocation();
 
-	Result = TargetLocation - SourceLocation;
+		Result = TargetLocation - SourceLocation;
+	}
+	else if (IsValid(CurrentTargetableActor_Instant) == true)
+	{
+		FVector SourceLocation = GetActorLocation();
+		FVector TargetLocation = Cast<AActor>(CurrentTargetableActor_Instant)->GetActorLocation();
+
+		Result = TargetLocation - SourceLocation;
+	}
+
 	Result.Z = 0.0f;
 
 	Result.Normalize();
 
 	// 임시 타겟팅인 경우, 원상복구
-	if (bIsInstantTargeting)
-	{
-		CurrentTargetableActor = nullptr;
-	}
+	//if (bIsInstantTargeting)
+	//{
+	//	CurrentTargetableActor = nullptr;
+	//}
 
 	return Result;
 }
@@ -706,6 +717,22 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	//{
 	//	PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
 	//}
+}
+
+void AUSACharacterBase::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
+{
+	//if (bIsAction && !bIsSliding && !bIsFalling && !bIsWalking)
+	//{
+	//	return;
+	//}
+
+	if (ASC != nullptr
+		&& ASC->GetGameplayTagCount(USA_CHARACTER_ADJUST_IGNOREMOVEINPUT) > 0)
+	{
+		return;
+	}
+
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
 }
 
 void AUSACharacterBase::Move(const FInputActionValue& Value)
@@ -1122,21 +1149,37 @@ void AUSACharacterBase::OnGameplayTagCallback_Walk(const FGameplayTag CallbackTa
 	if (NewCount > 0)
 	{
 		//CharacterMovementRealWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+		//bIsWalking = true;
 	}
 	else
 	{
 		//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
+		//bIsWalking = false;
 	}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTag, int32 NewCount)
 {
-
+	if (NewCount > 0)
+	{
+		//bIsFalling = true;
+	}
+	else
+	{
+		//bIsFalling = false;
+	}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Slide(const FGameplayTag CallbackTag, int32 NewCount)
 {
-
+	if (NewCount > 0)
+	{
+		//bIsSliding = true;
+	}
+	else
+	{
+		//bIsSliding = false;
+	}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag CallbackTag, int32 NewCount)
@@ -1186,6 +1229,23 @@ void AUSACharacterBase::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTa
 	else
 	{
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	}
+}
+
+void AUSACharacterBase::OnGameplayTagCallback_Action(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		//bIsAction = true;
+
+		//if (GetCharacterMovement() != nullptr)
+		//{
+		//	GetCharacterMovement()->StopMovementImmediately();
+		//}
+	}
+	else
+	{
+		//bIsAction = false;
 	}
 }
 
@@ -1412,6 +1472,16 @@ FVector AUSACharacterBase::GetTargetablePivotlocation()
 	return GetActorLocation();
 }
 
+float AUSACharacterBase::GetTargetableCapsuleRadius()
+{
+	if (IsValid(GetCapsuleComponent()) == true)
+	{
+		return GetCapsuleComponent()->GetScaledCapsuleRadius();
+	}
+
+	return 50.0f;
+}
+
 // TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
 //void AUSACharacterBase::AdjustVelocityWithVelocityZero()
 //{
@@ -1517,7 +1587,7 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 
 	// bIsFalling
 	// 현재 공중에 있는지 판단하기 위한 변수
-	bool bIsFalling = GetMovementComponent()->IsFalling();
+	bool bIsFallingLocally = GetMovementComponent()->IsFalling();
 
 	// bIsBiggerDamageThanArmor
 	// 현재 들어온 데미지가 아머보다 높은지 판단하기 위한 변수
@@ -1560,7 +1630,7 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	// 패리
 	else if (bIsParrying)
 	{
-		if (bIsFalling)
+		if (bIsFallingLocally)
 		{
 			if (GameplayAbilities_ParryMomentumAir.Contains(DamageType))
 			{
@@ -1584,7 +1654,7 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		}
 		else
 		{
-			if (bIsFalling)
+			if (bIsFallingLocally)
 			{
 				if (GameplayAbilities_DamageAir.Contains(DamageType))
 				{
@@ -1616,6 +1686,77 @@ void AUSACharacterBase::UpdateCurrentTargetableActor()
 void AUSACharacterBase::UpdateCurrentTargetableActor_Instant()
 {	
 	UpdateCurrentTargetableActor();
+}
+
+bool AUSACharacterBase::GetIsTargeting()
+{
+	return IsValid (CurrentTargetableActor) || IsValid(CurrentTargetableActor_Instant);
+}
+
+FVector AUSACharacterBase::GetTargetingDirection()
+{
+	FVector Result = GetActorForwardVector();
+
+	if (GetIsTargeting() == false)
+	{
+		return Result;
+	}
+
+	if (IsValid(CurrentTargetableActor) == true)
+	{
+		Result = (CurrentTargetableActor->GetActorLocation() - GetActorLocation());
+	}
+	else if (IsValid(CurrentTargetableActor_Instant) == true)
+	{
+		Result = (CurrentTargetableActor_Instant->GetActorLocation() - GetActorLocation());
+	}
+
+	Result.Normalize();
+	return Result;
+}
+
+FVector AUSACharacterBase::GetTargetingDirection2D()
+{
+	FVector Result = GetActorForwardVector();
+
+	if (GetIsTargeting() == false)
+	{
+		return Result;
+	}
+
+	if (IsValid(CurrentTargetableActor) == true)
+	{
+		Result = (CurrentTargetableActor->GetActorLocation() - GetActorLocation());
+	}
+	else if (IsValid(CurrentTargetableActor_Instant) == true)
+	{
+		Result = (CurrentTargetableActor_Instant->GetActorLocation() - GetActorLocation());
+	}
+
+	Result.Z = 0.0f;
+	Result.Normalize();
+	return Result;
+}
+
+FVector AUSACharacterBase::GetTargetableActorLocation()
+{
+	FVector Result = GetActorLocation();
+
+	if (GetIsTargeting() == false)
+	{
+		return Result;
+	}
+
+	if (IsValid(CurrentTargetableActor) == true)
+	{
+		Result = CurrentTargetableActor->GetActorLocation();
+	}
+	else if (IsValid(CurrentTargetableActor_Instant) == true)
+	{
+		Result = CurrentTargetableActor_Instant->GetActorLocation() - GetActorLocation();
+	}
+
+	return Result;
 }
 
 //void AUSACharacterBase::SetCurrentTargetableActorNullptr()
@@ -1871,6 +2012,13 @@ void AUSACharacterBase::PostSetupGAS()
 		USA_CHARACTER_HAND_SECONDWEAPON,
 		ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon)
+	);
+
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ACTION,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ACTION, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Action)
 	);
 }
 

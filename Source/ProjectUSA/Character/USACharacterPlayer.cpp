@@ -84,13 +84,13 @@ void AUSACharacterPlayer::Tick(float DeltaTime)
 		KeepTargeting();
 	}
 
-	if (IsValid(PlayerController) && IsValid(PlayerController->PlayerCameraManager))
-	{
-		USA_LOG(LogTemp, Log, TEXT("Capsule Yaw: %f, Mesh Yaw: %f,Camera Yaw: %f"),
-			GetCapsuleComponent()->GetComponentRotation().Yaw,
-			GetMesh()->GetComponentRotation().Yaw,
-			PlayerController->PlayerCameraManager->GetCameraRotation().Yaw);
-	}
+	//if (IsValid(PlayerController) && IsValid(PlayerController->PlayerCameraManager))
+	//{
+	//	USA_LOG(LogTemp, Log, TEXT("Capsule Yaw: %f, Mesh Yaw: %f,Camera Yaw: %f"),
+	//		GetCapsuleComponent()->GetComponentRotation().Yaw,
+	//		GetMesh()->GetComponentRotation().Yaw,
+	//		PlayerController->PlayerCameraManager->GetCameraRotation().Yaw);
+	//}
 
 }
 
@@ -218,16 +218,21 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 	}
 
 	// 카메라 방향 기준으로 타깃 설정
-	SetCurrentTargetableActorUsingForwardVector(PlayerController->PlayerCameraManager->GetCameraRotation().Vector());
+	SetCurrentTargetableActorUsingForwardVector(PlayerController->PlayerCameraManager->GetCameraRotation().Vector(), CurrentTargetableActor);
 }
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 {
+	//if (GetCharacterMovement() == nullptr)
+	//{
+	//	return;
+	//}
+
 	// 플레이어 방향 기준으로 타깃 설정
-	SetCurrentTargetableActorUsingForwardVector(GetActorForwardVector());
+	SetCurrentTargetableActorUsingForwardVector(GetUSACharacterDirection_InputMovement(), CurrentTargetableActor_Instant);
 }
 
-void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection)
+void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection, TObjectPtr<class AActor>& InOutTargetActorPointer)
 {
 	// 오버랩으로 모든 액터 가져오기
 	FVector SourceLocation = GetActorLocation();
@@ -295,11 +300,11 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 	// 가장 가까운 액터를 타깃으로 설정
 	if (TempTargetableActors_Scored.IsEmpty() == false)
 	{
-		CurrentTargetableActor = TempTargetableActors_Scored[TempTargetableActors_Scored.Num() - 1].Value;
+		InOutTargetActorPointer = TempTargetableActors_Scored[TempTargetableActors_Scored.Num() - 1].Value;
 	}
 	else
 	{
-		CurrentTargetableActor = nullptr;
+		InOutTargetActorPointer = nullptr;
 	}
 }
 

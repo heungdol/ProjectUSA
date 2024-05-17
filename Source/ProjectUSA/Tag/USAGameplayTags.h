@@ -18,6 +18,7 @@
 #define USA_CHARACTER_STATE_FALL FGameplayTag::RequestGameplayTag(FName("Character.State.Fall"))
 #define USA_CHARACTER_STATE_DEAD FGameplayTag::RequestGameplayTag(FName("Character.State.Dead"))
 
+#define USA_CHARACTER_ACTION FGameplayTag::RequestGameplayTag(FName("Character.Action"))
 #define USA_CHARACTER_ACTION_SLIDE FGameplayTag::RequestGameplayTag(FName("Character.Action.Slide"))
 #define USA_CHARACTER_ACTION_PARRY FGameplayTag::RequestGameplayTag(FName("Character.Action.Parry"))
 

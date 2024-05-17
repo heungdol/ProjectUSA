@@ -34,6 +34,7 @@ enum class ECharacterActionMoveType : uint8
 	Move UMETA(DisplayName = "Move"),
 	Walk UMETA(DisplayName = "Walk"),
 	Launch UMETA(DisplayName = "Launch"),
+	//MoveToTarget UMETA(DisplayName = "MoveToTarget"), -> 우선 순위가 높으므로 변수들로 따로 빼 놓음
 };
 
 UENUM(BlueprintType)
@@ -78,6 +79,23 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
 	FGameplayTag EndGameplayTag;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	bool bIsMoveToTargetAction = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	float MoveToTargetDuration = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	float MoveToTargetRange = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	UCurveFloat* MoveToTargetCurveFloat;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	class UCurveVector* MoveToTargetCurveVector;
 
 	//
 

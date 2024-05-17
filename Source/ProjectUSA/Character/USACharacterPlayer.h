@@ -83,7 +83,7 @@ protected:
 	void UpdateCurrentTargetableActor() override;
 	void UpdateCurrentTargetableActor_Instant() override;
 
-	void SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection);
+	void SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection, TObjectPtr<class AActor>& InOutTargetActorPointer);
 
 	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 

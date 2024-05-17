@@ -17,6 +17,8 @@
 
 //#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
+#include "Interface/USAAttackableInterface.h"
+
 #include "Character/USACharacterBase.h"
 
 #include "Kismet/KismetSystemLibrary.h"
@@ -72,37 +74,85 @@ void UGA_CharacterAction::CalculateTargetVector()
 		TargetVector = MyCharacter->GetActorForwardVector();
 	}
 
-	switch (DirectionType)
+	if (MyUSACharacter)
+	{	
+		MyUSACharacter->UpdateCurrentTargetableActor_Instant();
+	}
+
+	//bool bIsFinalMoveToTargetAction = false;
+	//IUSAAttackableInterface* AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
+
+	//if (bIsMoveToTargetAction)
+	//{
+	//	if (AttackableInterface != nullptr)
+	//	{
+	//		bIsFinalMoveToTargetAction = AttackableInterface->GetIsTargeting();
+	//	}
+	//}
+
+	//if (bIsFinalMoveToTargetAction)
+	//{
+	//	if (AttackableInterface != nullptr
+	//		&& AttackableInterface->GetTargetingDirection2D().SquaredLength() > SMALL_NUMBER)
+	//	{
+	//		TargetVector = AttackableInterface->GetTargetingDirection2D();
+	//	}
+	//	else if (MyCharacter != nullptr
+	//		&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
+	//	{
+	//		TargetVector = MyCharacter->GetPendingMovementInputVector();
+	//	}
+	//}
+	//else
 	{
+		switch (DirectionType)
+		{
 		case ECharacterActionDirectionType::Input:
 
-		if (MyUSACharacter != nullptr
-			&& MyUSACharacter->GetUSACharacterDirection_InputMovement().Length() > SMALL_NUMBER)
-		{
-			TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
-		}
-		else if (MyCharacter != nullptr
-			&& MyCharacter->GetPendingMovementInputVector().Length() > SMALL_NUMBER)
-		{
-			TargetVector = MyCharacter->GetPendingMovementInputVector();
-		}
+			if (MyUSACharacter != nullptr
+				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
+			{
+				TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+			}
+			else if (MyCharacter != nullptr
+				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
+			{
+				TargetVector = MyCharacter->GetPendingMovementInputVector();
+			}
 
-		break;
+			break;
 
 		case ECharacterActionDirectionType::Target:
-		if (MyUSACharacter != nullptr
-			&& MyUSACharacter->GetUSACharacterDirection_Target().Length() > SMALL_NUMBER)
-		{
-			TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
-		}
+			//if (AttackableInterface != nullptr
+			//	&& AttackableInterface->GetTargetingDirection2D().SquaredLength() > SMALL_NUMBER)
+			//{
+			//	TargetVector = AttackableInterface->GetTargetingDirection2D();
+			//}
+			//else if (MyUSACharacter != nullptr
+			//	&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
+			//{
+			//	TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+			//}
+			//else if (MyCharacter != nullptr
+			//	&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
+			//{
+			//	TargetVector = MyCharacter->GetPendingMovementInputVector();
+			//}
 
-		break;
+			if (MyUSACharacter != nullptr
+				&& MyUSACharacter->GetUSACharacterDirection_Target().Length() > SMALL_NUMBER)
+			{
+				TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
+			}
+
+			break;
 
 		case ECharacterActionDirectionType::None:
 		default:
 
 
-		break;
+			break;
+		}
 	}
 }
 
@@ -118,6 +168,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 	// 이동 설정
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
+	IUSAAttackableInterface* AttackableInterface = nullptr;
 
 	if (CurrentActorInfo != nullptr)
 	{
@@ -138,9 +189,13 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		FVector	RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
 		RightDirection.Normalize();
 
+		//
+
 		FVector EndLocation = FVector::ZeroVector;
 		FVector FinalLaunchVector = FVector::ZeroVector;
 		
+		//
+
 		// 카메라 예외
 		USpringArmComponent* SpringArmComponent = MyCharacter->GetComponentByClass<USpringArmComponent>();
 		FTransform SprintArmComponentTransform;
@@ -149,8 +204,12 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 			SprintArmComponentTransform = SpringArmComponent->GetComponentTransform();
 		}
 
+		//
+
 		MyCharacter->SetActorRotation(TargetVector.Rotation());
 		MyCharacter->UpdateComponentTransforms();
+
+		//
 
 		// 카메라 예외
 		if (IsValid(SpringArmComponent))
@@ -158,50 +217,89 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 			SpringArmComponent->SetWorldTransform(SprintArmComponentTransform);
 		}
 
+		//
+
 		UAT_MoveToLocationByVelocity* AbilityTask_MoveToLocation;
 		UAT_LaunchCharacterForPeriod* AbilityTask_LaunchCharacter;
 		UAT_ChangeCharacterMovementInfo* AbilityTask_ChangeMovementInfo;
 
-		switch (MoveType)
+		//
+
+		//bool bIsFinalMoveToTargetAction = false;
+		//float BetweenDistance = 0.0f;
+
+		//AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
+
+		//if (bIsMoveToTargetAction)
+		//{
+		//	if (AttackableInterface != nullptr
+		//		&& AttackableInterface->GetIsTargeting())
+		//	{
+		//		FVector TargetableActorLocation = AttackableInterface->GetTargetableActorLocation();
+		//		TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
+
+		//		BetweenDistance = (TargetableActorLocation - MyCharacter->GetActorLocation()).Length();
+		//		if (BetweenDistance < MoveToTargetRange)
+		//		{
+		//			bIsFinalMoveToTargetAction = true;
+		//		}
+		//	}
+		//}
+
+
+		//if (bIsFinalMoveToTargetAction)
+		//{
+		//	EndLocation = MyCharacter->GetActorLocation()
+		//		+ (ForwardDirection * BetweenDistance);
+
+		//	AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
+		//	(this, TEXT("MoveToTarget"), EndLocation, MoveToTargetDuration, MoveToTargetCurveFloat, MoveToTargetCurveVector);
+
+		//	AbilityTask_MoveToLocation->ReadyForActivation();
+		//}
+		//else
 		{
-		case ECharacterActionMoveType::Move:
-			EndLocation = MyCharacter->GetActorLocation()
-				+ (ForwardDirection * MoveOffsetLocation.X)
-				+ (RightDirection * MoveOffsetLocation.Y)
-				+ (FVector::UpVector * MoveOffsetLocation.Z);
+			switch (MoveType)
+			{
+			case ECharacterActionMoveType::Move:
+				EndLocation = MyCharacter->GetActorLocation()
+					+ (ForwardDirection * MoveOffsetLocation.X)
+					+ (RightDirection * MoveOffsetLocation.Y)
+					+ (FVector::UpVector * MoveOffsetLocation.Z);
 
-			AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-			(this, TEXT("Move"), EndLocation, MoveDuration, MoveCurveFloat, nullptr);
+				AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
+				(this, TEXT("Move"), EndLocation, MoveDuration, MoveCurveFloat, nullptr);
 
-			AbilityTask_MoveToLocation->ReadyForActivation();
+				AbilityTask_MoveToLocation->ReadyForActivation();
 
-			break;
+				break;
 
-		case ECharacterActionMoveType::Walk:
+			case ECharacterActionMoveType::Walk:
 
-			AbilityTask_ChangeMovementInfo = UAT_ChangeCharacterMovementInfo::GetNewAbilityTask_ChangeCharacterMovementInfo
-			(this, MyCharacter, WalkMovementInfo);
-			OnEndAbility.AddUObject(AbilityTask_ChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleEndAbilityTask);
-			OnCancelAbility.AddUObject(AbilityTask_ChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleCancelAbilityTask);
-			AbilityTask_ChangeMovementInfo->ReadyForActivation();
-			break;
+				AbilityTask_ChangeMovementInfo = UAT_ChangeCharacterMovementInfo::GetNewAbilityTask_ChangeCharacterMovementInfo
+				(this, MyCharacter, WalkMovementInfo);
+				OnEndAbility.AddUObject(AbilityTask_ChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleEndAbilityTask);
+				OnCancelAbility.AddUObject(AbilityTask_ChangeMovementInfo, &UAT_ChangeCharacterMovementInfo::SimpleCancelAbilityTask);
+				AbilityTask_ChangeMovementInfo->ReadyForActivation();
+				break;
 
-		case ECharacterActionMoveType::Launch:
-			FinalLaunchVector = (ForwardDirection * MoveLaunchVector.X)
-				+ (RightDirection * MoveLaunchVector.Y)
-				+ (FVector::UpVector * MoveLaunchVector.Z);
+			case ECharacterActionMoveType::Launch:
+				FinalLaunchVector = (ForwardDirection * MoveLaunchVector.X)
+					+ (RightDirection * MoveLaunchVector.Y)
+					+ (FVector::UpVector * MoveLaunchVector.Z);
 
-			AbilityTask_LaunchCharacter = UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
-			(this, FinalLaunchVector, bMoveLaunchXYOverride, bMoveLaunchZOverride, MoveLaunchPeriod);
+				AbilityTask_LaunchCharacter = UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
+				(this, FinalLaunchVector, bMoveLaunchXYOverride, bMoveLaunchZOverride, MoveLaunchPeriod);
 
-			AbilityTask_LaunchCharacter->ReadyForActivation();
+				AbilityTask_LaunchCharacter->ReadyForActivation();
 
-			break;
+				break;
 
-		case ECharacterActionMoveType::None:
-		default:
+			case ECharacterActionMoveType::None:
+			default:
 
-			break;
+				break;
+			}
 		}
 	}
 

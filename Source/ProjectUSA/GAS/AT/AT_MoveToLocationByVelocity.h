@@ -45,7 +45,13 @@ protected:
 	UPROPERTY()
 	FVector OffsetLocationDelta;
 
+	UPROPERTY()
+	float PrevTime; 
 
+	UPROPERTY()
+	bool bIsPassesFirstTick;
+
+	const float OffsetDeltaNumber = 1.5f;
 	//UPROPERTY()
 	//FVector StartCharacterLocation;
 };

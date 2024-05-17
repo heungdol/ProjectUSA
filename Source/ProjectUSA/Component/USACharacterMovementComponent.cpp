@@ -4,6 +4,7 @@
 #include "Component/USACharacterMovementComponent.h"
 
 #include "GameFramework/Character.h"
+#include "Character/USACharacterBase.h"
 
 
 float UUSACharacterMovementComponent::GetGravityZ() const
@@ -43,31 +44,38 @@ void UUSACharacterMovementComponent::PhysicsRotation(float DeltaTime)
 	FRotator DesiredRotation = CurrentRotation;
 	FRotator TargetRotation = Velocity.GetSafeNormal().Rotation();
 
+	//AUSACharacterBase* USACharacter = Cast<AUSACharacterBase>(CharacterOwner);
+
+	//if (IsValid(USACharacter))
+	//{
+	//	TargetRotation = USACharacter->GetUSACharacterDirection_InputMovement().Rotation();
+	//}
+
 	float DeltaRotYaw = DeltaRot.Yaw;
 
 	if (bOrientRotationToMovement)
 	{
-		//DesiredRotation = ComputeOrientToMovementRotation(CurrentRotation, DeltaTime, DeltaRot);
+		DesiredRotation = ComputeOrientToMovementRotation(CurrentRotation, DeltaTime, DeltaRot);
 
-		if (Velocity.SquaredLength() > SMALL_NUMBER)
-		{
-			if (IsValid(GetCharacterOwner()) == false
-				|| IsValid(GetCharacterOwner()->GetController<APlayerController>()) == false)
-			{
-				DesiredRotation = TargetRotation;
-			}
-			else
-			{
-				if (GetCharacterOwner()->GetController<APlayerController>()->IsLocalController() == true)
-				{
-					DesiredRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, DeltaRotYaw);
-				}
-				else
-				{
-					DesiredRotation = TargetRotation;
-				}
-			}
-		}
+		//if (Velocity.SquaredLength() > SMALL_NUMBER)
+		//{
+		//	if (IsValid(GetCharacterOwner()) == false
+		//		|| IsValid(GetCharacterOwner()->GetController<APlayerController>()) == false)
+		//	{
+		//		DesiredRotation = TargetRotation;
+		//	}
+		//	else
+		//	{
+		//		if (GetCharacterOwner()->GetController<APlayerController>()->IsLocalController() == true)
+		//		{
+		//			DesiredRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, DeltaRotYaw);
+		//		}
+		//		else
+		//		{
+		//			DesiredRotation = TargetRotation;
+		//		}
+		//	}
+		//}
 	}
 	else if (CharacterOwner->Controller && bUseControllerDesiredRotation)
 	{

@@ -53,6 +53,7 @@ void UAT_MoveToLocationByVelocity::Activate()
 	Super::Activate();
 
 	PrevLocation = StartLocation;
+	PrevTime = GetWorld()->GetTimeSeconds();
 
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -76,13 +77,26 @@ void UAT_MoveToLocationByVelocity::Activate()
 	if (CharMoveComp != nullptr)
 	{
 		//CharMoveComp->SetMovementMode(EMovementMode::MOVE_None);
+
+		//CharMoveComp->StopActiveMovement();
+		//CharMoveComp->Velocity *= -1.0f;
+		//CharMoveComp->UpdateProxyAcceleration();
+		CharMoveComp->StopMovementImmediately();
 	}
 
 	SetWaitingOnAvatar();
+
+	bIsPassesFirstTick = false;
 }
 
 void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 {
+	if (bIsPassesFirstTick == false)
+	{
+		bIsPassesFirstTick = true;
+		return;
+	}
+
 	AActor* MyActor = GetAvatarActor();
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* CharMoveComp = nullptr;
@@ -112,8 +126,14 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 		{
 			bIsFinished = true;
 
+			float FinalDeltaTime = TimeMoveWillEnd - PrevTime;
 			OffsetLocation = (TargetLocation - PrevLocation);
-			OffsetLocationDelta = OffsetLocation / DeltaTime;
+			OffsetLocationDelta = OffsetLocation / FinalDeltaTime;
+
+			if (CharMoveComp->IsFalling() == false)
+			{
+				OffsetLocationDelta *= OffsetDeltaNumber;
+			}
 
 			if (OffsetLocation.Z > SMALL_NUMBER)
 			{
@@ -168,6 +188,11 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 
 			OffsetLocation = (CurrentLocation - PrevLocation);
 			OffsetLocationDelta = OffsetLocation / DeltaTime;
+			
+			if (CharMoveComp->IsFalling() == false)
+			{
+				OffsetLocationDelta *= OffsetDeltaNumber;
+			}
 
 			if (OffsetLocation.Z > SMALL_NUMBER)
 			{
@@ -188,6 +213,8 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 			// ;
 			//MyCharacter->LaunchCharacter(OffsetLocation / DeltaTime, true, true);
 		}
+
+		PrevTime = CurrentTime;
 	}
 	else
 	{

@@ -18,6 +18,8 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 
+#include "Character/USACharacterBase.h"
+
 #include "TimerManager.h"
 #include "Engine/World.h"
 
@@ -35,7 +37,16 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		return;
 	}
 
-	SlideForwardDirection = Character->GetPendingMovementInputVector();
+	AUSACharacterBase* USACharacter = Cast <AUSACharacterBase>(Character);
+
+	if (USACharacter != nullptr)
+	{
+		SlideForwardDirection = USACharacter->GetUSACharacterDirection_InputMovement();
+	}
+	else
+	{
+		SlideForwardDirection = Character->GetPendingMovementInputVector();
+	}
 
 	//if (HasAuthority(&ActivationInfo))
 	//{

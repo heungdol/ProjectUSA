@@ -14,6 +14,8 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
+#include "Interface/USAAttackableInterface.h"
+
 
 
 UAT_TraceAttack::UAT_TraceAttack()
@@ -70,20 +72,40 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 	IgnoreActors.Init(GetAvatarActor(), 1);
 
 	FVector AttackDirection = MyCharacter->GetActorForwardVector();
+
 	
 	while (CurrentAttackTraceIndex < AttackTraceData->AttackTraceInfos.Num()
 		&& PrevAttackTraceTime + SMALL_NUMBER >= NextSpawnTime)
 	{
+		FVector FinalAttackDirection = MyCharacter->GetActorForwardVector();
+		FVector FinalAttackDirectionRight = MyCharacter->GetActorRightVector();
+		FVector FinalAttackDirectionUp = FVector::UpVector;
+
+		IUSAAttackableInterface* AttackableInterface = nullptr;
+		
+		if (Ability != nullptr)
+		{
+			AttackableInterface = Cast<IUSAAttackableInterface>(Ability->GetAvatarActorFromActorInfo());
+		}
+
+		if (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].bIsDirectToTarget == true
+			&& AttackableInterface != nullptr)
+		{
+			FinalAttackDirection = AttackableInterface->GetTargetingDirection();
+			FinalAttackDirectionRight = FVector::CrossProduct(FVector::UpVector, FinalAttackDirection);
+			FinalAttackDirectionUp = FVector::CrossProduct(FinalAttackDirection, FinalAttackDirectionRight);
+		}
+
+
 		FVector AttackStartTraceLocation = GetAvatarActor()->GetActorLocation();
 		AttackStartTraceLocation += GetAvatarActor()->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.X;
 		AttackStartTraceLocation += GetAvatarActor()->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Y;
 		AttackStartTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Z;
 
 		FVector AttackEndTraceLocation = AttackStartTraceLocation;
-		//AttackEndTraceLocation += AttackDirection * 1.0f;
-		AttackEndTraceLocation += GetAvatarActor()->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.X;
-		AttackEndTraceLocation += GetAvatarActor()->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.Y;
-		AttackEndTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.Z;
+		AttackEndTraceLocation += FinalAttackDirection * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.X;
+		AttackEndTraceLocation += FinalAttackDirectionRight * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.Y;
+		AttackEndTraceLocation += FinalAttackDirectionUp * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.Z;
 
 		float AttackDamage = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamage;
 		float AttackTraceRadius = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackTraceRadius;

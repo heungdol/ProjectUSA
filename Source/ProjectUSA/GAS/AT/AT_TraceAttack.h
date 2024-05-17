@@ -38,6 +38,10 @@ public:
 	FVector OffsetTraceEndLocation = FVector::ZeroVector;
 
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
+	bool bIsDirectToTarget = false;
+
+
 	// 형태는?
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
 	//EAttackTraceShape TraceShape = EAttackTraceShape::Sphere;
@@ -53,6 +57,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
 	TSubclassOf<UDamageType> AttackDamageType;
+
+	
 };
 
 
