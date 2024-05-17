@@ -5,6 +5,7 @@
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "GAS/AT/AT_MoveToLocationByVelocity.h"
 #include "GAS/AT/AT_LaunchCharacterForPeriod.h"
@@ -140,7 +141,22 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		FVector EndLocation = FVector::ZeroVector;
 		FVector FinalLaunchVector = FVector::ZeroVector;
 		
+		// 카메라 예외
+		USpringArmComponent* SpringArmComponent = MyCharacter->GetComponentByClass<USpringArmComponent>();
+		FTransform SprintArmComponentTransform;
+		if (IsValid(SpringArmComponent))
+		{
+			SprintArmComponentTransform = SpringArmComponent->GetComponentTransform();
+		}
+
 		MyCharacter->SetActorRotation(TargetVector.Rotation());
+		MyCharacter->UpdateComponentTransforms();
+
+		// 카메라 예외
+		if (IsValid(SpringArmComponent))
+		{
+			SpringArmComponent->SetWorldTransform(SprintArmComponentTransform);
+		}
 
 		UAT_MoveToLocationByVelocity* AbilityTask_MoveToLocation;
 		UAT_LaunchCharacterForPeriod* AbilityTask_LaunchCharacter;

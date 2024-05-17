@@ -18,9 +18,12 @@ public:
 	virtual float GetGravityZ() const override;
 
 	UPROPERTY(EditDefaultsOnly, Category = Gravity)
-	float UppingGravityScale = 8.0f;
+	float UppingGravityScale = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = Gravity)
-	float DowningGravityScale = 5.0f;
+	float DowningGravityScale = 2.0f;
+
+	/** Perform rotation over deltaTime */
+	virtual void PhysicsRotation(float DeltaTime) override;
 	
 };

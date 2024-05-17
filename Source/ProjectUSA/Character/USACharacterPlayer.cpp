@@ -22,6 +22,8 @@
 
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
+#include "Components/CapsuleComponent.h"
+
 #include "ProjectUSA.h"
 
 
@@ -81,6 +83,15 @@ void AUSACharacterPlayer::Tick(float DeltaTime)
 	{
 		KeepTargeting();
 	}
+
+	if (IsValid(PlayerController) && IsValid(PlayerController->PlayerCameraManager))
+	{
+		USA_LOG(LogTemp, Log, TEXT("Capsule Yaw: %f, Mesh Yaw: %f,Camera Yaw: %f"),
+			GetCapsuleComponent()->GetComponentRotation().Yaw,
+			GetMesh()->GetComponentRotation().Yaw,
+			PlayerController->PlayerCameraManager->GetCameraRotation().Yaw);
+	}
+
 }
 
 
