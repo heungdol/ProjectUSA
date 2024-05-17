@@ -85,9 +85,9 @@ struct FUSACharacterCapsuleInfo
 	EUSACharacterCapsulePivot CapsulePivot = EUSACharacterCapsulePivot::Bottom;
 
 public:
-	void RenewCharacterCapsule(class ACharacter* InCharacter);
+	void RenewCharacterCapsule(class ACharacter* InCharacter, class USpringArmComponent* InSpringArmComponent = nullptr);
 	void RenewCharacterCapsuleSize(class ACharacter* InCharacter);	
-	void RenewCharacterCapsuleLocation(class ACharacter* InCharacter);
+	void RenewCharacterCapsuleLocation(class ACharacter* InCharacter, class USpringArmComponent* InSpringArmComponent = nullptr);
 
 	//
 
@@ -154,6 +154,9 @@ protected:
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
 	//TObjectPtr <class UStaticMeshComponent> TestStaticMeshComponent;
 
+	//
+
+	FORCEINLINE TObjectPtr <class USpringArmComponent> GetCameraSpringArmComponent() {return CameraSpringArmComponent;}
 
 	//
 

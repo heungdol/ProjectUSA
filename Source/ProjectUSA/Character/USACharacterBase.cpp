@@ -50,9 +50,9 @@
 // ====================================================================================
 
 
-void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter)
+void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter, USpringArmComponent* InSpringArmComponent)
 {
-	RenewCharacterCapsuleLocation(InCharacter);
+	RenewCharacterCapsuleLocation(InCharacter, InSpringArmComponent);
 	RenewCharacterCapsuleSize(InCharacter);
 }
 
@@ -72,11 +72,18 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter
 	//InCharacter->GetCharacterMovement()->AdjustProxyCapsuleSize();
 }
 
-void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InCharacter)
+void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InCharacter, USpringArmComponent* InSpringArmComponent)
 {
 	if (InCharacter == nullptr)
 	{
 		return;
+	}
+
+	// 카메라 예외 처리
+	FVector CameraSpringArmLocation = FVector::ZeroVector;
+	if (IsValid(InSpringArmComponent))
+	{
+		CameraSpringArmLocation = InSpringArmComponent->GetComponentLocation();
 	}
 
 	// 위치 갱신
@@ -157,6 +164,12 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 	
 	// Simulated Mesh
 	InCharacter->CacheInitialMeshOffset(NewUpdatedComponentsLocation, FRotator(0.0f, -90.0f, 0.0f));
+
+	// 카메라 예외 처리
+	if (IsValid(InSpringArmComponent))
+	{
+		InSpringArmComponent->SetWorldLocation(CameraSpringArmLocation);
+	}
 }
 
 void FUSACharacterCapsuleInfo::RenewJellyEffectMeshLocation(UUSAJellyEffectComponent* InJellyEffect)
@@ -323,7 +336,7 @@ void AUSACharacterBase::MulticastRPC_RenewCharacterCapsule_Implementation(/*ACha
 		return;
 	}
 
-	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(this);
+	CharacterCapsuleInfos[InKeyName].RenewCharacterCapsule(this, CameraSpringArmComponent);
 	CharacterCapsuleInfos[InKeyName].RenewJellyEffectMeshLocation(JellyEffectComponent);
 	//TestStaticMeshComponent->SetRelativeLocation(CharacterCapsuleInfos[InKeyName].CapsuleHaflHeight * FVector::RightVector);
 }
@@ -601,7 +614,7 @@ void AUSACharacterBase::BeginPlay()
 		}
 	}
 
-	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this);
+	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this, CameraSpringArmComponent);
 
 	//ResetAttributeSet();
 
@@ -1531,6 +1544,9 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	NewDirection.Z = 0.0f;
 	NewDirection.Normalize();
 
+	//SetActorRotation(NewDirection.Rotation());
+	//UpdateComponentTransforms();
+
 	DamageType = DamageEvent.DamageTypeClass;
 
 	// 죽음
@@ -1627,7 +1643,21 @@ void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation
 		return;
 	}
 
+	// 카메라 예외 처리
+	FRotator CameraSpringArmRotation = FRotator::ZeroRotator;
+	if (IsValid(CameraSpringArmComponent))
+	{
+		CameraSpringArmRotation = CameraSpringArmComponent->GetComponentRotation();
+	}
+
 	SetActorRotation(InNewDirection.Rotation());
+	UpdateComponentTransforms();
+
+	// 카메라 예외 처리
+	if (IsValid(CameraSpringArmComponent))
+	{
+		CameraSpringArmComponent->SetWorldRotation(CameraSpringArmRotation);
+	}
 
 	if (/*HasAuthority()*/ UKismetSystemLibrary::IsServer(GetWorld()))
 	{
