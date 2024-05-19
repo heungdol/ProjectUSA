@@ -54,14 +54,11 @@ public:
 	virtual void DoSomethingWithTargetVector();
 	virtual bool GetIsAbleToActivateCondition();
 
-	UPROPERTY()
-	FVector TargetVector ;
 	FORCEINLINE FVector GetTargetVector() { return TargetVector; }
 
 	FUSAGASimpleDelegate OnActivateAbility;
 	FUSAGASimpleDelegate OnCancelAbility;
 	FUSAGASimpleDelegate OnEndAbility;
-
 
 	UFUNCTION()
 	void SimpleCancelAbility ();
@@ -82,6 +79,9 @@ private:
 
 
 protected:
+	UPROPERTY()
+	FVector TargetVector;
+
 	//UFUNCTION(BlueprintCallable)
 	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects, 
 		const FGameplayAbilitySpecHandle Handle, 

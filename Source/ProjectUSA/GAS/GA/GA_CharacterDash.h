@@ -47,6 +47,11 @@ protected:
 	FVector DashOffsetLocation = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = GAS)
+	//float DashDistance = 500.0f;
+	FVector MoveAfterVelocity = FVector::ZeroVector;
+	
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = GAS)
 	float DashDuration = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = GAS)

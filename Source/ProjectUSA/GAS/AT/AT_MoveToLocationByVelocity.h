@@ -20,7 +20,14 @@ class PROJECTUSA_API UAT_MoveToLocationByVelocity : public UAbilityTask_MoveToLo
 public:
 	/** Move to the specified location, using the vector curve (range 0 - 1) if specified, otherwise the float curve (range 0 - 1) or fallback to linear interpolation */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_MoveToLocationByVelocity* GetNewAbilityTask_MoveToLocationByVelocity(UGameplayAbility* OwningAbility, FName TaskInstanceName, FVector Location, float Duration, UCurveFloat* OptionalInterpolationCurve, UCurveVector* OptionalVectorInterpolationCurve);
+	static UAT_MoveToLocationByVelocity* GetNewAbilityTask_MoveToLocationByVelocity
+	(UGameplayAbility* OwningAbility, 
+		FName TaskInstanceName, 
+		FVector Location, 
+		FVector AfterVelocity,
+		float Duration, 
+		UCurveFloat* OptionalInterpolationCurve, 
+		UCurveVector* OptionalVectorInterpolationCurve);
 
 	virtual void InitSimulatedTask(UGameplayTasksComponent& InGameplayTasksComponent) override;
 
@@ -39,19 +46,24 @@ protected:
 	UPROPERTY(Replicated)
 	FVector PrevLocation;
 
+	UPROPERTY(Replicated)
+	FVector AfterVelocity;
+
+	//
+
 	UPROPERTY()
 	FVector OffsetLocation;
 
-	UPROPERTY()
-	FVector OffsetLocationDelta;
+	//UPROPERTY()
+	//FVector OffsetLocationDelta;
 
 	UPROPERTY()
 	float PrevTime; 
 
-	UPROPERTY()
-	bool bIsPassesFirstTick;
+	//UPROPERTY()
+	//bool bIsPassesFirstTick;
 
-	const float OffsetDeltaNumber = 1.5f;
+	const float OffsetDeltaNumber = 1.3f;
 	//UPROPERTY()
 	//FVector StartCharacterLocation;
 };

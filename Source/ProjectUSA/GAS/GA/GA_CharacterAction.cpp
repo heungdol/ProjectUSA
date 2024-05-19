@@ -74,6 +74,7 @@ void UGA_CharacterAction::CalculateTargetVector()
 		TargetVector = MyCharacter->GetActorForwardVector();
 	}
 
+	// 액션 수행 전마다 임시 타겟팅 업데이트
 	if (MyUSACharacter)
 	{	
 		MyUSACharacter->UpdateCurrentTargetableActor_Instant();
@@ -81,6 +82,10 @@ void UGA_CharacterAction::CalculateTargetVector()
 
 	//bool bIsFinalMoveToTargetAction = false;
 	//IUSAAttackableInterface* AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
+	//if (AttackableInterface != nullptr)
+	//{
+	//	//bIsFinalMoveToTargetAction = AttackableInterface->GetIsTargeting();
+	//}
 
 	//if (bIsMoveToTargetAction)
 	//{
@@ -140,11 +145,20 @@ void UGA_CharacterAction::CalculateTargetVector()
 			//}
 
 			if (MyUSACharacter != nullptr
-				&& MyUSACharacter->GetUSACharacterDirection_Target().Length() > SMALL_NUMBER)
+				&& MyUSACharacter->GetUSACharacterDirection_Target().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
 			}
-
+			else if (MyUSACharacter != nullptr
+				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
+			{
+				TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+			}
+			else if (MyCharacter != nullptr
+				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
+			{
+				TargetVector = MyCharacter->GetPendingMovementInputVector();
+			}
 			break;
 
 		case ECharacterActionDirectionType::None:
@@ -268,7 +282,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 					+ (FVector::UpVector * MoveOffsetLocation.Z);
 
 				AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-				(this, TEXT("Move"), EndLocation, MoveDuration, MoveCurveFloat, nullptr);
+				(this, TEXT("Move"), EndLocation, MoveAfterVelocity, MoveDuration, MoveCurveFloat, nullptr);
 
 				AbilityTask_MoveToLocation->ReadyForActivation();
 

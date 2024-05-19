@@ -109,7 +109,7 @@ void UGA_CharacterDash::DoSomethingWithTargetVector()
 		+ (FVector::UpVector * DashOffsetLocation.Z);
 
 	UAT_MoveToLocationByVelocity* AbilityTask = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-	(this, TEXT("Dash"), EndLocation, DashDuration, DashCurveFloat, nullptr);
+	(this, TEXT("Dash"), EndLocation, MoveAfterVelocity, DashDuration, DashCurveFloat, nullptr);
 
 	AbilityTask->OnTargetLocationReached.AddDynamic(this, &UGA_CharacterDash::SimpleEndAbility);
 	AbilityTask->ReadyForActivation();

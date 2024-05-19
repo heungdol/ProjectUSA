@@ -18,7 +18,14 @@
 
 
 // TODO: 공중 로테이션 다듬어 볼 것
-UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity(UGameplayAbility* OwningAbility, FName TaskInstanceName, FVector Location, float Duration, UCurveFloat* OptionalInterpolationCurve, UCurveVector* OptionalVectorInterpolationCurve)
+UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
+(UGameplayAbility* OwningAbility, 
+	FName TaskInstanceName, 
+	FVector Location, 
+	FVector AfterVelocity,
+	float Duration, 
+	UCurveFloat* OptionalInterpolationCurve, 
+	UCurveVector* OptionalVectorInterpolationCurve)
 {
 	UAT_MoveToLocationByVelocity* MyObj = NewAbilityTask<UAT_MoveToLocationByVelocity>(OwningAbility, TaskInstanceName);
 
@@ -28,6 +35,7 @@ UAT_MoveToLocationByVelocity* UAT_MoveToLocationByVelocity::GetNewAbilityTask_Mo
 	}
 
 	MyObj->TargetLocation = Location;
+	MyObj->AfterVelocity = AfterVelocity;
 	MyObj->DurationOfMovement = FMath::Max(Duration, 0.001f);		// Avoid negative or divide-by-zero cases
 	MyObj->TimeMoveStarted = MyObj->GetWorld()->GetTimeSeconds();
 	MyObj->TimeMoveWillEnd = MyObj->TimeMoveStarted + MyObj->DurationOfMovement;
@@ -86,17 +94,11 @@ void UAT_MoveToLocationByVelocity::Activate()
 
 	SetWaitingOnAvatar();
 
-	bIsPassesFirstTick = false;
+	//bIsPassesFirstTick = false;
 }
 
 void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 {
-	if (bIsPassesFirstTick == false)
-	{
-		bIsPassesFirstTick = true;
-		return;
-	}
-
 	AActor* MyActor = GetAvatarActor();
 	ACharacter* MyCharacter = nullptr;
 	UCharacterMovementComponent* CharMoveComp = nullptr;
@@ -122,47 +124,10 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 	{
 		float CurrentTime = GetWorld()->GetTimeSeconds();
 
-		if (CurrentTime >= TimeMoveWillEnd)
+		if (CurrentTime >= TimeMoveWillEnd
+			&& bIsFinished == false)
 		{
 			bIsFinished = true;
-
-			float FinalDeltaTime = TimeMoveWillEnd - PrevTime;
-			OffsetLocation = (TargetLocation - PrevLocation);
-			OffsetLocationDelta = OffsetLocation / FinalDeltaTime;
-
-			if (CharMoveComp->IsFalling() == false)
-			{
-				OffsetLocationDelta *= OffsetDeltaNumber;
-			}
-
-			if (OffsetLocation.Z > SMALL_NUMBER)
-			{
-				MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
-			}
-			else
-			{
-				CharMoveComp->Velocity = OffsetLocationDelta;
-				CharMoveComp->UpdateComponentVelocity();
-			}
-
-			//MyCharacter->AddActorWorldOffset(OffsetLocation, true);
-
-			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
-
-			//CharMoveComp->Velocity = OffsetLocationDelta;
-			//CharMoveComp->UpdateComponentVelocity();
-
-			//MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
-
-			if (ShouldBroadcastAbilityTaskDelegates())
-			{
-				OnTargetLocationReached.Broadcast();
-			}
-
-			if (MyActor->GetLocalRole() == ROLE_Authority)
-			{
-				MyActor->ForceNetUpdate();
-			}
 
 			OnEndTaskCallback();
 		}
@@ -186,25 +151,52 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 				CurrentLocation = FMath::Lerp<FVector, float>(StartLocation, TargetLocation, MoveFraction);
 			}
 
+
 			OffsetLocation = (CurrentLocation - PrevLocation);
-			OffsetLocationDelta = OffsetLocation / DeltaTime;
-			
-			if (CharMoveComp->IsFalling() == false)
+
+			if (OffsetLocation.Z < SMALL_NUMBER
+				&& CharMoveComp->IsFalling() == false)
 			{
-				OffsetLocationDelta *= OffsetDeltaNumber;
+				FVector GroundNormal = MyCharacter->GetCharacterMovement()->CurrentFloor.HitResult.Normal;
+				FVector GroundRightVector = FVector::CrossProduct(GroundNormal, FVector::ForwardVector);
+				FVector GroundFowardVector = FVector::CrossProduct(GroundRightVector, GroundNormal);
+
+				OffsetLocation = GroundFowardVector * OffsetLocation.X
+					+ GroundRightVector * OffsetLocation.Y
+					+ GroundNormal * OffsetLocation.Z;
 			}
 
-			if (OffsetLocation.Z > SMALL_NUMBER)
-			{
-				MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
-			}
-			else
-			{
-				CharMoveComp->Velocity = OffsetLocationDelta;
-				CharMoveComp->UpdateComponentVelocity();
-			}
+			MyCharacter->AddActorWorldOffset(OffsetLocation, true, nullptr, ETeleportType::ResetPhysics);
+
+			CharMoveComp->Velocity = FVector::ZeroVector;
+			CharMoveComp->UpdateComponentVelocity();
 
 			PrevLocation = CurrentLocation;
+			
+			
+
+			//OffsetLocationDelta = OffsetLocation / DeltaTime;
+			//
+			//if (CharMoveComp->IsFalling() == false)
+			//{
+			//	OffsetLocationDelta *= OffsetDeltaNumber;
+			//}
+
+			//if (OffsetLocation.Z > SMALL_NUMBER)
+			//{
+			//	MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
+			//}
+			//else
+			//{
+			//	CharMoveComp->Velocity = OffsetLocationDelta;
+			//	CharMoveComp->UpdateComponentVelocity();
+			//}
+
+			//if (CharMoveComp->IsFalling() == false)
+			//{
+
+			//}
+
 
 			//MyCharacter->AddActorWorldOffset(OffsetLocation, true);
 
@@ -215,6 +207,16 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 		}
 
 		PrevTime = CurrentTime;
+	
+		//if (bIsPassesFirstTick == false)
+		//{
+		//	bIsPassesFirstTick = true;
+		//}
+
+		if (MyActor->GetLocalRole() == ROLE_Authority)
+		{
+			MyActor->ForceNetUpdate();
+		}
 	}
 	else
 	{
@@ -224,33 +226,6 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 
 void UAT_MoveToLocationByVelocity::OnCancelTaskCallback()
 {
-	if (bIsFinished == false)
-	{
-		AActor* MyActor = GetAvatarActor();
-		ACharacter* MyCharacter = nullptr;
-		UCharacterMovementComponent* CharMoveComp = nullptr;
-
-		if (MyActor)
-		{
-			MyCharacter = Cast<ACharacter>(MyActor);
-		}
-
-		if (MyCharacter != nullptr)
-		{
-			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
-		}
-
-		if (CharMoveComp)
-		{
-			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
-		}
-
-		if (MyCharacter != nullptr)
-		{
-			MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
-		}
-	}
-
 	bIsFinished = true;
 
 	ExternalCancel();
@@ -274,14 +249,31 @@ void UAT_MoveToLocationByVelocity::OnEndTaskCallback()
 			CharMoveComp = Cast<UCharacterMovementComponent>(MyCharacter->GetMovementComponent());
 		}
 
-		if (CharMoveComp)
-		{
-			//CharMoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
-		}
+		//
 
 		if (MyCharacter != nullptr)
 		{
-			MyCharacter->LaunchCharacter(OffsetLocationDelta, true, true);
+			OffsetLocation = (TargetLocation - PrevLocation);
+
+			if (OffsetLocation.Z < SMALL_NUMBER
+				&& CharMoveComp->IsFalling() == false)
+			{
+				FVector GroundNormal = MyCharacter->GetCharacterMovement()->CurrentFloor.HitResult.Normal;
+				FVector GroundRightVector = FVector::CrossProduct(GroundNormal, FVector::ForwardVector);
+				FVector GroundFowardVector = FVector::CrossProduct(GroundRightVector, GroundNormal);
+
+				OffsetLocation = GroundFowardVector * OffsetLocation.X
+					+ GroundRightVector * OffsetLocation.Y
+					+ GroundNormal * OffsetLocation.Z;
+			}
+
+			MyCharacter->AddActorWorldOffset(OffsetLocation, true, nullptr, ETeleportType::ResetPhysics);
+		}
+
+		if (CharMoveComp)
+		{
+			CharMoveComp->Velocity = AfterVelocity;
+			CharMoveComp->UpdateComponentVelocity();
 		}
 	}
 

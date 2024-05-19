@@ -103,6 +103,9 @@ public:
 	FVector MoveOffsetLocation = FVector::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	FVector MoveAfterVelocity = FVector::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
 	float MoveDuration = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")

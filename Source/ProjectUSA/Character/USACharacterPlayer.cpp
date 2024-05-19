@@ -229,7 +229,16 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 	//}
 
 	// 플레이어 방향 기준으로 타깃 설정
-	SetCurrentTargetableActorUsingForwardVector(GetUSACharacterDirection_InputMovement(), CurrentTargetableActor_Instant);
+	//SetCurrentTargetableActorUsingForwardVector(GetUSACharacterDirection_InputMovement(), CurrentTargetableActor_Instant);
+
+	if (PlayerController == nullptr
+		|| PlayerController->PlayerCameraManager == nullptr)
+	{
+		return;
+	}
+
+	// 카메라 방향 기준으로 타깃 설정
+	SetCurrentTargetableActorUsingForwardVector(PlayerController->PlayerCameraManager->GetCameraRotation().Vector(), CurrentTargetableActor_Instant);
 }
 
 void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection, TObjectPtr<class AActor>& InOutTargetActorPointer)
@@ -254,7 +263,7 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 	// 인터페이스를 이용하여 타깃 가능한 액터 가져오기
 	TArray<TPair<float, AActor*>> TempTargetableActors_Scored;
 	const float ScoreWeight = 0.6f;
-	const float DotCutoff = 0.0f;
+	const float DotCutoff = 0.3f;
 
 	for (AActor* TempActor : TempTargetableActors_Overlap)
 	{
