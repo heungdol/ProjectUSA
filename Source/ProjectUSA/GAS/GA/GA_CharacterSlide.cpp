@@ -70,6 +70,7 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	//
 
 	ACharacter* AvatarCharacter = Cast <ACharacter>(GetAvatarActorFromActorInfo());
+	AUSACharacterBase* AvatarUSACharacter = Cast <AUSACharacterBase>(AvatarCharacter);
 
 	AController* Controller = nullptr;
 	APlayerController* PlayerController = nullptr;
@@ -100,7 +101,14 @@ void UGA_CharacterSlide::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 			}
 			else
 			{
-				ServerRPC_SetDirectionAndDoSlide(Character->GetPendingMovementInputVector());
+				if (IsValid(AvatarUSACharacter))
+				{
+					ServerRPC_SetDirectionAndDoSlide(AvatarUSACharacter->GetUSACharacterDirection_InputMovement());
+				}
+				else
+				{
+					ServerRPC_SetDirectionAndDoSlide(AvatarCharacter->GetPendingMovementInputVector());
+				}
 
 				DoSlide();
 			}

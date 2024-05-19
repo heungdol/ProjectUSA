@@ -43,16 +43,6 @@ void UAT_MoveToGround::Activate()
 	//}
 
 	BroadcastSimpleDelegate(OnBeginMovement);
-}
-
-void UAT_MoveToGround::TickTask(float DeltaTime)
-{
-	if (bIsFinished)
-	{
-		return;
-	}
-
-	Super::TickTask(DeltaTime);
 
 	AActor* MyActor = GetAvatarActor();
 	ACharacter* MyCharacter = nullptr;
@@ -66,7 +56,7 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 			MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
 		}
 	}
-	
+
 	if (MyActor == nullptr
 		|| MyCharacter == nullptr
 		|| MyCharacterMovementComponent == nullptr)
@@ -76,18 +66,42 @@ void UAT_MoveToGround::TickTask(float DeltaTime)
 		return;
 	}
 
-	if (IsValid(MyCharacterMovementComponent)
-		&& MyCharacterMovementComponent->IsFalling() == false)
-	{
-		BroadcastSimpleDelegate (OnGroundReached);
-
-		SimpleEndAbilityTask();
-	}
-	else
+	//else
 	{
 		//MyCharacterMovementComponent->Velocity = FVector(0, 0, MoveSpeed * -1.0f);
 		//MyCharacterMovementComponent->UpdateComponentVelocity();
 		MyCharacter->LaunchCharacter(FVector(0, 0, MoveSpeed * -1.0f), true, true);
+	}
+}
+
+void UAT_MoveToGround::TickTask(float DeltaTime)
+{
+	Super::TickTask(DeltaTime);
+
+	if (bIsFinished)
+	{
+		return;
+	}
+
+	AActor* MyActor = GetAvatarActor();
+	ACharacter* MyCharacter = nullptr;
+	UCharacterMovementComponent* MyCharacterMovementComponent = nullptr;
+
+	if (MyActor)
+	{
+		MyCharacter = Cast <ACharacter>(MyActor);
+		if (MyCharacter)
+		{
+			MyCharacterMovementComponent = MyCharacter->GetCharacterMovement();
+		}
+	}
+
+	if (IsValid(MyCharacterMovementComponent)
+		&& MyCharacterMovementComponent->IsFalling() == false)
+	{
+		BroadcastSimpleDelegate(OnGroundReached);
+
+		SimpleEndAbilityTask();
 	}
 }
 

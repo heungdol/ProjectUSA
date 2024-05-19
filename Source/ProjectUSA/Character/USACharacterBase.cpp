@@ -1163,10 +1163,20 @@ void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTa
 	if (NewCount > 0)
 	{
 		//bIsFalling = true;
+
+		if (IsValid(GetCharacterMovement()))
+		{
+			GetCharacterMovement()->bUseFlatBaseForFloorChecks = false;
+		}
 	}
 	else
 	{
 		//bIsFalling = false;
+	
+		if (IsValid(GetCharacterMovement()))
+		{
+			GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
+		}
 	}
 }
 
