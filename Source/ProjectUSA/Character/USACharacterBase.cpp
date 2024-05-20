@@ -645,6 +645,9 @@ void AUSACharacterBase::Destroyed()
 		ASC->ClearAllAbilities ();
 	}
 
+	// 무기 드랍
+	DropWeapons(true);
+
 	Super::Destroyed();
 }
 
@@ -652,6 +655,11 @@ void AUSACharacterBase::Destroyed()
 void AUSACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AUSACharacterBase::BeginDestroy()
+{
+	Super::BeginDestroy();
 }
 
 // Called to bind functionality to input
@@ -1234,6 +1242,8 @@ void AUSACharacterBase::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTa
 	{
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
+		DropWeapons(true);
+
 		K2_OnUSADeath();
 	}
 	else
@@ -1420,12 +1430,24 @@ void AUSACharacterBase::PickupWeapon(AUSAWeaponBase* InWeapon)
 
 	// ASC 새 갱신
 	InWeapon->SetWeaponOwner(this);
+
 }
 
-void AUSACharacterBase::DropWeapons()
+void AUSACharacterBase::DropWeapons(bool bIsAbsolute)
 {
-	ServerRPC_DropWeapons();
-}
+	if (bIsAbsolute)
+	{
+		ServerRPC_DropWeapons();
+	}
+	else
+	{
+		if (IsValid(ASC) == true
+			&& ASC->GetGameplayTagCount(USA_CHARACTER_ACTION) <= 0)
+		{
+			ServerRPC_DropWeapons();
+		}
+	}
+}	
 
 void AUSACharacterBase::ServerRPC_DropWeapons_Implementation()
 {
@@ -1445,7 +1467,7 @@ void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 			continue;
 		}
 
-		// 방향 설정
+		// 무기 소유자 설정
 		if (UKismetSystemLibrary::IsServer(GetWorld()))
 		{
 			CurrentEquipedWeapons[CurrentEquipedWeaponKey]->SetWeaponOwner(nullptr);

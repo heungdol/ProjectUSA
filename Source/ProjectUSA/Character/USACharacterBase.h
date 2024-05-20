@@ -250,6 +250,8 @@ public:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void BeginDestroy() override;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -412,7 +414,16 @@ protected:
 
 	void PickupWeapon(class AUSAWeaponBase* InWeapon);
 
-	void DropWeapons();
+	//UFUNCTION(Server, Reliable)
+	//void ServerRPC_PickupWeapon(class AUSAWeaponBase* InWeapon);
+
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_PickupWeapon(class AUSAWeaponBase* InWeapon);
+
+
+	//
+
+	void DropWeapons(bool bIsAbsolute = false);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_DropWeapons();

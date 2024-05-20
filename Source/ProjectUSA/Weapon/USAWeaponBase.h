@@ -28,17 +28,29 @@ public:
 	AUSAWeaponBase();
 
 public:
+
+	virtual void OnConstruction(const FTransform& Transform) override;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
-	TObjectPtr <class USceneComponent> WeaponMeshHolder;
+	TObjectPtr <class USphereComponent> WeaponCollisionComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr <class UBoxComponent> WeaponBoxComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
 	TObjectPtr <class USkeletalMeshComponent> WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
 	TObjectPtr <class UStaticMeshComponent> WeaponStaticMesh;
 
+	//
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr<class USkeletalMesh> WeaponMeshRef;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr <class UBoxComponent> WeaponBoxComponent;
+	TObjectPtr<class UStaticMesh> WeaponStaticMeshRef;
+
 
 	//
 
@@ -46,6 +58,9 @@ public:
 	TObjectPtr <class UTexture2D> WeaponTexture;
 
 	//
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	//TObjectPtr <class URotatingMovementComponent> WeaponRotatingMovementCompont;
 	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
@@ -69,6 +84,25 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
 	class AUSACharacterBase* WeaponOwner = nullptr;
 
+	//
+	//UPROPERTY(VisibleAnywhere, Category = "Weapon Drop")
+	//bool bIsDropping = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	bool bIsRandomDrop = true;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	float WeaponDropImpulseXY = 300.0f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	float WeaponDropImpulseZ = 300.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	FRotator WeaponIdleRotationRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Drop Info")
+	float bIsWeaponDropping = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -88,6 +122,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ClearGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
 
+	UFUNCTION()
+	void OnBoxComponentHitAndCheckIsGround (UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 
 public:	
 	// Called every frame
@@ -96,6 +133,8 @@ public:
 	//
 
 	void SetWeaponOwner(class AUSACharacterBase* InCharacter);
+
+	void SetWeaponPhysics(bool IsDropping);
 
 	FORCEINLINE class AUSACharacterBase* GetWeaponOwner() { return WeaponOwner; }
 
@@ -116,4 +155,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UTexture2D* GetWeaponTexture() const { return WeaponTexture; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE  class UStaticMeshComponent* GetStaticMeshComponent() const {return WeaponStaticMesh;}
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE  class USkeletalMeshComponent* GetSkeletalMeshComponent() const { return WeaponMesh; }
+
 };
