@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+
+#include "Interface/USATargetableInterface.h"
+
 #include "USAAttackableInterface.generated.h"
 
 // This class does not need to be modified.
@@ -31,4 +34,5 @@ public:
 
 	virtual FVector GetTargetableActorLocation() = 0;
 
+	virtual IUSATargetableInterface* GetTargetableInterface() = 0;
 };

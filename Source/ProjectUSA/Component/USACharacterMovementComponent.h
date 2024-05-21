@@ -15,13 +15,18 @@ class PROJECTUSA_API UUSACharacterMovementComponent : public UCharacterMovementC
 	GENERATED_BODY()
 	
 public:
+	UUSACharacterMovementComponent();
+
 	virtual float GetGravityZ() const override;
 
 	UPROPERTY(EditDefaultsOnly, Category = Gravity)
 	float UppingGravityScale = 5.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = Gravity)
-	float DowningGravityScale = 2.0f;
+	float DowningGravityScale = 1.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gravity)
+	float DowningGravityScale_Damage = 1.0f;
 
 	/** Perform rotation over deltaTime */
 	virtual void PhysicsRotation(float DeltaTime) override;

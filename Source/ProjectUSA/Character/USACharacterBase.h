@@ -358,6 +358,7 @@ public:
 	virtual FVector GetTargetingDirection() override;
 	virtual FVector GetTargetingDirection2D() override;
 	virtual FVector GetTargetableActorLocation() override;
+	virtual IUSATargetableInterface* GetTargetableInterface() override;
 
 	//
 

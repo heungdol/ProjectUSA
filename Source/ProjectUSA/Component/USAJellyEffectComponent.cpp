@@ -112,7 +112,7 @@ void UUSAJellyEffectComponent::PlayJellyEffect(UUSAJellyEffectData* InJellyEffec
 	PlayJellyEffectTime = GetWorld()->GetTimeSeconds();
 	EndJellyEffectTime = PlayJellyEffectTime + CurrentJellyEffectData->GetJellyEffectTime();
 
-	UE_LOG(LogTemp, Log, TEXT("Start Time: %f, End Time: %f"), PlayJellyEffectTime, EndJellyEffectTime);
+	//UE_LOG(LogTemp, Log, TEXT("Start Time: %f, End Time: %f"), PlayJellyEffectTime, EndJellyEffectTime);
 
 	bIsPlayingJellyEffect = true;
 	//PrimaryComponentTick.bCanEverTick = true;

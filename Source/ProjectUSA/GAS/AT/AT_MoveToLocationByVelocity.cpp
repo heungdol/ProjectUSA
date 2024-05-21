@@ -127,8 +127,6 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 		if (CurrentTime >= TimeMoveWillEnd
 			&& bIsFinished == false)
 		{
-			bIsFinished = true;
-
 			OnEndTaskCallback();
 		}
 		else

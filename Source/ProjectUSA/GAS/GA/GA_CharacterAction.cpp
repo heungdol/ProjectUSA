@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+#include "Components/CapsuleComponent.h"
+
 #include "GAS/AT/AT_MoveToLocationByVelocity.h"
 #include "GAS/AT/AT_LaunchCharacterForPeriod.h"
 #include "GAS/AT/AT_WaitDelay.h"
@@ -18,6 +20,7 @@
 //#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
 #include "Interface/USAAttackableInterface.h"
+#include "Interface/USATargetableInterface.h"
 
 #include "Character/USACharacterBase.h"
 
@@ -80,36 +83,56 @@ void UGA_CharacterAction::CalculateTargetVector()
 		MyUSACharacter->UpdateCurrentTargetableActor_Instant();
 	}
 
-	//bool bIsFinalMoveToTargetAction = false;
-	//IUSAAttackableInterface* AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
-	//if (AttackableInterface != nullptr)
-	//{
-	//	//bIsFinalMoveToTargetAction = AttackableInterface->GetIsTargeting();
-	//}
+	bool bIsFinalMoveToTargetAction = false;
+	float TempDistance = -1.0f;
+	FVector TempVector = FVector::ZeroVector;
 
-	//if (bIsMoveToTargetAction)
-	//{
-	//	if (AttackableInterface != nullptr)
-	//	{
-	//		bIsFinalMoveToTargetAction = AttackableInterface->GetIsTargeting();
-	//	}
-	//}
-
-	//if (bIsFinalMoveToTargetAction)
-	//{
-	//	if (AttackableInterface != nullptr
-	//		&& AttackableInterface->GetTargetingDirection2D().SquaredLength() > SMALL_NUMBER)
-	//	{
-	//		TargetVector = AttackableInterface->GetTargetingDirection2D();
-	//	}
-	//	else if (MyCharacter != nullptr
-	//		&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
-	//	{
-	//		TargetVector = MyCharacter->GetPendingMovementInputVector();
-	//	}
-	//}
-	//else
+	IUSAAttackableInterface* AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
+	
+	if (bIsMoveToTargetAction)
 	{
+		if (AttackableInterface != nullptr
+			&& AttackableInterface->GetIsTargeting() == true)
+		{
+			TargetableActorInterface = AttackableInterface->GetTargetableInterface();
+
+			FVector TargetableActorLocation = AttackableInterface->GetTargetableActorLocation();
+			//if (TargetableActorLocation.Z > MyCharacter->GetActorLocation().Z)
+			//{
+			//	TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
+			//}
+
+			TempVector = (TargetableActorLocation - MyCharacter->GetActorLocation());
+			TempVector.Normalize();
+
+			TempDistance = (TargetableActorLocation - MyCharacter->GetActorLocation()).Length();
+
+			bIsFinalMoveToTargetAction = (TempDistance <= MoveToTargetRange);
+		}
+	}
+
+	if (bIsFinalMoveToTargetAction == true)
+	{
+		float TargetRadius = 0.0f;
+		if (TargetableActorInterface != nullptr)
+		{
+			TargetRadius = TargetableActorInterface->GetTargetableCapsuleRadius();
+		}
+
+		float SourceRadius = 0.0f;
+		if (IsValid(MyCharacter) == true)
+		{
+			SourceRadius = MyCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
+		}
+
+		TargetDistance = FMath::Max(TempDistance - TargetRadius - SourceRadius - MoveToTargetGap, 0.0f);
+		TargetVector = TempVector;
+
+	}
+	else
+	{
+		TargetDistance = -1.0f;
+
 		switch (DirectionType)
 		{
 		case ECharacterActionDirectionType::Input:
@@ -128,37 +151,11 @@ void UGA_CharacterAction::CalculateTargetVector()
 			break;
 
 		case ECharacterActionDirectionType::Target:
-			//if (AttackableInterface != nullptr
-			//	&& AttackableInterface->GetTargetingDirection2D().SquaredLength() > SMALL_NUMBER)
-			//{
-			//	TargetVector = AttackableInterface->GetTargetingDirection2D();
-			//}
-			//else if (MyUSACharacter != nullptr
-			//	&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
-			//{
-			//	TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
-			//}
-			//else if (MyCharacter != nullptr
-			//	&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
-			//{
-			//	TargetVector = MyCharacter->GetPendingMovementInputVector();
-			//}
-
-			if (MyUSACharacter != nullptr
-				&& MyUSACharacter->GetUSACharacterDirection_Target().SquaredLength() > SMALL_NUMBER)
+			if (MyUSACharacter != nullptr)
 			{
 				TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
 			}
-			else if (MyUSACharacter != nullptr
-				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
-			{
-				TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
-			}
-			else if (MyCharacter != nullptr
-				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
-			{
-				TargetVector = MyCharacter->GetPendingMovementInputVector();
-			}
+
 			break;
 
 		case ECharacterActionDirectionType::None:
@@ -198,6 +195,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		&& MyCharacterMovementComponent != nullptr)
 	{
 		FVector	ForwardDirection = TargetVector;
+		ForwardDirection.Z = 0.0f;
 		ForwardDirection.Normalize();
 
 		FVector	RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);
@@ -220,7 +218,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 		//
 
-		MyCharacter->SetActorRotation(TargetVector.Rotation());
+		MyCharacter->SetActorRotation(ForwardDirection.Rotation());
 		MyCharacter->UpdateComponentTransforms();
 
 		//
@@ -261,17 +259,19 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		//}
 
 
-		//if (bIsFinalMoveToTargetAction)
-		//{
-		//	EndLocation = MyCharacter->GetActorLocation()
-		//		+ (ForwardDirection * BetweenDistance);
+		if (TargetDistance > -SMALL_NUMBER)
+		{
+			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("B"));
+			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("%f %f %f"), EndMoveDistance, TargetRadius, SourceRadius);
 
-		//	AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-		//	(this, TEXT("MoveToTarget"), EndLocation, MoveToTargetDuration, MoveToTargetCurveFloat, MoveToTargetCurveVector);
+			EndLocation = MyCharacter->GetActorLocation() + TargetVector * TargetDistance;
 
-		//	AbilityTask_MoveToLocation->ReadyForActivation();
-		//}
-		//else
+			AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
+			(this, TEXT("MoveToTarget"), EndLocation, MoveToTargetAfterVelocity, MoveToTargetDuration, MoveToTargetCurveFloat, MoveToTargetCurveVector);
+
+			AbilityTask_MoveToLocation->ReadyForActivation();
+		}
+		else
 		{
 			switch (MoveType)
 			{

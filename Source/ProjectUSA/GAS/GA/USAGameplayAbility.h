@@ -55,6 +55,7 @@ public:
 	virtual bool GetIsAbleToActivateCondition();
 
 	FORCEINLINE FVector GetTargetVector() { return TargetVector; }
+	FORCEINLINE float GetTargetDistance() { return TargetDistance; }
 
 	FUSAGASimpleDelegate OnActivateAbility;
 	FUSAGASimpleDelegate OnCancelAbility;
@@ -67,12 +68,12 @@ public:
 	void SimpleEndAbility();
 
 private:
-	void ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
-	void NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
-	void ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
+	//void ActivateAbilityWithTargetData_Client(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData);
+	//void NotifyTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
+	//void ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
+	void ServerRPC_SetTargetVectorAndDoSomething(const FVector& InVector, float InDistance = -1.0f);
 	
 	//UFUNCTION(NetMulticast, Reliable)
 	//void MulticastRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
@@ -81,6 +82,9 @@ private:
 protected:
 	UPROPERTY()
 	FVector TargetVector;
+
+	UPROPERTY()
+	float TargetDistance = -1.0f;
 
 	//UFUNCTION(BlueprintCallable)
 	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects, 

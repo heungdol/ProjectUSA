@@ -10,6 +10,8 @@
 #include "GAS/AT/AT_TraceAttack.h"
 #include "GAS/AT/AT_ChangeCharacterMovementInfo.h"
 
+//#include "Interface/USATargetableInterface.h"
+
 #include "GA_CharacterAction.generated.h"
 
 // 캐릭터 액션에서 필요한 동작
@@ -86,10 +88,15 @@ public:
 	bool bIsMoveToTargetAction = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	FVector MoveToTargetAfterVelocity = FVector::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
 	float MoveToTargetDuration = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
 	float MoveToTargetRange = 100.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
+	float MoveToTargetGap = 50.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move To Target")
 	UCurveFloat* MoveToTargetCurveFloat;
@@ -183,4 +190,8 @@ public:
 	virtual void DoSomethingWithTargetVector() override;
 	virtual bool GetIsAbleToActivateCondition() override;
 
+protected:
+
+	UPROPERTY()
+	TObjectPtr<class IUSATargetableInterface> TargetableActorInterface;
 };

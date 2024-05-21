@@ -6,6 +6,17 @@
 #include "GameFramework/Character.h"
 #include "Character/USACharacterBase.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+
+#include "Tag/USAGameplayTags.h"
+
+UUSACharacterMovementComponent::UUSACharacterMovementComponent()
+{
+	UppingGravityScale = 5.0f;
+	DowningGravityScale = 2.0f;
+	DowningGravityScale_Damage = 1.5f;
+}
 
 float UUSACharacterMovementComponent::GetGravityZ() const
 {
@@ -17,7 +28,17 @@ float UUSACharacterMovementComponent::GetGravityZ() const
 	}
 	else
 	{
-		FinalGravityZ *= DowningGravityScale;
+		UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
+
+		if (OwnerASC != nullptr
+			&& OwnerASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_DAMAGE))
+		{
+			FinalGravityZ *= DowningGravityScale_Damage;
+		}
+		else
+		{
+			FinalGravityZ *= DowningGravityScale;
+		}
 	}
 
 	return FinalGravityZ;

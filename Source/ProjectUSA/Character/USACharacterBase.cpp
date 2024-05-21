@@ -105,9 +105,8 @@ void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InChara
 		return;
 	}
 
-
+	// 땅에 파고 들지 않기 위한 보정
 	FVector GroundHitLocation = FVector::ZeroVector;
-
 	if (CharacterMovementComponent->CurrentFloor.bBlockingHit)
 	{
 		GroundHitLocation = CharacterMovementComponent->CurrentFloor.HitResult.ImpactPoint;
@@ -550,8 +549,8 @@ void AUSACharacterBase::Falling()
 {
 	Super::Falling();
 
-	if (GetLocalRole() == ENetRole::ROLE_Authority
-		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//if (GetLocalRole() == ENetRole::ROLE_Authority
+		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
 		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
 	}
@@ -561,8 +560,8 @@ void AUSACharacterBase::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	if (GetLocalRole() == ENetRole::ROLE_Authority
-		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//if (GetLocalRole() == ENetRole::ROLE_Authority
+		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
 		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 	}
@@ -572,8 +571,8 @@ void AUSACharacterBase::Landed(const FHitResult& Hit)
 
 void AUSACharacterBase::OnUSACrouch()
 {
-	if (GetLocalRole() == ENetRole::ROLE_Authority
-		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//if (GetLocalRole() == ENetRole::ROLE_Authority
+		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
 		ServerRPC_OnUSACrouch();
 	}
@@ -593,8 +592,8 @@ void AUSACharacterBase::MulticastRPC_OnUSACrouch_Implementation()
 
 void AUSACharacterBase::OnUSAUnCrouch()
 {
-	if (GetLocalRole() == ENetRole::ROLE_Authority
-		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	//if (GetLocalRole() == ENetRole::ROLE_Authority
+		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
 		ServerRPC_OnUSAUnCrouch();
 	}
@@ -1206,8 +1205,8 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 	{
 		OnUSACrouch();
 
-		if (GetLocalRole() == ENetRole::ROLE_Authority
-			|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+		//if (GetLocalRole() == ENetRole::ROLE_Authority
+			//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 		{
 			ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_CROUCH);
 		}
@@ -1218,16 +1217,16 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 
 		if (GetMovementComponent()->IsFalling())
 		{
-			if (GetLocalRole() == ENetRole::ROLE_Authority
-				|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)	
+			//if (GetLocalRole() == ENetRole::ROLE_Authority
+				//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)	
 			{
 				ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
 			}
 		}
 		else
 		{
-			if (GetLocalRole() == ENetRole::ROLE_Authority
-				|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			//if (GetLocalRole() == ENetRole::ROLE_Authority
+				//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 			{
 				ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 			}
@@ -1785,10 +1784,25 @@ FVector AUSACharacterBase::GetTargetableActorLocation()
 	}
 	else if (IsValid(CurrentTargetableActor_Instant) == true)
 	{
-		Result = CurrentTargetableActor_Instant->GetActorLocation() - GetActorLocation();
+		Result = CurrentTargetableActor_Instant->GetActorLocation();
 	}
 
 	return Result;
+}
+
+IUSATargetableInterface* AUSACharacterBase::GetTargetableInterface()
+{
+	if (IsValid(CurrentTargetableActor))
+	{
+		return Cast <IUSATargetableInterface>(CurrentTargetableActor);
+	}
+
+	if (IsValid(CurrentTargetableActor_Instant))
+	{
+		return Cast <IUSATargetableInterface>(CurrentTargetableActor_Instant);
+	}
+
+	return nullptr;
 }
 
 //void AUSACharacterBase::SetCurrentTargetableActorNullptr()

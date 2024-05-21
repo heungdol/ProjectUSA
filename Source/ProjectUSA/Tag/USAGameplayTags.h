@@ -21,6 +21,7 @@
 #define USA_CHARACTER_ACTION FGameplayTag::RequestGameplayTag(FName("Character.Action"))
 #define USA_CHARACTER_ACTION_SLIDE FGameplayTag::RequestGameplayTag(FName("Character.Action.Slide"))
 #define USA_CHARACTER_ACTION_PARRY FGameplayTag::RequestGameplayTag(FName("Character.Action.Parry"))
+#define USA_CHARACTER_ACTION_DAMAGE FGameplayTag::RequestGameplayTag(FName("Character.Action.Damage"))
 
 #define USA_CHARACTER_HAND_FIRSTWEAPON FGameplayTag::RequestGameplayTag(FName("Character.Hand.FirstWeapon"))
 #define USA_CHARACTER_HAND_SECONDWEAPON FGameplayTag::RequestGameplayTag(FName("Character.Hand.SecondWeapon"))
