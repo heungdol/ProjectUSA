@@ -156,6 +156,14 @@ public:
 	struct FAttackTraceData AttackTraceData;
 
 	//
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attribute")
+	float ArmorAttributeAddNumber = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Action Info: Attribute")
+	bool bIsAppliedArmorAttribute = false;
+	
+	//
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: USA Jelly Effect")
 	//TMap<float, TSubclassOf<class UUSAJellyEffectData>*>  USAJellyEffectData;
@@ -194,4 +202,10 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class IUSATargetableInterface> TargetableActorInterface;
+
+	UFUNCTION()
+	void AddArmorAttributeFromBase(float InAddArmor);
+
+	UFUNCTION()
+	void ResetArmorAttributeToBase();
 };

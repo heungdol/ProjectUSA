@@ -17,6 +17,8 @@
 #include "GAS/AT/AT_TraceAttack.h"
 #include "GAS/AT/AT_WaitGameplayTag.h"
 
+#include "GAS/AttributeSet/USAAttributeSet.h"
+
 //#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 
 #include "Interface/USAAttackableInterface.h"
@@ -25,6 +27,8 @@
 #include "Character/USACharacterBase.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+
+#include "AbilitySystemComponent.h"
 
 #include "ProjectUSA.h"
 
@@ -43,12 +47,18 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 	ActivateAbilityUsingTargetVector(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	// 어트리뷰트 수행
+	AddArmorAttributeFromBase(ArmorAttributeAddNumber);
+
 	K2_DoSomething_Activate();
 }
 
 void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
 	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+
+	// 어트리뷰트 종료
+	ResetArmorAttributeToBase();
 
 	K2_DoSomething_Cancel();
 }
@@ -57,6 +67,9 @@ void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
+	// 어트리뷰트 종료
+	ResetArmorAttributeToBase();
+
 	K2_DoSomething_End();
 }
 
@@ -64,6 +77,7 @@ void UGA_CharacterAction::CalculateTargetVector()
 {
 	ACharacter* MyCharacter = nullptr;
 	AUSACharacterBase* MyUSACharacter = nullptr;
+	UCharacterMovementComponent* MyCharacaterMovementComponent = nullptr;
 
 	if (CurrentActorInfo != nullptr)
 	{
@@ -73,6 +87,8 @@ void UGA_CharacterAction::CalculateTargetVector()
 	if (MyCharacter != nullptr)
 	{
 		MyUSACharacter = Cast <AUSACharacterBase>(MyCharacter);
+
+		MyCharacaterMovementComponent = MyCharacter->GetCharacterMovement();
 
 		TargetVector = MyCharacter->GetActorForwardVector();
 	}
@@ -97,10 +113,12 @@ void UGA_CharacterAction::CalculateTargetVector()
 			TargetableActorInterface = AttackableInterface->GetTargetableInterface();
 
 			FVector TargetableActorLocation = AttackableInterface->GetTargetableActorLocation();
-			//if (TargetableActorLocation.Z > MyCharacter->GetActorLocation().Z)
-			//{
-			//	TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
-			//}
+
+			if (IsValid(MyCharacaterMovementComponent) == true
+				&& MyCharacaterMovementComponent->IsFalling() == false)
+			{
+				TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
+			}
 
 			TempVector = (TargetableActorLocation - MyCharacter->GetActorLocation());
 			TempVector.Normalize();
@@ -204,6 +222,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		//
 
 		FVector EndLocation = FVector::ZeroVector;
+		FVector AfterVelocity = FVector::ZeroVector;
 		FVector FinalLaunchVector = FVector::ZeroVector;
 		
 		//
@@ -266,8 +285,12 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 			EndLocation = MyCharacter->GetActorLocation() + TargetVector * TargetDistance;
 
+			AfterVelocity = (ForwardDirection * MoveToTargetAfterVelocity.X)
+				+ (RightDirection * MoveToTargetAfterVelocity.Y)
+				+ (FVector::UpVector * MoveToTargetAfterVelocity.Z);
+
 			AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-			(this, TEXT("MoveToTarget"), EndLocation, MoveToTargetAfterVelocity, MoveToTargetDuration, MoveToTargetCurveFloat, MoveToTargetCurveVector);
+			(this, TEXT("MoveToTarget"), EndLocation, AfterVelocity, MoveToTargetDuration, MoveToTargetCurveFloat, MoveToTargetCurveVector);
 
 			AbilityTask_MoveToLocation->ReadyForActivation();
 		}
@@ -281,8 +304,12 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 					+ (RightDirection * MoveOffsetLocation.Y)
 					+ (FVector::UpVector * MoveOffsetLocation.Z);
 
+				AfterVelocity = (ForwardDirection * MoveAfterVelocity.X)
+					+ (RightDirection * MoveAfterVelocity.Y)
+					+ (FVector::UpVector * MoveAfterVelocity.Z);
+
 				AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
-				(this, TEXT("Move"), EndLocation, MoveAfterVelocity, MoveDuration, MoveCurveFloat, nullptr);
+				(this, TEXT("Move"), EndLocation, AfterVelocity, MoveDuration, MoveCurveFloat, nullptr);
 
 				AbilityTask_MoveToLocation->ReadyForActivation();
 
@@ -395,4 +422,48 @@ bool UGA_CharacterAction::GetIsAbleToActivateCondition()
 	}
 	
 	return true;
+}
+
+void UGA_CharacterAction::AddArmorAttributeFromBase(float InAddArmor)
+{
+	if (bIsAppliedArmorAttribute == false)
+	{
+		bIsAppliedArmorAttribute = true;
+
+		UAbilitySystemComponent* OwnerASC = GetAbilitySystemComponentFromActorInfo();
+		if (OwnerASC != nullptr
+			&& OwnerASC->GetSet <UUSAAttributeSet>() != nullptr)
+		{
+			float BaseArmor = 0.0f;
+			bool CheckIsAttributeFound = false;
+			BaseArmor = OwnerASC->GetGameplayAttributeValue(UUSAAttributeSet::GetBaseArmorAttribute(), CheckIsAttributeFound);
+
+			if (CheckIsAttributeFound == true)
+			{
+				OwnerASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentArmorAttribute(), BaseArmor + InAddArmor);
+			}
+		}
+	}
+}
+
+void UGA_CharacterAction::ResetArmorAttributeToBase()
+{
+	if (bIsAppliedArmorAttribute == true)
+	{
+		bIsAppliedArmorAttribute = false;
+
+		UAbilitySystemComponent* OwnerASC = GetAbilitySystemComponentFromActorInfo();
+		if (OwnerASC != nullptr
+			&& OwnerASC->GetSet <UUSAAttributeSet>() != nullptr)
+		{
+			float BaseArmor = 0.0f;
+			bool CheckIsAttributeFound = false;
+			BaseArmor = OwnerASC->GetGameplayAttributeValue(UUSAAttributeSet::GetBaseArmorAttribute(), CheckIsAttributeFound);
+
+			if (CheckIsAttributeFound == true)
+			{
+				OwnerASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentArmorAttribute(), BaseArmor);
+			}
+		}
+	}
 }

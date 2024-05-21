@@ -20,7 +20,7 @@ AUSAPlayerState::AUSAPlayerState()
         ASC->SetIsReplicated(true);
     }
 
-    NetUpdateFrequency = 10.0f;
+    NetUpdateFrequency = 2.0f;
 }
 
 UAbilitySystemComponent* AUSAPlayerState::GetAbilitySystemComponent() const

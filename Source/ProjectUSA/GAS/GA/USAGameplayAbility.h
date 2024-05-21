@@ -96,4 +96,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
+
+	UFUNCTION(Server, Reliable)
+	void MulticastRPC_ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 };

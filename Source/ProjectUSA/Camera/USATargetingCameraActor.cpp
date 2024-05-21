@@ -74,20 +74,26 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	FVector TargetLocation = Cast<IUSATargetableInterface>(TargetActor)->GetTargetablePivotlocation();
 
 	FVector ResultLocation = ((SourceLocation * LocationWeightRatio) + (TargetLocation * (1.0f - LocationWeightRatio)));
-	ResultLocation.Z = FMath::Max(SourceLocation.Z + ResultLocationHeightOffset, TargetLocation.Z);
-	ResultLocation.Z += SourceHeightOffset;
+	//ResultLocation.Z = FMath::Max(SourceLocation.Z + ResultLocationHeightOffset, TargetLocation.Z);
+	//ResultLocation.Z += SourceHeightOffset;
 
 	//
 
-	float BetweenDistance = (SourceLocation - TargetLocation).SquaredLength();
+	float BetweenDistance = (SourceLocation - TargetLocation).Length();
 
 	//
 
 	FVector DirectionFromSourceToTarget = TargetLocation - SourceLocation;
 	DirectionFromSourceToTarget.Normalize();
 
-	FVector OffsetDirection = FVector::CrossProduct(FVector::UpVector, DirectionFromSourceToTarget);
-	FVector OffsetLocation = ResultLocation + OffsetDirection * RotationDistanceOffset;
+	FVector OffsetRightDirection = FVector::CrossProduct(FVector::UpVector, DirectionFromSourceToTarget);
+	FVector OffsetLocation = OffsetRightDirection * RotationDistanceOffset;
+
+	if (BetweenDistance < MinUpdateRange)
+	{
+		float DistanceOffsetRatio = BetweenDistance / MinUpdateRange;
+		OffsetLocation = OffsetRightDirection * RotationDistanceOffset * DistanceOffsetRatio;
+	}
 	
 	//
 
@@ -101,7 +107,9 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	
 	float CurrentTargetHeightOffset = TargetMaxHeightOffset;
 
-	FVector ResultDirection = (TargetLocation + FVector::UpVector * CurrentTargetHeightOffset) - OffsetLocation;
+	ResultLocation += FVector::UpVector * CurrentTargetHeightOffset + OffsetLocation;
+
+	FVector ResultDirection = (TargetLocation) - ResultLocation;
 	ResultDirection.Normalize();
 
 	FRotator ResultRotation = ResultDirection.Rotation();
@@ -112,7 +120,7 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 
 	SetActorLocation(ResultLocation);
 	
-	if (BetweenDistance > MinUpdateRange * MinUpdateRange)
+	if (BetweenDistance > MinUpdateRange /** MinUpdateRange*/)
 	{
 		SetActorRotation(ResultRotation);
 	}

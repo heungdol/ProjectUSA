@@ -263,12 +263,22 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 	// 인터페이스를 이용하여 타깃 가능한 액터 가져오기
 	TArray<TPair<float, AActor*>> TempTargetableActors_Scored;
 	const float ScoreWeight = 0.6f;
-	const float DotCutoff = 0.3f;
+	const float DotCutoff = 0.1f;
 
 	for (AActor* TempActor : TempTargetableActors_Overlap)
 	{
-		if (TempActor->GetClass()->ImplementsInterface(UUSATargetableInterface::StaticClass()))
+		if (IsValid(TempActor) == false)
 		{
+			continue;
+		}
+
+		if (Cast<IUSATargetableInterface>(TempActor) == nullptr)
+		{
+			continue;
+		}
+
+		//if (TempActor->GetClass()->ImplementsInterface(UUSATargetableInterface::StaticClass()))
+		//{
 			// 만약 타겟팅이 불가능 하면 무시
 			if (Cast<IUSATargetableInterface>(TempActor)->GetIsTargetableCurrently() == false)
 			{
@@ -301,7 +311,7 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 			float CurrentTempActorScore = (CurrentTempActorScore_Distance * ScoreWeight) + (CurrentTempActorScore_Direction * (1 - ScoreWeight));
 
 			TempTargetableActors_Scored.Add({ CurrentTempActorScore, TempActor });
-		}
+		//}
 	}
 
 	TempTargetableActors_Scored.Sort();

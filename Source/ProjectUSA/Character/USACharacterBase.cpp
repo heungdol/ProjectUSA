@@ -255,6 +255,7 @@ AUSACharacterBase::AUSACharacterBase()
 	CameraComponent->bUsePawnControlRotation = false;
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
@@ -1826,6 +1827,11 @@ void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation
 (const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility)
 {
 	if (ASC == nullptr)
+	{
+		return;
+	}
+
+	if (IsValid(InAbility) == false)
 	{
 		return;
 	}
