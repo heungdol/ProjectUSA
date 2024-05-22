@@ -30,4 +30,7 @@ public:
 
 	virtual void SetWeaponPhysics(bool IsDropping, bool IsFirst = false) override;
 
+	//UFUNCTION(NetMulticast, Unreliable)
+	//virtual void MulticastRPC_ImpulseWeapon(const FVector& InLocation, const FRotator& InRotatoin, const FVector& InScale, const FVector& InImpulse);
+
 };

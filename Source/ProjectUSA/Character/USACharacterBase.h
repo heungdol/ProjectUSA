@@ -207,26 +207,26 @@ protected:
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Weapon")
-	TObjectPtr <class UBoxComponent> WeaponDetectBoxComponent;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Weapon")
+	//TObjectPtr <class UBoxComponent> WeaponDetectBoxComponent;
 
-	FTimerHandle WeaponDetectBoxComponentTimerHandle;
+	//FTimerHandle WeaponDetectBoxComponentTimerHandle;
 
-	const float WeaponDetectBoxComponentActiveDelay = 1.0f;
+	//const float WeaponDetectBoxComponentActiveDelay = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
-	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquipedWeapons, EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
+	TArray<TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
+
+	UFUNCTION()
+	void OnRep_CurrentEquipedWeapons(TArray<class AUSAWeaponBase*> PrevWeapons);
 
 	//
 
-	UPROPERTY(ReplicatedUsing = OnRep_StartWeapons, EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(/*ReplicatedUsing = OnRep_StartWeapons, */EditDefaultsOnly, BlueprintReadWrite)
 	TArray<TObjectPtr <class AUSAWeaponBase>> StartWeapons;
 
-	UPROPERTY()
-	bool bIsStartWeaponsInitted = false ;
-
-	UFUNCTION()
-	void OnRep_StartWeapons();
+	//UFUNCTION()
+	//void OnRep_StartWeapons();
 
 	UFUNCTION(BlueprintCallable)
 	void AddStartWeapon (class AUSAWeaponBase* InWeapon);
@@ -360,6 +360,18 @@ public:
 
 	//
 
+
+	UFUNCTION()
+	void SetWeaponDetectBoxComponentActive(bool InActive);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SetWeaponDetectBoxComponentActive(bool InActive);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_SetWeaponDetectBoxComponentActive(bool InActive);
+	
+	//
+
 	float GetCharacterCurrentHealth_Implementation() override;
 	float GetCharacterMaxHealth_Implementation() override;
 	float GetCharacterCurrentArmor_Implementation() override;
@@ -389,7 +401,7 @@ public:
 	//
 
 	// Weapon의 OnRep을 통해 호출
-	void SetCurrentWeapon(EUSAWeaponType InWeaponType, class AUSAWeaponBase* InWeapon);
+	bool SetCurrentWeapon(EUSAWeaponType InWeaponType, class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHandSocket(class AUSAWeaponBase* InWeapon);

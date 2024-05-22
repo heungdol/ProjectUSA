@@ -42,7 +42,7 @@ void AUSAWeaponStaticMesh::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetWeaponPhysics(true, true);
+	//SetWeaponPhysics(true, true);
 }
 
 void AUSAWeaponStaticMesh::SetWeaponPhysics(bool IsDropping, bool IsFirst)
@@ -75,7 +75,10 @@ void AUSAWeaponStaticMesh::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 						WeaponImpulseVector += FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Vector() * WeaponDropImpulseXY;
 					}
 
+					
 					WeaponMeshComponent->SetPhysicsLinearVelocity(WeaponImpulseVector);
+					
+					//MulticastRPC_ImpulseWeapon(GetActorLocation(), GetActorRotation(), GetActorScale3D(), WeaponImpulseVector);
 				}
 			}
 		}
@@ -90,4 +93,16 @@ void AUSAWeaponStaticMesh::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 		}
 	}
 }
+
+//void AUSAWeaponStaticMesh::MulticastRPC_ImpulseWeapon_Implementation(const FVector& InLocation, const FRotator& InRotatoin, const FVector& InScale, const FVector& InImpulse)
+//{
+//	SetActorLocation(InLocation);
+//	SetActorRotation(InRotatoin);
+//	SetActorScale3D(InScale);
+//
+//	if (IsValid(WeaponMeshComponent) == true)
+//	{
+//		WeaponMeshComponent->SetPhysicsLinearVelocity(InImpulse);
+//	}
+//}
 

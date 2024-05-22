@@ -14,4 +14,6 @@ class PROJECTUSA_API AUSAPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void BeginPlayingState() override;
 };

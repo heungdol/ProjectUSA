@@ -170,27 +170,37 @@ void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 
 }
 
+//void AUSAWeaponBase::MulticastRPC_ImpulseWeapon_Implementation(const FVector& InImpulse)
+//{
+//
+//}
 
 
-void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
+
+bool AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
 {
 	IAbilitySystemInterface* ASCInterface = Cast <IAbilitySystemInterface>(InCharacter);
 
 	if (ASCInterface == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	UAbilitySystemComponent* InASC = ASCInterface->GetAbilitySystemComponent();
 
-	if (InASC == nullptr)
+	if (IsValid(InASC) == false)
 	{
-		return;
+		return false;
 	}
 
-	if (InCharacter == nullptr)
+	if (IsValid(InCharacter) == false)
 	{
-		return;
+		return false;
+	}
+
+	if (InCharacter->SetCurrentWeapon(WeaponType, this) == false)
+	{
+		return false;
 	}
 
 	if (HasAuthority() == true)
@@ -212,29 +222,35 @@ void AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharac
 		}
 	}
 
-	InCharacter->SetCurrentWeapon(WeaponType, this);
 	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, this);
+
+	return true;
 }
 
-void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
+bool AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)
 {
 	IAbilitySystemInterface* ASCInterface = Cast <IAbilitySystemInterface>(InCharacter);
 
 	if (ASCInterface == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	UAbilitySystemComponent* InASC = ASCInterface->GetAbilitySystemComponent();
 
 	if (InASC == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	if (InCharacter == nullptr)
 	{
-		return;
+		return false;
+	}
+
+	if (InCharacter->SetCurrentWeapon(WeaponType, nullptr) == false)
+	{
+		return false;
 	}
 
 	if (HasAuthority() == true)
@@ -261,8 +277,9 @@ void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 		}
 	}
 
-	InCharacter->SetCurrentWeapon(WeaponType, nullptr);
 	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, nullptr);
+
+	return true;
 }
 
 //void AUSAWeaponBase::OnBoxComponentHitAndCheckIsGround(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -296,49 +313,24 @@ void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 
 void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 {
-	//
-
-	//USA_LOG(LogTemp, Log, TEXT("OnRep Weapon Owner"));
-
-
-	if (IsValid(WeaponOwner) == true)
+	if (IsValid(PrevCharacter) == true)
 	{
-	//	//USA_LOG(LogTemp, Log, TEXT("OnRep Weapon Owner: Give"));
+		ClearGameplayWeaponAbilitesToASC(PrevCharacter);
 
-		GiveGameplayWeaponAbilitesToASC(WeaponOwner);
-	}
-	else
-	{
-		if (IsValid(PrevCharacter) == true)
-		{
-			//USA_LOG(LogTemp, Log, TEXT("OnRep Weapon Owner: Clear"));
-
-			ClearGameplayWeaponAbilitesToASC(PrevCharacter);
-		}
-	}
-
-	////
-
-	if (WeaponOwner == nullptr
-		|| IsValid(WeaponOwner) == false)
-	{
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 		DetachFromActor(DetachmentTransformRules);
 
-		if (PrevCharacter != nullptr)
-		{
-			SetActorLocation(PrevCharacter->GetActorLocation());
-		}
-
-		SetActorRotation(FRotator::ZeroRotator);
-		SetActorScale3D(FVector::OneVector);
-
 		SetWeaponPhysics(true);
 	}
-	else
+
+	if (IsValid(WeaponOwner) == true)
 	{
-		WeaponOwner->AttachWeaponToHolderSocket(this);
-		SetWeaponPhysics(false);
+		if (GiveGameplayWeaponAbilitesToASC(WeaponOwner))
+		{
+			WeaponOwner->AttachWeaponToHolderSocket(this);
+
+			SetWeaponPhysics(false);
+		}
 	}
 }
 

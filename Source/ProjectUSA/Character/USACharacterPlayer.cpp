@@ -23,6 +23,7 @@
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 
 #include "ProjectUSA.h"
 

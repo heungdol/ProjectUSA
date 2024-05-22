@@ -224,16 +224,53 @@ void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySy
 // ====================================================================================
 
 
-void AUSACharacterBase::OnRep_StartWeapons()
+//void AUSACharacterBase::OnRep_StartWeapons()
+//{
+//		//USA_LOG(LogTemp, Log, TEXT("A"));
+//	//UpdateCurrentWeaponsFromStart();
+//
+//	//for (AUSAWeaponBase* StartWeapon : StartWeapons)
+//	//{
+//	//	PickupWeapon(StartWeapon);
+//	//}
+//
+//}
+
+void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
 {
-		//USA_LOG(LogTemp, Log, TEXT("A"));
-	//UpdateCurrentWeaponsFromStart();
+	ServerRPC_SetWeaponDetectBoxComponentActive(InActive);
+}
 
-	//for (AUSAWeaponBase* StartWeapon : StartWeapons)
+void AUSACharacterBase::ServerRPC_SetWeaponDetectBoxComponentActive_Implementation(bool InActive)
+{
+	MulticastRPC_SetWeaponDetectBoxComponentActive(InActive);
+}
+
+void AUSACharacterBase::MulticastRPC_SetWeaponDetectBoxComponentActive_Implementation(bool InActive)
+{
+	if (IsValid(GetCapsuleComponent()) == true)
+	{
+		USA_LOG(LogTemp, Log, TEXT("A"));
+		GetCapsuleComponent()->SetGenerateOverlapEvents(InActive);
+	}
+}
+
+void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> PrevWeapons)
+{
+	//for (int i = 0; i < PrevWeapons.Num() || i < CurrentEquipedWeapons.Num(); i++)
 	//{
-	//	PickupWeapon(StartWeapon);
+	//	if (PrevWeapons[i] != CurrentEquipedWeapons[i])
+	//	{
+	//		if (IsValid(CurrentEquipedWeapons[i]) == false)
+	//		{
+	//			PrevWeapons[i]->SetWeaponOwner(nullptr);
+	//		}
+	//		else
+	//		{
+	//			CurrentEquipedWeapons[i]->SetWeaponOwner(this);
+	//		}
+	//	}
 	//}
-
 }
 
 void AUSACharacterBase::AddStartWeapon(AUSAWeaponBase* InWeapon)
@@ -294,6 +331,8 @@ AUSACharacterBase::AUSACharacterBase()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnWeaponDetectBoxOverlapBegin);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
@@ -328,12 +367,14 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 0.0f;
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
-	WeaponDetectBoxComponent = CreateDefaultSubobject <UBoxComponent>(TEXT("Weapon Detect Box Component"));
-	WeaponDetectBoxComponent->SetupAttachment(RootComponent);
-	WeaponDetectBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnWeaponDetectBoxOverlapBegin);
-	WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
+	//WeaponDetectBoxComponent = CreateDefaultSubobject <UBoxComponent>(TEXT("Weapon Detect Box Component"));
+	//WeaponDetectBoxComponent->SetupAttachment(RootComponent);
+	//WeaponDetectBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnWeaponDetectBoxOverlapBegin);
+	//WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
 
 	ASC = nullptr;
+
+	CurrentEquipedWeapons.Init(nullptr, 10);
 
 	//bIsSetStartWeaponBeforeGASSetup = false;
 
@@ -344,9 +385,9 @@ void AUSACharacterBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (IsValid(WeaponDetectBoxComponent) == true)
+	if (IsValid(GetCapsuleComponent()) == true)
 	{
-		WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
+		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 	}
 }
 
@@ -369,22 +410,26 @@ void AUSACharacterBase::BeginPlay()
 
 	//
 
-	WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
+	
 
-	if (GetWorld()->GetTimerManager().IsTimerActive(WeaponDetectBoxComponentTimerHandle))
-	{
-		GetWorld()->GetTimerManager().ClearTimer(WeaponDetectBoxComponentTimerHandle);
-		WeaponDetectBoxComponentTimerHandle.Invalidate();
-	}
+	//
 
-	GetWorld()->GetTimerManager().SetTimer(WeaponDetectBoxComponentTimerHandle, FTimerDelegate::CreateLambda([=]()
-		{
-			if (IsValid(WeaponDetectBoxComponent) == true)
-			{
-				WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
-			}
-		}
-	), WeaponDetectBoxComponentActiveDelay, false);
+	//WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
+
+	//if (GetWorld()->GetTimerManager().IsTimerActive(WeaponDetectBoxComponentTimerHandle))
+	//{
+	//	GetWorld()->GetTimerManager().ClearTimer(WeaponDetectBoxComponentTimerHandle);
+	//	WeaponDetectBoxComponentTimerHandle.Invalidate();
+	//}
+
+	//GetWorld()->GetTimerManager().SetTimer(WeaponDetectBoxComponentTimerHandle, FTimerDelegate::CreateLambda([=]()
+	//	{
+	//		if (IsValid(WeaponDetectBoxComponent) == true)
+	//		{
+	//			WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
+	//		}
+	//	}
+	//), 10.0f, false);
 
 	//
 
@@ -794,6 +839,11 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	ResetAttributeSet();
 
 	BeginStartAbilities();
+
+	//if (IsValid(WeaponDetectBoxComponent) == true)
+	//{
+	//	WeaponDetectBoxComponent->SetGenerateOverlapEvents(IsValid(ASC));
+	//}
 
 	// 시작할 때 자동으로 콘솔 입력
 	//APlayerController* PlayerController = Cast <APlayerController>(NewController);
@@ -1350,7 +1400,12 @@ void AUSACharacterBase::OnGameplayTagCallback_Action(const FGameplayTag Callback
 
 void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if (CurrentEquipedWeapons.Contains(EUSAWeaponType::First) == false)
+	if ((uint8)EUSAWeaponType::First < 0 || CurrentEquipedWeapons.Num() <= (uint8)EUSAWeaponType::First)
+	{
+		return;
+	}
+
+	if (CurrentEquipedWeapons[(uint8)EUSAWeaponType::First] == false)
 	{
 		return;
 	}
@@ -1358,29 +1413,34 @@ void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag
 	if (NewCount > 0)
 	{
 		//USA_LOG(LogTemp, Log, TEXT("First on Hand"));
-		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
 	}
 	else
 	{
 		//USA_LOG(LogTemp, Log, TEXT("First on Spine"));
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::First]);
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
 	}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if (CurrentEquipedWeapons.Contains(EUSAWeaponType::Second) == false)
+	if ((uint8)EUSAWeaponType::Second < 0 || CurrentEquipedWeapons.Num() <= (uint8)EUSAWeaponType::Second)
+	{
+		return;
+	}
+
+	if (CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second] == false)
 	{
 		return;
 	}
 
 	if (NewCount > 0)
 	{
-		AttachWeaponToHandSocket(CurrentEquipedWeapons[EUSAWeaponType::Second]);
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
 	}
 	else
 	{
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[EUSAWeaponType::Second]);
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
 	}
 }
 
@@ -1469,26 +1529,48 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHolderSocketName());
 }
 
-void AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeaponBase* InWeapon)
+bool AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeaponBase* InWeapon)
 {
-	if (CurrentEquipedWeapons.Contains(InWeaponType) == false)
+	if (UKismetSystemLibrary::IsServer(GetWorld()) != false
+		&& UKismetSystemLibrary::IsStandalone(GetWorld()) != false)
 	{
-		CurrentEquipedWeapons.Add({ InWeaponType , nullptr });
+		return false;
 	}
 
-	CurrentEquipedWeapons[InWeaponType] = InWeapon;
+	if ((uint8)InWeaponType < 0 || CurrentEquipedWeapons.Num() <= (uint8)InWeaponType)
+	{
+		return false;
+	}
+
+	//TArray<AUSAWeaponBase*> PrevWeapons;
+	//PrevWeapons.Init(nullptr, CurrentEquipedWeapons.Num());
+	//for (int i = 0; i < PrevWeapons.Num(); i++)
+	//{
+	//	PrevWeapons[i] = CurrentEquipedWeapons[i];
+	//} 
+
+	CurrentEquipedWeapons[(uint8)InWeaponType] = InWeapon;
+
+	//OnRep_CurrentEquipedWeapons(PrevWeapons);
+
+	return true;
 }
 
 void AUSACharacterBase::PickupWeapon(AUSAWeaponBase* InWeapon)
 {
 	// 서버에서만 수행하도록
-	//if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-	//	&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
-	//{
-	//	return;
-	//}
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
+		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	{
+		return;
+	}
 
-	if (InWeapon == nullptr)
+	if (IsValid (ASC) == false)
+	{
+		return;
+	}
+
+	if (IsValid (InWeapon) == false)
 	{
 		return;
 	}
@@ -1498,10 +1580,24 @@ void AUSACharacterBase::PickupWeapon(AUSAWeaponBase* InWeapon)
 		return;
 	}
 
+	if (IsValid(GetController()) == false)
+	{
+		return;
+	}
+
+	//if (GetController()->GetPlayerState)
+	//{
+	//	return;
+	//}
+
 	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
 
-	if (CurrentEquipedWeapons.Contains(InWeaponType)
-		&& CurrentEquipedWeapons[InWeaponType] != nullptr)
+	if ((uint8)InWeaponType < 0 || CurrentEquipedWeapons.Num() <= (uint8)InWeaponType)
+	{
+		return;
+	}
+
+	if (CurrentEquipedWeapons[(uint8)InWeaponType] != nullptr)
 	{
 		return;
 	}
@@ -1535,21 +1631,22 @@ void AUSACharacterBase::ServerRPC_DropWeapons_Implementation()
 
 void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 {
-	TArray<EUSAWeaponType> CurrentEquipedWeaponKeys;
-	CurrentEquipedWeapons.GenerateKeyArray(CurrentEquipedWeaponKeys);
+	//TArray<EUSAWeaponType> CurrentEquipedWeaponKeys;
+	//CurrentEquipedWeapons.GenerateKeyArray(CurrentEquipedWeaponKeys);
 
-	for (EUSAWeaponType CurrentEquipedWeaponKey : CurrentEquipedWeaponKeys)
+	for (AUSAWeaponBase* CurrentWeapon: CurrentEquipedWeapons)
 	{
-		if (CurrentEquipedWeapons[CurrentEquipedWeaponKey] == nullptr)
+		if (IsValid(CurrentWeapon) == false)
 		{
 			continue;
 		}
 
+		CurrentWeapon->SetWeaponOwner(nullptr);
+		
 		// 무기 소유자 설정
-		if (UKismetSystemLibrary::IsServer(GetWorld()))
-		{
-			CurrentEquipedWeapons[CurrentEquipedWeaponKey]->SetWeaponOwner(nullptr);
-		}
+		//if (UKismetSystemLibrary::IsServer(GetWorld()))
+		//{
+		//}
 	}
 	
 	// 무기 탐지 딜레이
@@ -1966,6 +2063,11 @@ UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 
 void AUSACharacterBase::OnRep_ASC()
 {	
+	//if (IsValid (WeaponDetectBoxComponent) == true)
+	//{
+	//	WeaponDetectBoxComponent->SetGenerateOverlapEvents(IsValid(ASC));
+	//}
+
 	// ... 
 
 	//USA_LOG(LogTemp, Log, TEXT("Hey"));
@@ -2273,8 +2375,9 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
+	DOREPLIFETIME(AUSACharacterBase, CurrentEquipedWeapons);
 
-	DOREPLIFETIME(AUSACharacterBase, StartWeapons);
+	//DOREPLIFETIME(AUSACharacterBase, StartWeapons);
 
 	//DOREPLIFETIME(AUSACharacterBase, NextWaitingWeapons);
 }

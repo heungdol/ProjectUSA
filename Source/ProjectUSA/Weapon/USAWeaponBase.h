@@ -11,9 +11,9 @@
 UENUM(BlueprintType)
 enum class EUSAWeaponType : uint8
 {
-	None UMETA(DisplayName = "None"),
-	First UMETA(DisplayName = "First"),
-	Second UMETA(DisplayName = "Second"),
+	None = 0 UMETA(DisplayName = "None"),
+	First = 1 UMETA(DisplayName = "First"),
+	Second = 2 UMETA(DisplayName = "Second"),
 };
 
 // ========================================================================
@@ -123,10 +123,10 @@ protected:
 
 
 	UFUNCTION(BlueprintCallable)
-	void GiveGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
+	bool GiveGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
 
 	UFUNCTION(BlueprintCallable)
-	void ClearGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
+	bool ClearGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
 
 	//UFUNCTION()
 	//void OnBoxComponentHitAndCheckIsGround (UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -141,6 +141,9 @@ public:
 	void SetWeaponOwner(class AUSACharacterBase* InCharacter);
 
 	virtual void SetWeaponPhysics(bool IsDropping, bool IsFirst = false);
+
+	//UFUNCTION(NetMulticast, Unreliable)
+	//virtual void MulticastRPC_ImpulseWeapon(const FVector& InImpulse);
 
 	FORCEINLINE class AUSACharacterBase* GetWeaponOwner() { return WeaponOwner; }
 
