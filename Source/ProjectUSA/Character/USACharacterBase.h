@@ -225,7 +225,7 @@ protected:
 	UPROPERTY(/*ReplicatedUsing = OnRep_StartWeapons, */EditDefaultsOnly, BlueprintReadWrite)
 	TArray<TSubclassOf <class AUSAWeaponBase>> StartWeaponClassList;
 
-	void SetCurrentWeaponsUsingStartWeaponClassList();
+
 
 	//UFUNCTION()
 	//void OnRep_StartWeapons();
@@ -373,6 +373,14 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_SetWeaponDetectBoxComponentActive(bool InActive);
 	
+	//
+
+	void SetCurrentWeaponsUsingStartWeaponClassList();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList();
+
+
 	//
 
 	float GetCharacterCurrentHealth_Implementation() override;

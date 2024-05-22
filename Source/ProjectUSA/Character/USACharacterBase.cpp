@@ -1636,7 +1636,21 @@ void AUSACharacterBase::DropWeapons(bool bIsAbsolute)
 
 void AUSACharacterBase::SetCurrentWeaponsUsingStartWeaponClassList()
 {
-	//if (Server)
+	ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList();
+}
+
+void AUSACharacterBase::ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList_Implementation()
+{
+	for (TSubclassOf <AUSAWeaponBase> StartWeaponClass : StartWeaponClassList)
+	{
+		if (IsValid(StartWeaponClass) == false)
+		{
+			continue;
+		}
+
+		AUSAWeaponBase* StartWeapon = GetWorld()->SpawnActor<AUSAWeaponBase>(StartWeaponClass, GetActorTransform());
+		PickupWeapon(StartWeapon);
+	}
 }
 
 

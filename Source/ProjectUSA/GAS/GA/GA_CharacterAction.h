@@ -200,7 +200,7 @@ public:
 
 protected:
 
-	//UPROPERTY()
+	UPROPERTY()
 	TObjectPtr<class IUSATargetableInterface> TargetableActorInterface;
 
 	UFUNCTION()

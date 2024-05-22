@@ -32,6 +32,7 @@ void AUSAPlayerController::BeginPlayingState()
         {
             //UE_LOG(LogTemp, Warning, TEXT("Player has fully joined the game"));
             USACharacterOwner->SetWeaponDetectBoxComponentActive(true);
+            USACharacterOwner->SetCurrentWeaponsUsingStartWeaponClassList();
             USACharacterOwner->K2_OnUSAUpdateHUDUserWidget(PlayerHUDUserWidget);
         }
     }
