@@ -6,6 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
 
+#include "Components/MeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
@@ -34,47 +35,49 @@ AUSAWeaponBase::AUSAWeaponBase()
 	SetReplicateMovement(true);
 
 	// 메쉬 홀더를 루트로 설정 -> 메쉬의 중심을 바꾸기 위함
-	WeaponCollisionComponent = CreateDefaultSubobject <USphereComponent>(TEXT("Weapon Mesh Holder"));
-	RootComponent = WeaponCollisionComponent;
-	WeaponCollisionComponent->SetSimulatePhysics(true);
-	WeaponCollisionComponent->SetCollisionProfileName(TEXT("Item"), false);
-	WeaponCollisionComponent->SetGenerateOverlapEvents(false);
-	WeaponCollisionComponent->SetNotifyRigidBodyCollision(true);
-	WeaponCollisionComponent->OnComponentHit.AddDynamic(this, &AUSAWeaponBase::OnBoxComponentHitAndCheckIsGround);
+	//WeaponCollisionComponent = CreateDefaultSubobject <USphereComponent>(TEXT("Weapon Mesh Holder"));
+	//RootComponent = WeaponCollisionComponent;
+	//WeaponCollisionComponent->SetSimulatePhysics(true);
+	//WeaponCollisionComponent->SetCollisionProfileName(TEXT("Item"), false);
+	//WeaponCollisionComponent->SetGenerateOverlapEvents(false);
+	//WeaponCollisionComponent->SetNotifyRigidBodyCollision(true);
+	//WeaponCollisionComponent->OnComponentHit.AddDynamic(this, &AUSAWeaponBase::OnBoxComponentHitAndCheckIsGround);
 
-	WeaponCollisionComponent->BodyInstance.bLockXRotation = true;
-	WeaponCollisionComponent->BodyInstance.bLockYRotation = true;
+	//WeaponCollisionComponent->BodyInstance.bLockXRotation = true;
+	//WeaponCollisionComponent->BodyInstance.bLockYRotation = true;
 	//WeaponCollisionComponent->BodyInstance.bLockZRotation = true;
 
 	// 메쉬 생성
-	WeaponMesh = CreateDefaultSubobject <USkeletalMeshComponent>(TEXT("Weapon Skeletal Mesh"));
-	WeaponMesh->SetupAttachment (WeaponCollisionComponent);
-	WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
-	WeaponMesh->SetGenerateOverlapEvents(false);
+	//WeaponMesh = CreateDefaultSubobject <USkeletalMeshComponent>(TEXT("Weapon Skeletal Mesh"));
+	//WeaponMesh->SetupAttachment (WeaponCollisionComponent);
+	//WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
+	//WeaponMesh->SetGenerateOverlapEvents(false);
 
-	WeaponStaticMesh = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Weapon Static Mesh"));
-	WeaponStaticMesh->SetupAttachment(WeaponCollisionComponent);
-	WeaponStaticMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
-	WeaponStaticMesh->SetGenerateOverlapEvents(false);
+	//WeaponStaticMesh = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Weapon Static Mesh"));
+	//WeaponStaticMesh->SetupAttachment(WeaponCollisionComponent);
+	//WeaponStaticMesh->SetCollisionProfileName(TEXT("NoCollision"), false);
+	//WeaponStaticMesh->SetGenerateOverlapEvents(false);
 
-	// 범위 설정
-	WeaponBoxComponent = CreateDefaultSubobject <UBoxComponent>(TEXT("Weapon Box Component"));
-	WeaponBoxComponent->SetupAttachment(WeaponCollisionComponent);
-	WeaponBoxComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
-	WeaponBoxComponent->SetSimulatePhysics(false);
-	WeaponBoxComponent->SetGenerateOverlapEvents(true);
+	//// 범위 설정
+	//WeaponBoxComponent = CreateDefaultSubobject <UBoxComponent>(TEXT("Weapon Box Component"));
+	//WeaponBoxComponent->SetupAttachment(WeaponCollisionComponent);
+	//WeaponBoxComponent->SetCollisionProfileName(TEXT("OverlapAll"), false);
+	//WeaponBoxComponent->SetSimulatePhysics(false);
+	//WeaponBoxComponent->SetGenerateOverlapEvents(true);
 
 	// 회전 설정
 	//WeaponRotatingMovementCompont = CreateDefaultSubobject <URotatingMovementComponent>(TEXT("Weapon Rotating Movement Component"));
 	//WeaponRotatingMovementCompont->SetAutoActivate(false);
+
+	//WeaponMeshComponent = CreateDefaultSubobject <UMeshComponent>(TEXT("Weapon Skeletal Mesh"));
 }
 
 void AUSAWeaponBase::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	WeaponMesh->SetSkeletalMesh(WeaponMeshRef);
-	WeaponStaticMesh->SetStaticMesh(WeaponStaticMeshRef);
+	//WeaponMesh->SetSkeletalMesh(WeaponMeshRef);
+	//WeaponStaticMesh->SetStaticMesh(WeaponStaticMeshRef);
 }
 
 // Called when the game starts or when spawned
@@ -124,46 +127,46 @@ void AUSAWeaponBase::SetWeaponOwner(AUSACharacterBase* InCharacter)
 	OnRep_WeaponOwner(PrevCharacter);
 }
 
-void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping)
+void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 {
-	if (IsDropping == true)
-	{
-		if (IsValid(WeaponCollisionComponent) == true)
-		{
-			// 기본 설정
-			WeaponCollisionComponent->SetSimulatePhysics(true);
+	//if (IsDropping == true)
+	//{
+	//	if (IsValid(WeaponCollisionComponent) == true)
+	//	{
+	//		// 기본 설정
+	//		WeaponCollisionComponent->SetSimulatePhysics(true);
 
-			WeaponCollisionComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+	//		WeaponCollisionComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 
-			// 랜덤 값은 서버에서만 수행
-			if (UKismetSystemLibrary::IsServer(GetWorld()) == true)
-			{
-				FVector WeaponImpulseVector = FVector::UpVector * WeaponDropImpulseZ;
+	//		// 랜덤 값은 서버에서만 수행
+	//		if (UKismetSystemLibrary::IsServer(GetWorld()) == true)
+	//		{
+	//			FVector WeaponImpulseVector = FVector::UpVector * WeaponDropImpulseZ;
 
-				if (bIsRandomDrop == false)
-				{
-					WeaponImpulseVector += GetActorForwardVector() * WeaponDropImpulseXY;
-				}
-				else
-				{
-					WeaponImpulseVector += FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Vector() * WeaponDropImpulseXY;
-				}
-				WeaponCollisionComponent->SetPhysicsLinearVelocity(WeaponImpulseVector);
-			}
-		}
-	}
-	else
-	{
-		if (IsValid(WeaponCollisionComponent) == true)
-		{
-			WeaponCollisionComponent->SetSimulatePhysics(false);
-		}
+	//			if (bIsRandomDrop == false)
+	//			{
+	//				WeaponImpulseVector += GetActorForwardVector() * WeaponDropImpulseXY;
+	//			}
+	//			else
+	//			{
+	//				WeaponImpulseVector += FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Vector() * WeaponDropImpulseXY;
+	//			}
+	//			WeaponCollisionComponent->SetPhysicsLinearVelocity(WeaponImpulseVector);
+	//		}
+	//	}
+	//}
+	//else
+	//{
+	//	if (IsValid(WeaponCollisionComponent) == true)
+	//	{
+	//		WeaponCollisionComponent->SetSimulatePhysics(false);
+	//	}
 
-		//if (IsValid(WeaponRotatingMovementCompont))
-		//{
-		//	WeaponRotatingMovementCompont->SetActive(false);
-		//}
-	}
+	//	//if (IsValid(WeaponRotatingMovementCompont))
+	//	//{
+	//	//	WeaponRotatingMovementCompont->SetActive(false);
+	//	//}
+	//}
 
 }
 
@@ -262,34 +265,34 @@ void AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, nullptr);
 }
 
-void AUSAWeaponBase::OnBoxComponentHitAndCheckIsGround(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	// 서버에서만 수행
-	//if (UKismetSystemLibrary::IsServer(GetWorld()) == false)
-	//{
-	//	return;
-	//}
-
-	if (IsValid(WeaponOwner) == true)
-	{
-		return;
-	}
-
-	const float DotThreshold = 0.45f;
-	if (FVector::DotProduct(Hit.ImpactNormal, FVector::UpVector) > DotThreshold)
-	{
-		if (IsValid(WeaponCollisionComponent) == true)
-		{
-			WeaponCollisionComponent->SetSimulatePhysics(false);
-			WeaponCollisionComponent->SetSimulatePhysics(true);
-		}
-
-		//if (IsValid(WeaponRotatingMovementCompont) == true)
-		//{
-		//	WeaponRotatingMovementCompont->SetActive(true);
-		//}
-	}
-}
+//void AUSAWeaponBase::OnBoxComponentHitAndCheckIsGround(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+//{
+//	// 서버에서만 수행
+//	//if (UKismetSystemLibrary::IsServer(GetWorld()) == false)
+//	//{
+//	//	return;
+//	//}
+//
+//	if (IsValid(WeaponOwner) == true)
+//	{
+//		return;
+//	}
+//
+//	const float DotThreshold = 0.45f;
+//	if (FVector::DotProduct(Hit.ImpactNormal, FVector::UpVector) > DotThreshold)
+//	{
+//		if (IsValid(WeaponCollisionComponent) == true)
+//		{
+//			WeaponCollisionComponent->SetSimulatePhysics(false);
+//			WeaponCollisionComponent->SetSimulatePhysics(true);
+//		}
+//
+//		//if (IsValid(WeaponRotatingMovementCompont) == true)
+//		//{
+//		//	WeaponRotatingMovementCompont->SetActive(true);
+//		//}
+//	}
+//}
 
 void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 {
@@ -334,8 +337,8 @@ void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 	}
 	else
 	{
-		SetWeaponPhysics(false);
 		WeaponOwner->AttachWeaponToHolderSocket(this);
+		SetWeaponPhysics(false);
 	}
 }
 

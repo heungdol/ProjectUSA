@@ -224,6 +224,44 @@ void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySy
 // ====================================================================================
 
 
+void AUSACharacterBase::OnRep_StartWeapons()
+{
+		//USA_LOG(LogTemp, Log, TEXT("A"));
+	//UpdateCurrentWeaponsFromStart();
+
+	//for (AUSAWeaponBase* StartWeapon : StartWeapons)
+	//{
+	//	PickupWeapon(StartWeapon);
+	//}
+
+}
+
+void AUSACharacterBase::AddStartWeapon(AUSAWeaponBase* InWeapon)
+{
+	StartWeapons.Add(InWeapon);
+
+	//if (UKismetSystemLibrary::IsServer(GetWorld()) == true)
+	//{
+	//	OnRep_StartWeapons ();
+	//}
+}
+
+void AUSACharacterBase::UpdateCurrentWeaponsFromStart()
+{
+	//if (IsValid(ASC) == false)
+	//{
+	//	return;
+	//}
+
+	//if (bIsStartWeaponsInitted == true)
+	//{
+	//	return;
+	//}
+
+
+	//bIsStartWeaponsInitted = true;
+}
+
 // Sets default values
 AUSACharacterBase::AUSACharacterBase()
 {
@@ -293,13 +331,99 @@ AUSACharacterBase::AUSACharacterBase()
 	WeaponDetectBoxComponent = CreateDefaultSubobject <UBoxComponent>(TEXT("Weapon Detect Box Component"));
 	WeaponDetectBoxComponent->SetupAttachment(RootComponent);
 	WeaponDetectBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnWeaponDetectBoxOverlapBegin);
+	WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
 
 	ASC = nullptr;
 
-	bIsSetStartWeaponBeforeGASSetup = false;
+	//bIsSetStartWeaponBeforeGASSetup = false;
 
 	//NetUpdateFrequency = 200.0f;
 }
+
+void AUSACharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (IsValid(WeaponDetectBoxComponent) == true)
+	{
+		WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
+	}
+}
+
+// Called when the game starts or when spawned
+void AUSACharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+
+	//
+
+	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this, CameraSpringArmComponent);
+
+	//
+
+	WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
+
+	if (GetWorld()->GetTimerManager().IsTimerActive(WeaponDetectBoxComponentTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(WeaponDetectBoxComponentTimerHandle);
+		WeaponDetectBoxComponentTimerHandle.Invalidate();
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(WeaponDetectBoxComponentTimerHandle, FTimerDelegate::CreateLambda([=]()
+		{
+			if (IsValid(WeaponDetectBoxComponent) == true)
+			{
+				WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
+			}
+		}
+	), WeaponDetectBoxComponentActiveDelay, false);
+
+	//
+
+	if (JellyEffectComponent != nullptr)
+	{
+		JellyEffectComponent->SetMeshComponent(this, GetMesh());
+	}
+
+	//
+
+	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+
+	//USA_LOG(LogTemp, Log, TEXT("Hey"));
+}
+
+// Called every frame
+void AUSACharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void AUSACharacterBase::BeginDestroy()
+{
+	Super::BeginDestroy();
+}
+
+void AUSACharacterBase::Destroyed()
+{
+	if (ASC != nullptr)
+	{
+		ASC->ClearAllAbilities();
+	}
+
+	// 무기 드랍
+	DropWeapons(true);
+
+	Super::Destroyed();
+}
+
 
 //void AUSACharacterBase::OnConstruction(const FTransform& Transform)
 //{
@@ -612,55 +736,7 @@ void AUSACharacterBase::MulticastRPC_OnUSAUnCrouch_Implementation()
 
 //
 
-// Called when the game starts or when spawned
-void AUSACharacterBase::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
 
-	CharacterCapsuleInfos[KEYNAME_CAPSULEINFO_WALK].RenewCharacterCapsule(this, CameraSpringArmComponent);
-
-	//ResetAttributeSet();
-
-	if (JellyEffectComponent != nullptr)
-	{
-		JellyEffectComponent->SetMeshComponent(this, GetMesh());
-	}
-	
-
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
-}
-
-void AUSACharacterBase::Destroyed()
-{
-	if (ASC != nullptr)
-	{
-		ASC->ClearAllAbilities ();
-	}
-
-	// 무기 드랍
-	DropWeapons(true);
-
-	Super::Destroyed();
-}
-
-// Called every frame
-void AUSACharacterBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-void AUSACharacterBase::BeginDestroy()
-{
-	Super::BeginDestroy();
-}
 
 // Called to bind functionality to input
 void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -725,6 +801,8 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	//{
 	//	PlayerController->ConsoleCommand(TEXT("showdebug abilitysystem"));
 	//}
+
+	//USA_LOG(LogTemp, Log, TEXT("Hey"));
 }
 
 void AUSACharacterBase::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
@@ -1404,11 +1482,11 @@ void AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeapon
 void AUSACharacterBase::PickupWeapon(AUSAWeaponBase* InWeapon)
 {
 	// 서버에서만 수행하도록
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
-	{
-		return;
-	}
+	//if (UKismetSystemLibrary::IsServer(GetWorld()) == false
+	//	&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	//{
+	//	return;
+	//}
 
 	if (InWeapon == nullptr)
 	{
@@ -1473,6 +1551,24 @@ void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 			CurrentEquipedWeapons[CurrentEquipedWeaponKey]->SetWeaponOwner(nullptr);
 		}
 	}
+	
+	// 무기 탐지 딜레이
+	//WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
+
+	//if (GetWorld()->GetTimerManager().IsTimerActive(WeaponDetectBoxComponentTimerHandle))
+	//{
+	//	GetWorld()->GetTimerManager().ClearTimer(WeaponDetectBoxComponentTimerHandle);
+	//	WeaponDetectBoxComponentTimerHandle.Invalidate();
+	//}
+
+	//GetWorld()->GetTimerManager().SetTimer(WeaponDetectBoxComponentTimerHandle, FTimerDelegate::CreateLambda([=]()
+	//	{
+	//		if (IsValid(WeaponDetectBoxComponent) == true)
+	//		{
+	//			WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
+	//		}
+	//	}
+	//), WeaponDetectBoxComponentActiveDelay, false);
 }
 
 bool AUSACharacterBase::GetIsTargetableCurrently()
@@ -1871,11 +1967,15 @@ UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 void AUSACharacterBase::OnRep_ASC()
 {	
 	// ... 
+
+	//USA_LOG(LogTemp, Log, TEXT("Hey"));
 }
 
 void AUSACharacterBase::OnRep_bIsASCInitialized()
 {
 	// ...
+
+	//USA_LOG(LogTemp, Log, TEXT("Hey"));
 }
 
 void AUSACharacterBase::OnCurrentHealthRatioChanged(float InValue)
@@ -1979,8 +2079,9 @@ void AUSACharacterBase::PostSetupGAS()
 
 		//	UpdateCurrentWeapons();
 		//}
+		
+		//UpdateCurrentWeaponsFromStart();
 	}
-
 
 
 	RegisteredGameplayTagEvents.Add
@@ -2172,6 +2273,8 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
+
+	DOREPLIFETIME(AUSACharacterBase, StartWeapons);
 
 	//DOREPLIFETIME(AUSACharacterBase, NextWaitingWeapons);
 }

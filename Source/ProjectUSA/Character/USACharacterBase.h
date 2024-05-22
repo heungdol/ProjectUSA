@@ -210,14 +210,34 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Weapon")
 	TObjectPtr <class UBoxComponent> WeaponDetectBoxComponent;
 
+	FTimerHandle WeaponDetectBoxComponentTimerHandle;
+
+	const float WeaponDetectBoxComponentActiveDelay = 1.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
 	TMap<EUSAWeaponType, TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
-	//UPROPERTY(ReplicatedUsing = OnRep_NextWaitingWeapon, EditDefaultsOnly, BlueprintReadWrite)
-	//TArray<TObjectPtr <class AUSAWeaponBase>> NextWaitingWeapons;
+	//
+
+	UPROPERTY(ReplicatedUsing = OnRep_StartWeapons, EditDefaultsOnly, BlueprintReadWrite)
+	TArray<TObjectPtr <class AUSAWeaponBase>> StartWeapons;
 
 	UPROPERTY()
-	bool bIsSetStartWeaponBeforeGASSetup = false;
+	bool bIsStartWeaponsInitted = false ;
+
+	UFUNCTION()
+	void OnRep_StartWeapons();
+
+	UFUNCTION(BlueprintCallable)
+	void AddStartWeapon (class AUSAWeaponBase* InWeapon);
+
+	UFUNCTION()
+	void UpdateCurrentWeaponsFromStart();
+
+
+
+	//UPROPERTY()
+	//bool bIsSetStartWeaponBeforeGASSetup = false;
 
 	//
 
@@ -242,6 +262,8 @@ protected:
 public:
 	// Sets default values for this character's properties
 	AUSACharacterBase();
+
+	virtual void PostInitializeComponents() override;
 
 	virtual void BeginPlay() override;
 

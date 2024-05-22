@@ -31,22 +31,28 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
-	TObjectPtr <class USphereComponent> WeaponCollisionComponent;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	//TObjectPtr <class USphereComponent> WeaponCollisionComponent;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr <class UBoxComponent> WeaponBoxComponent;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	//TObjectPtr <class UBoxComponent> WeaponBoxComponent;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr <class USkeletalMeshComponent> WeaponMesh;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	//TObjectPtr <class UMeshComponent> WeaponMeshComponent;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr <class UStaticMeshComponent> WeaponStaticMesh;
+	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	//TObjectPtr <class UMesh> WeaponMeshRef;
+
+	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	//TObjectPtr <class USkeletalMeshComponent> WeaponMesh;
+
+	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	//TObjectPtr <class UStaticMeshComponent> WeaponStaticMesh;
 
 	//
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr<class USkeletalMesh> WeaponMeshRef;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr<class USkeletalMesh> WeaponSkeletalMeshMeshRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
 	TObjectPtr<class UStaticMesh> WeaponStaticMeshRef;
@@ -97,8 +103,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
 	float WeaponDropImpulseZ = 300.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
-	FRotator WeaponIdleRotationRate;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	//FRotator WeaponIdleRotationRate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Drop Info")
 	float bIsWeaponDropping = false;
@@ -122,8 +128,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ClearGameplayWeaponAbilitesToASC(class AUSACharacterBase* InCharacter);
 
-	UFUNCTION()
-	void OnBoxComponentHitAndCheckIsGround (UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	//UFUNCTION()
+	//void OnBoxComponentHitAndCheckIsGround (UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 
 public:	
@@ -134,7 +140,7 @@ public:
 
 	void SetWeaponOwner(class AUSACharacterBase* InCharacter);
 
-	void SetWeaponPhysics(bool IsDropping);
+	virtual void SetWeaponPhysics(bool IsDropping, bool IsFirst = false);
 
 	FORCEINLINE class AUSACharacterBase* GetWeaponOwner() { return WeaponOwner; }
 
@@ -156,10 +162,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UTexture2D* GetWeaponTexture() const { return WeaponTexture; }
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE  class UStaticMeshComponent* GetStaticMeshComponent() const {return WeaponStaticMesh;}
+	//UFUNCTION(BlueprintCallable)
+	//FORCEINLINE  class UStaticMeshComponent* GetStaticMeshComponent() const {return WeaponStaticMesh;}
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE  class USkeletalMeshComponent* GetSkeletalMeshComponent() const { return WeaponMesh; }
+	//UFUNCTION(BlueprintCallable)
+	//FORCEINLINE  class USkeletalMeshComponent* GetSkeletalMeshComponent() const { return WeaponMesh; }
 
 };
