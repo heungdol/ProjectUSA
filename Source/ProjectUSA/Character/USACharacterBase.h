@@ -223,16 +223,19 @@ protected:
 	//
 
 	UPROPERTY(/*ReplicatedUsing = OnRep_StartWeapons, */EditDefaultsOnly, BlueprintReadWrite)
-	TArray<TObjectPtr <class AUSAWeaponBase>> StartWeapons;
+	TArray<TSubclassOf <class AUSAWeaponBase>> StartWeaponClassList;
+
+	void SetCurrentWeaponsUsingStartWeaponClassList();
 
 	//UFUNCTION()
 	//void OnRep_StartWeapons();
 
-	UFUNCTION(BlueprintCallable)
-	void AddStartWeapon (class AUSAWeaponBase* InWeapon);
+	//UFUNCTION(BlueprintCallable)
+	//void 
+	//  (class AUSAWeaponBase* InWeapon);
 
-	UFUNCTION()
-	void UpdateCurrentWeaponsFromStart();
+	//UFUNCTION()
+	//void UpdateCurrentWeaponsFromStart();
 
 
 
@@ -413,6 +416,9 @@ public:
 	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
 	
 	//
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUpdateHUDUserWidget", ScriptName = "OnUSAUpdateHUDUserWidget"))
+	void K2_OnUSAUpdateHUDUserWidget(class UUserWidget* InUserWidget);
 
 
 protected:

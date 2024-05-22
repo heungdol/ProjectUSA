@@ -6,6 +6,20 @@
 #include "Character/USACharacterBase.h"
 
 
+void AUSAPlayerController::BeginPlay()
+{
+    Super::BeginPlay();
+    
+    // 시작시 호출
+    if (IsLocalController() == true)
+    {
+        if (AUSACharacterBase* USACharacterOwner = Cast<AUSACharacterBase>(GetPawn()))
+        {
+            USACharacterOwner->K2_OnUSAUpdateHUDUserWidget(PlayerHUDUserWidget);
+        }
+    }
+}
+
 void AUSAPlayerController::BeginPlayingState()
 {
     Super::BeginPlayingState();
@@ -16,8 +30,9 @@ void AUSAPlayerController::BeginPlayingState()
         //         
         if (AUSACharacterBase* USACharacterOwner = Cast<AUSACharacterBase>(GetPawn()))
         {
-            UE_LOG(LogTemp, Warning, TEXT("Player has fully joined the game"));
+            //UE_LOG(LogTemp, Warning, TEXT("Player has fully joined the game"));
             USACharacterOwner->SetWeaponDetectBoxComponentActive(true);
+            USACharacterOwner->K2_OnUSAUpdateHUDUserWidget(PlayerHUDUserWidget);
         }
     }
 }

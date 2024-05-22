@@ -222,8 +222,6 @@ bool AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharac
 		}
 	}
 
-	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, this);
-
 	return true;
 }
 
@@ -277,8 +275,6 @@ bool AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 		}
 	}
 
-	InCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, nullptr);
-
 	return true;
 }
 
@@ -319,6 +315,8 @@ void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 		DetachFromActor(DetachmentTransformRules);
+		
+		PrevCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, nullptr);
 
 		SetWeaponPhysics(true);
 	}
@@ -328,6 +326,8 @@ void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 		if (GiveGameplayWeaponAbilitesToASC(WeaponOwner))
 		{
 			WeaponOwner->AttachWeaponToHolderSocket(this);
+
+			WeaponOwner->K2_OnUSACurrentWeaponChanged(WeaponType, this);
 
 			SetWeaponPhysics(false);
 		}

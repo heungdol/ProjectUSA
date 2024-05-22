@@ -15,5 +15,10 @@ class PROJECTUSA_API AUSAPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 protected:
+	virtual void BeginPlay() override;
+
 	virtual void BeginPlayingState() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Player Controller Info");
+	TObjectPtr <class UUserWidget> PlayerHUDUserWidget;
 };
