@@ -104,6 +104,8 @@ void UGA_CharacterAction::CalculateTargetVector()
 	FVector TempVector = FVector::ZeroVector;
 
 	IUSAAttackableInterface* AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
+	IUSATargetableInterface* TargetableActorInterface = nullptr;
+
 	
 	if (bIsMoveToTargetAction)
 	{

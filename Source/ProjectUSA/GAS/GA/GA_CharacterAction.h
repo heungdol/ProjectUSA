@@ -200,9 +200,6 @@ public:
 
 protected:
 
-	UPROPERTY()
-	TObjectPtr<class IUSATargetableInterface> TargetableActorInterface;
-
 	UFUNCTION()
 	void AddArmorAttributeFromBase(float InAddArmor);
 
