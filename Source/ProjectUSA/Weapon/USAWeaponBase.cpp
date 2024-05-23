@@ -129,51 +129,10 @@ void AUSAWeaponBase::SetWeaponOwner(AUSACharacterBase* InCharacter)
 
 void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 {
-	//if (IsDropping == true)
-	//{
-	//	if (IsValid(WeaponCollisionComponent) == true)
-	//	{
-	//		// 기본 설정
-	//		WeaponCollisionComponent->SetSimulatePhysics(true);
 
-	//		WeaponCollisionComponent->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
-
-	//		// 랜덤 값은 서버에서만 수행
-	//		if (UKismetSystemLibrary::IsServer(GetWorld()) == true)
-	//		{
-	//			FVector WeaponImpulseVector = FVector::UpVector * WeaponDropImpulseZ;
-
-	//			if (bIsRandomDrop == false)
-	//			{
-	//				WeaponImpulseVector += GetActorForwardVector() * WeaponDropImpulseXY;
-	//			}
-	//			else
-	//			{
-	//				WeaponImpulseVector += FRotator(0.0f, FMath::RandRange(0.0f, 360.0f), 0.0f).Vector() * WeaponDropImpulseXY;
-	//			}
-	//			WeaponCollisionComponent->SetPhysicsLinearVelocity(WeaponImpulseVector);
-	//		}
-	//	}
-	//}
-	//else
-	//{
-	//	if (IsValid(WeaponCollisionComponent) == true)
-	//	{
-	//		WeaponCollisionComponent->SetSimulatePhysics(false);
-	//	}
-
-	//	//if (IsValid(WeaponRotatingMovementCompont))
-	//	//{
-	//	//	WeaponRotatingMovementCompont->SetActive(false);
-	//	//}
-	//}
 
 }
 
-//void AUSAWeaponBase::MulticastRPC_ImpulseWeapon_Implementation(const FVector& InImpulse)
-//{
-//
-//}
 
 
 

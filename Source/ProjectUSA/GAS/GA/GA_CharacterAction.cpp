@@ -167,13 +167,27 @@ void UGA_CharacterAction::CalculateTargetVector()
 			{
 				TargetVector = MyCharacter->GetPendingMovementInputVector();
 			}
+			else
+			{
+				TargetVector = MyCharacter->GetActorForwardVector();
+			}
 
 			break;
 
 		case ECharacterActionDirectionType::Target:
-			if (MyUSACharacter != nullptr)
+			if (MyUSACharacter != nullptr
+				&& MyUSACharacter->GetUSACharacterDirection_Target().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
+			}
+			else if (MyCharacter != nullptr
+				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
+			{
+				TargetVector = MyCharacter->GetPendingMovementInputVector();
+			}
+			else
+			{
+				TargetVector = MyCharacter->GetActorForwardVector();
 			}
 
 			break;
