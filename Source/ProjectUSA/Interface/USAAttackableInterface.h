@@ -35,4 +35,6 @@ public:
 	virtual FVector GetTargetableActorLocation() = 0;
 
 	virtual IUSATargetableInterface* GetTargetableInterface() = 0;
+
+	virtual class UUSACharacterAttackComponent* GetUSACharacterAttackComponent() = 0;
 };

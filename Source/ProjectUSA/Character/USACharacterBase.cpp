@@ -27,6 +27,7 @@
 #include "Component/USACharacterMovementComponent.h"
 #include "Component/USAJellyEffectComponent.h"
 #include "Component/USACharacterPivotComponent.h"
+#include "Component/USACharacterAttackComponent.h"
 
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
@@ -46,195 +47,6 @@
 #include "Tag/USAGameplayTags.h"
 #include "ProjectUSA.h"
 
-
-// ====================================================================================
-
-
-void FUSACharacterCapsuleInfo::RenewCharacterCapsule(ACharacter* InCharacter, USpringArmComponent* InSpringArmComponent)
-{
-	RenewCharacterCapsuleLocation(InCharacter, InSpringArmComponent);
-	RenewCharacterCapsuleSize(InCharacter);
-}
-
-void FUSACharacterCapsuleInfo::RenewCharacterCapsuleSize(ACharacter* InCharacter)
-{
-	if (InCharacter == nullptr)
-	{
-		return;
-	}
-
-	if (InCharacter->GetCapsuleComponent() == nullptr)
-	{
-		return;
-	}
-
-	InCharacter->GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHaflHeight);
-	//InCharacter->GetCharacterMovement()->AdjustProxyCapsuleSize();
-}
-
-void FUSACharacterCapsuleInfo::RenewCharacterCapsuleLocation(ACharacter* InCharacter, USpringArmComponent* InSpringArmComponent)
-{
-	if (InCharacter == nullptr)
-	{
-		return;
-	}
-
-	// 카메라 예외 처리
-	FVector CameraSpringArmLocation = FVector::ZeroVector;
-	if (IsValid(InSpringArmComponent))
-	{
-		CameraSpringArmLocation = InSpringArmComponent->GetComponentLocation();
-	}
-
-	// 위치 갱신
-	
-	UCharacterMovementComponent* CharacterMovementComponent = InCharacter->GetCharacterMovement();
-
-	if (CharacterMovementComponent == nullptr)
-	{
-		return;
-	}
-
-	if (InCharacter->GetCapsuleComponent() == nullptr)
-	{
-		return;
-	}
-
-	if (InCharacter->GetMesh() == nullptr)
-	{
-		return;
-	}
-
-	// 땅에 파고 들지 않기 위한 보정
-	FVector GroundHitLocation = FVector::ZeroVector;
-	if (CharacterMovementComponent->CurrentFloor.bBlockingHit)
-	{
-		GroundHitLocation = CharacterMovementComponent->CurrentFloor.HitResult.ImpactPoint;
-	}
-
-	FVector NewLocation = InCharacter->GetActorLocation();
-	//FVector OffsetLocation = FVector::ZeroVector;
-
-	switch (CapsulePivot)
-	{
-	case EUSACharacterCapsulePivot::Top:
-		NewLocation.Z += -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-		//OffsetLocation.Z = -(CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-		break;
-
-	case EUSACharacterCapsulePivot::Center:
-		break;
-
-	case EUSACharacterCapsulePivot::Bottom:
-		NewLocation.Z += (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-		//OffsetLocation.Z = (CapsuleHaflHeight - InCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-		break;
-	}
-
-	if (CharacterMovementComponent->CurrentFloor.bBlockingHit &&
-		GroundHitLocation.Z > NewLocation.Z - CapsuleHaflHeight)
-	{
-		NewLocation.Z = GroundHitLocation.Z + CapsuleHaflHeight;
-	}
-
-	InCharacter->SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
-
-	// 메쉬 위치 갱신
-
-	FVector NewUpdatedComponentsLocation = FVector::ZeroVector;
-
-	switch (CapsulePivot)
-	{
-	case EUSACharacterCapsulePivot::Top:
-		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
-		break;
-
-	case EUSACharacterCapsulePivot::Center:
-		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
-		break;
-
-	case EUSACharacterCapsulePivot::Bottom:
-		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleHaflHeight);
-		break;
-	};
-
-	// Authority or Automonous Mesh
-	InCharacter->GetMesh()->SetRelativeLocation(NewUpdatedComponentsLocation);
-	
-	// Simulated Mesh
-	InCharacter->CacheInitialMeshOffset(NewUpdatedComponentsLocation, FRotator(0.0f, -90.0f, 0.0f));
-
-	// 카메라 예외 처리
-	if (IsValid(InSpringArmComponent))
-	{
-		InSpringArmComponent->SetWorldLocation(CameraSpringArmLocation);
-	}
-}
-
-void FUSACharacterCapsuleInfo::RenewJellyEffectMeshLocation(UUSAJellyEffectComponent* InJellyEffect)
-{
-	if (InJellyEffect == nullptr)
-	{
-		return;
-	}
-
-	FVector NewUpdatedComponentsLocation = FVector::ZeroVector;
-
-	switch (CapsulePivot)
-	{
-	case EUSACharacterCapsulePivot::Top:
-		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight * 2.0f - CapsuleHaflHeight);
-		break;
-
-	case EUSACharacterCapsulePivot::Center:
-		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleOriginalHalfHeight);
-		break;
-
-	case EUSACharacterCapsulePivot::Bottom:
-		NewUpdatedComponentsLocation = FVector::UpVector * -(CapsuleHaflHeight);
-		break;
-	};
-
-	InJellyEffect->SetMeshStartLocation(NewUpdatedComponentsLocation);
-}
-
-
-// ====================================================================================
-
-
-void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySystemComponent* InASC)
-{
-	if (InASC == nullptr)
-	{
-		return;
-	}
-
-	// 아래 구문은 잘 수행시킬 것
-
-	if (InASC->GetSet <UUSAAttributeSet>() != nullptr)
-	{
-		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetMaxHealthAttribute(), StartMaxHealth);
-		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentHealthAttribute(), StartCurrentHealth);
-		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetBaseArmorAttribute(), StartBaseArmor);
-		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetCurrentArmorAttribute(), StartBaseArmor);
-	}
-}
-
-
-// ====================================================================================
-
-
-//void AUSACharacterBase::OnRep_StartWeapons()
-//{
-//		//USA_LOG(LogTemp, Log, TEXT("A"));
-//	//UpdateCurrentWeaponsFromStart();
-//
-//	//for (AUSAWeaponBase* StartWeapon : StartWeapons)
-//	//{
-//	//	PickupWeapon(StartWeapon);
-//	//}
-//
-//}
 
 void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
 {
@@ -361,6 +173,7 @@ AUSACharacterBase::AUSACharacterBase()
 	HealthBarWidgetComponent->SetupAttachment(RootComponent);
 
 	
+	AttackComponent = CreateDefaultSubobject <UUSACharacterAttackComponent>(TEXT("Attack Component"));
 
 
 	//TestStaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Test Static Mesh"));
@@ -1790,6 +1603,8 @@ void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmoun
 	}
 
 	// 데미지 적용
+
+	// 
 	UUSAAttributeSet* USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
 
 	if (USAAttributeSet != nullptr)
@@ -2028,6 +1843,11 @@ IUSATargetableInterface* AUSACharacterBase::GetTargetableInterface()
 	}
 
 	return nullptr;
+}
+
+UUSACharacterAttackComponent* AUSACharacterBase::GetUSACharacterAttackComponent()
+{
+	return AttackComponent;
 }
 
 //void AUSACharacterBase::SetCurrentTargetableActorNullptr()

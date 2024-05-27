@@ -75,5 +75,5 @@ DerivedDataCache/*
 
 # 컨텐츠는 포함시키지 않음
 #Content/*
-
-
+Content/TokyoStylizedEnvironment/*
+Content/Vefects/*

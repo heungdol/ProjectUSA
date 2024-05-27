@@ -153,7 +153,7 @@ public:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
-	struct FAttackTraceData AttackTraceData;
+	struct FAttackTraceInfos AttackTraceData;
 
 	//
 	

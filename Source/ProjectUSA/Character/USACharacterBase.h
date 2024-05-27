@@ -18,6 +18,9 @@
 // 체크할 태그를 가져오기 위한 헤더
 #include "Tag/USAGameplayTags.h"
 
+#include "Enum/USAEnums.h"
+#include "Struct/USAStructs.h"
+
 #include "USACharacterBase.generated.h"
 
 // ========================================================================================
@@ -29,115 +32,6 @@
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSimpleUSACharacterDelegate);
 // FCharacterReachedApexSignature
-
-// ========================================================================================
-
-// InputID와 InputAction, GameplayAbility를 관리하기 위한 Struct
-USTRUCT(BlueprintType)
-struct FUSAGameplayAbilityHandle
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Ability Handle Info")
-	int32 InputID = -1;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Ability Handle Info")
-	class UInputAction* InputAction;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Ability Handle Info")
-	TSubclassOf<class UGameplayAbility> GameplayAbility;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Info")
-	//FName GameplayTag;
-	
-	//FORCEINLINE TObjectPtr <class UInputAction> GetInputAction() { return InputAction;}
-};
-
-// ========================================================================================
-
-
-
-UENUM(BlueprintType)
-enum class EUSACharacterCapsulePivot : uint8
-{
-	Top UMETA(DisplayName = "Top"),
-	Center UMETA(DisplayName = "Center"),
-	Bottom UMETA(DisplayName = "Bottom"),
-};
-
-
-USTRUCT(BlueprintType)
-struct FUSACharacterCapsuleInfo
-{
-	GENERATED_BODY()
-
-	public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleOriginalHalfHeight = 90.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleHaflHeight = 90.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	float CapsuleRadius = 20.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Capsule Info")
-	EUSACharacterCapsulePivot CapsulePivot = EUSACharacterCapsulePivot::Bottom;
-
-public:
-	void RenewCharacterCapsule(class ACharacter* InCharacter, class USpringArmComponent* InSpringArmComponent = nullptr);
-	void RenewCharacterCapsuleSize(class ACharacter* InCharacter);	
-	void RenewCharacterCapsuleLocation(class ACharacter* InCharacter, class USpringArmComponent* InSpringArmComponent = nullptr);
-
-	//
-
-	void RenewJellyEffectMeshLocation(class UUSAJellyEffectComponent* InJellyEffect);
-};
-
-
-// ========================================================================================
-
-USTRUCT(BlueprintType)
-struct FUSACharacterAttributeSetInfo
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character AttributeSet Info")
-	float StartCurrentHealth = 100.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character AttributeSet Info")
-	float StartMaxHealth = 100.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character AttributeSet Info")
-	float StartBaseArmor = 10.0f;
-
-public:
-	void RenewUSACharacterAttributeSetData(UAbilitySystemComponent* InASC);
-
-};
-
-
-// ========================================================================================
-
-USTRUCT(BlueprintType)
-struct FUSAGameplayTagInputInfo
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Input GameplayTag Info")
-	FGameplayTag InputGameplayTag_Pressed;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Input GameplayTag Info")
-	FGameplayTag InputGameplayTag_Holding;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Input GameplayTag Info")
-	FGameplayTag InputGameplayTag_Released;
-};
-
-// ========================================================================================
 
 UCLASS()
 class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface, public IUSATargetableInterface, public IUSAAttackableInterface
@@ -158,6 +52,11 @@ protected:
 	//
 
 	FORCEINLINE TObjectPtr <class USpringArmComponent> GetCameraSpringArmComponent() {return CameraSpringArmComponent;}
+
+	//
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Component")
+	TObjectPtr <class UUSACharacterAttackComponent> AttackComponent;
 
 	//
 
@@ -404,7 +303,7 @@ public:
 	virtual FVector GetTargetingDirection2D() override;
 	virtual FVector GetTargetableActorLocation() override;
 	virtual IUSATargetableInterface* GetTargetableInterface() override;
-
+	virtual class UUSACharacterAttackComponent* GetUSACharacterAttackComponent() override;
 	//
 
 	virtual void StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType);

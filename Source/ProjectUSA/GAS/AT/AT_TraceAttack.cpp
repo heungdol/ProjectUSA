@@ -16,7 +16,7 @@
 
 #include "Interface/USAAttackableInterface.h"
 
-
+#include "Component/USACharacterAttackComponent.h"
 
 UAT_TraceAttack::UAT_TraceAttack()
 {
@@ -24,7 +24,7 @@ UAT_TraceAttack::UAT_TraceAttack()
 }
 
 
-UAT_TraceAttack* UAT_TraceAttack::GetNewAbilityTask_TraceAttack(UGameplayAbility* OwningAbility, const FAttackTraceData& InAttackTraceData)
+UAT_TraceAttack* UAT_TraceAttack::GetNewAbilityTask_TraceAttack(UGameplayAbility* OwningAbility, const FAttackTraceInfos& InAttackTraceData)
 {
 	UAT_TraceAttack* MyObj = NewAbilityTask<UAT_TraceAttack>(OwningAbility);
 
@@ -48,7 +48,7 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 {
 	ACharacter* MyCharacter = Cast <ACharacter>(GetAvatarActor());
 
-	if (MyCharacter == nullptr)
+	if (IsValid(MyCharacter) == false)
 	{
 		return;
 	}
@@ -73,20 +73,20 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 
 	FVector AttackDirection = MyCharacter->GetActorForwardVector();
 
-	
+	IUSAAttackableInterface* AttackableInterface = nullptr;
+
+	if (Ability != nullptr)
+	{
+		AttackableInterface = Cast<IUSAAttackableInterface>(Ability->GetAvatarActorFromActorInfo());
+	}
+
 	while (CurrentAttackTraceIndex < AttackTraceData->AttackTraceInfos.Num()
 		&& PrevAttackTraceTime + SMALL_NUMBER >= NextSpawnTime)
 	{
+		// 공격 방향 설정
 		FVector FinalAttackDirection = MyCharacter->GetActorForwardVector();
 		FVector FinalAttackDirectionRight = MyCharacter->GetActorRightVector();
 		FVector FinalAttackDirectionUp = FVector::UpVector;
-
-		IUSAAttackableInterface* AttackableInterface = nullptr;
-		
-		if (Ability != nullptr)
-		{
-			AttackableInterface = Cast<IUSAAttackableInterface>(Ability->GetAvatarActorFromActorInfo());
-		}
 
 		if (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].bIsDirectToTarget == true
 			&& AttackableInterface != nullptr)
@@ -96,11 +96,33 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 			FinalAttackDirectionUp = FVector::CrossProduct(FinalAttackDirection, FinalAttackDirectionRight);
 		}
 
+		// 인스턴트 / 지속형 판단
+		if (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDuration > SMALL_NUMBER)
+		{
+			if (AttackableInterface != nullptr
+				&& IsValid (AttackableInterface->GetUSACharacterAttackComponent()) == true)
+			{
+				AttackableInterface->GetUSACharacterAttackComponent()
+					->RegisterUSAAttackInfo(AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex],
+						MyCharacter->GetActorLocation(),
+						FinalAttackDirection, FinalAttackDirectionRight, FinalAttackDirectionUp);
+			}
 
-		FVector AttackStartTraceLocation = GetAvatarActor()->GetActorLocation();
-		AttackStartTraceLocation += GetAvatarActor()->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.X;
-		AttackStartTraceLocation += GetAvatarActor()->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Y;
-		AttackStartTraceLocation += GetAvatarActor()->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Z;
+			CurrentAttackTraceIndex += 1;
+
+			if (CurrentAttackTraceIndex < AttackTraceData->AttackTraceInfos.Num())
+			{
+				NextSpawnTime = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackTime;
+			}
+
+			continue;
+		}
+
+
+		FVector AttackStartTraceLocation = MyCharacter->GetActorLocation();
+		AttackStartTraceLocation += MyCharacter->GetActorForwardVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.X;
+		AttackStartTraceLocation += MyCharacter->GetActorRightVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Y;
+		AttackStartTraceLocation += MyCharacter->GetActorUpVector() * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceLocation.Z;
 
 		FVector AttackEndTraceLocation = AttackStartTraceLocation;
 		AttackEndTraceLocation += FinalAttackDirection * AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].OffsetTraceEndLocation.X;
