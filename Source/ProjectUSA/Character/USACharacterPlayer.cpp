@@ -389,6 +389,11 @@ void AUSACharacterPlayer::InitTargetingCameraActor()
 	}
 
 	TargetingCameraActor = GetWorld()->SpawnActor<AUSATargetingCameraActor>(TargetingCameraActorClass, GetActorTransform());
+
+	if (IsValid(TargetingCameraActor) == true)
+	{
+		TargetingCameraActor->SetSourceActor(this);
+	}
 }
 
 
@@ -516,7 +521,7 @@ void AUSACharacterPlayer::FinishTargeting()
 		return;
 	}
 
-	TargetingCameraActor->SetSourceActor(nullptr);
+	TargetingCameraActor->SetSourceActor(this);
 	TargetingCameraActor->SetTargetActor(nullptr);
 
 	//TargetingCameraActor->SetOnOff(false);

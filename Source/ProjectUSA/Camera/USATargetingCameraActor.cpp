@@ -62,11 +62,17 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	//}
 
 	if (SourceActor == nullptr
-		|| Cast<IUSATargetableInterface>(SourceActor) == nullptr
+		|| Cast<IUSATargetableInterface>(SourceActor) == nullptr)
+	{
+		return;
+	}
 
-		|| TargetActor == nullptr
+	if (TargetActor == nullptr
 		|| Cast<IUSATargetableInterface>(TargetActor) == nullptr)
 	{
+		SetActorLocation(SourceActor->GetActorLocation());
+		SetActorRotation(SourceActor->GetActorForwardVector().Rotation());
+
 		return;
 	}
 
@@ -75,63 +81,48 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	FVector SourceLocation = Cast<IUSATargetableInterface>(SourceActor)->GetTargetablePivotlocation();
 	FVector TargetLocation = Cast<IUSATargetableInterface>(TargetActor)->GetTargetablePivotlocation();
 
+	//
+
 	FVector ResultLocation = ((SourceLocation * LocationWeightRatio) + (TargetLocation * (1.0f - LocationWeightRatio)));
-	//ResultLocation.Z = FMath::Max(SourceLocation.Z + ResultLocationHeightOffset, TargetLocation.Z);
-	//ResultLocation.Z += SourceHeightOffset;
+	ResultLocation.Z += OffsetResultLocationHeight;
+
+	FVector ResultDirection = TargetLocation - SourceLocation;
+	ResultDirection.Normalize();
+
+	SetActorLocation(ResultLocation);
 
 	//
 
 	float BetweenDistance = (SourceLocation - TargetLocation).Length();
 
-	//
-
-	//FVector DirectionFromSourceToTarget = TargetLocation - SourceLocation;
-	//DirectionFromSourceToTarget.Normalize();
-
-	//FVector OffsetRightDirection = FVector::CrossProduct(FVector::UpVector, DirectionFromSourceToTarget);
-	//FVector OffsetLocation = OffsetRightDirection * RotationDistanceOffset;
-
-	//if (BetweenDistance < MinUpdateRange)
-	//{
-	//	float DistanceOffsetRatio = BetweenDistance / MinUpdateRange;
-	//	OffsetLocation = OffsetRightDirection * RotationDistanceOffset * DistanceOffsetRatio;
-	//}
-	
-	//
-
-	//FVector DirectionFromOffsetToSource = SourceLocation - OffsetLocation;`
-	//FVector DirectionFromOffsetToTarget = TargetLocation - OffsetLocation;
-	//DirectionFromOffsetToSource.Normalize();
-	//DirectionFromOffsetToTarget.Normalize();
-
-	//float CurrentTargetHeightOffset = UKismetMathLibrary::MapRangeClamped
-	//(TargetActor->GetVelocity().Z, TargetMinVelocityZ, TargetMaxVelocityZ, TargetMinHeightOffset, TargetMaxHeightOffset);
-	
-	//float CurrentTargetHeightOffset = TargetMaxHeightOffset;
-
-	//ResultLocation += FVector::UpVector * CurrentTargetHeightOffset + OffsetLocation;
-
-	FVector ResultDirection = TargetLocation - SourceLocation;
-	ResultDirection.Normalize();
-
-	FVector ResultDirection2D = TargetLocation - SourceLocation;
-	ResultDirection2D.Z = 0.0f;
-
-	//
-
-	SetActorLocation(ResultLocation);
-	
-	if (BetweenDistance > MinUpdateRange /** MinUpdateRange*/)
+	//if (BetweenDistance > MinUpdateRange /** MinUpdateRange*/)
 	{
-		SetActorRotation(ResultDirection.Rotation());
-		
+		FVector ResultDirection2D = TargetLocation - SourceLocation;
+		ResultDirection2D.Z = 0.0f;
+
+		FRotator ResultRotator = ResultDirection2D.Rotation();
+		ResultRotator.Yaw += OffsetRotationYaw;
+		ResultRotator.Pitch = FMath::Clamp(ResultDirection.Rotation().Pitch, MinRotationPitch, MaxRotationPitch);
+
+		if (ResultRotator.Pitch > PivotRotationPitch)
+		{
+			ResultRotator.Pitch = UKismetMathLibrary::MapRangeClamped
+				(ResultRotator.Pitch, PivotRotationPitch, MaxRotationPitch, 0, MaxRotationPitch);
+		}
+		else
+		{
+			ResultRotator.Pitch = UKismetMathLibrary::MapRangeClamped
+			(ResultRotator.Pitch, MinRotationPitch, PivotRotationPitch, MinRotationPitch, 0);
+		}
+
+		SetActorRotation(ResultRotator);
 	}
 
 	//
 	
 
 	float DesiredFOV = UKismetMathLibrary::MapRangeClamped
-	(BetweenDistance, MinDistanceForFOV * MinDistanceForFOV, MaxDistanceForFOV * MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);
+	(BetweenDistance, MinDistanceForFOV, MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);
 
 	CameraComponent->FieldOfView = DesiredFOV;
 }

@@ -65,6 +65,11 @@ public:
 	float MinDistanceForFOV = 300;
 
 	//
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float OffsetRotationYaw = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float PivotRotationPitch = -10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
 	float MaxRotationPitch = 45;
@@ -74,16 +79,16 @@ public:
 
 	//
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
-	float MinUpdateRange = 200;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	//float MinUpdateRange = 200;
 
 	//
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
-	float ResultLocationHeightOffset = -300.0f;
+	float OffsetResultLocationHeight = 50.0f;
 
 
-	bool bIsOn = false;
+	//bool bIsOn = false;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
