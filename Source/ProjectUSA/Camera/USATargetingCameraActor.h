@@ -26,28 +26,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	float LocationWeightRatio = 0.2f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float RotationDistanceOffset = 300.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	//float RotationDistanceOffset = 300.0f;
 
 	//
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float SourceHeightOffset = 30.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	//float SourceHeightOffset = 30.0f;
 
 	//
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float TargetMaxHeightOffset = 100.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	//float TargetMaxHeightOffset = 100.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float TargetMinHeightOffset = 0.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	//float TargetMinHeightOffset = 0.0f;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float TargetMaxVelocityZ = 500.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	//float TargetMaxVelocityZ = 500.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	float TargetMinVelocityZ = 0.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	//float TargetMinVelocityZ = 0.0f;
 
 	//
 

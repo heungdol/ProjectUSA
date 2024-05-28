@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GAS/AT/USAAbilityTask.h"
+
+#include "Struct/USAStructs.h"
+
 #include "AT_PlayAnimMontages.generated.h"
 
 
@@ -26,46 +29,6 @@
 //};
 //
 
-USTRUCT(BlueprintType)
-struct FPlayAnimMontageData
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	TObjectPtr <UAnimMontage> AnimMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	float AnimMontageRate = 1.0f;
-
-	//
-
-	//FPlayAnimMontageSectionDetail StartAnimMontageSectionDetail;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	FName StartAnimMontageSectionName = NAME_None;
-
-	//
-
-	//TArray <FPlayAnimMontageSectionDetail> MiddleAnimMontageSectionDetails;
-	// <GameplayTag, SectionName>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	TMap<FGameplayTag, FName> AnimMontageSectionMapByGameplayTagAdded;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	TMap<FGameplayTag, FName> AnimMontageSectionMapByGameplayTagRemoved;
-
-
-	//
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	//bool bHasEndSection = false;
-
-	//FPlayAnimMontageSectionDetail EndAnimMontageSectionDetail;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	FName EndAnimMontageSectionName = NAME_None;
-
-
-};
 
 
 // ========================================================================================

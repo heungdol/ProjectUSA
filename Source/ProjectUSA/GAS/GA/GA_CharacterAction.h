@@ -12,41 +12,9 @@
 
 //#include "Interface/USATargetableInterface.h"
 
+#include "Enum/USAEnums.h"
+
 #include "GA_CharacterAction.generated.h"
-
-// 캐릭터 액션에서 필요한 동작
-// 이동 (없음 / 단순 위치 이동 / 걷기 / Launch) -> 하나만 선택
-// 애니메이션 (몽타주 / 애님 블루프린트 / 둘 다) -> 모두 열어 놓기
-// 생성 (유 / 무) -> 하나만 선택
-// 방향 (없음 / 입력 방향 / 적)
-
-UENUM(BlueprintType)
-enum class ECharacterActionEndType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	WaitTime UMETA(DisplayName = "WaitTime"),
-	WaitTagAdded UMETA(DisplayName = "WaitTagAdded"),
-	WaitTagRemoved UMETA(DisplayName = "WaitTagRemoved"),
-};
-
-UENUM(BlueprintType)
-enum class ECharacterActionMoveType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	Move UMETA(DisplayName = "Move"),
-	Walk UMETA(DisplayName = "Walk"),
-	Launch UMETA(DisplayName = "Launch"),
-	//MoveToTarget UMETA(DisplayName = "MoveToTarget"), -> 우선 순위가 높으므로 변수들로 따로 빼 놓음
-};
-
-UENUM(BlueprintType)
-enum class ECharacterActionDirectionType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	Input UMETA(DisplayName = "Input"),
-	Target UMETA(DisplayName = "Target"),
-	//Damage UMETA(DisplayName = "Damage"), <- 우선 CharacterBase에서 처리
-};
 
 /**
  * 
@@ -58,10 +26,6 @@ class PROJECTUSA_API UGA_CharacterAction : public UUSAGameplayAbility
 	
 public:
 
-	//
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: General")
-	float Period = 0.5f;
 
 	//
 
@@ -78,9 +42,27 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
 	ECharacterActionEndType EndType = ECharacterActionEndType::WaitTime;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
+	float Period = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
 	FGameplayTag EndGameplayTag;
+
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
+	//ECharacterActionEndType InterruptType = ECharacterActionEndType::WaitTagAdded;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
+	//float InterruptDelay = 0.0f;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
+	//FGameplayTag InterruptGameplayTag;
+
+
+	//bool bIsInterruptDelayOver = false;
+	//bool bIsInterruptCondtion = false;
+
+	//FTimerHandle TimerHandleInterruptDelay;
 
 	//
 
@@ -205,4 +187,12 @@ protected:
 
 	UFUNCTION()
 	void ResetArmorAttributeToBase();
+
+	// ========================================================================
+
+	//UFUNCTION()
+	//void SetInterruptDelayOver();
+
+	//UFUNCTION()
+	//void SetInterruptCondition();
 };

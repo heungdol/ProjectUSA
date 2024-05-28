@@ -45,10 +45,62 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		return;
 	}
 
+	// Target Vector 활용
 	ActivateAbilityUsingTargetVector(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	// 어트리뷰트 수행
 	AddArmorAttributeFromBase(ArmorAttributeAddNumber);
+
+	// 인터럽트 딜레이 체크 수행
+	//bIsInterruptDelayOver = false;
+	//bIsInterruptCondtion = false;
+
+	//if (InterruptDelay < SMALL_NUMBER)
+	//{
+	//	//SetInterruptDelayOver();
+	//}
+	//else
+	//{
+	//	GetWorld()->GetTimerManager().ClearTimer(TimerHandleInterruptDelay);
+	//	GetWorld()->GetTimerManager().SetTimer(TimerHandleInterruptDelay, FTimerDelegate::CreateLambda([=]()
+	//		{
+	//			SetInterruptDelayOver();
+	//		}
+	//	), InterruptDelay, false);
+
+	//	// 인터럽트 첫 체크
+	//	if (InterruptGameplayTag.IsValid() == true
+	//		&& IsValid(GetAbilitySystemComponentFromActorInfo()) == true)
+	//	{
+	//		switch (InterruptType)
+	//		{
+
+	//		case ECharacterActionEndType::WaitTagAdded:
+
+	//			if (GetAbilitySystemComponentFromActorInfo()->GetGameplayTagCount(InterruptGameplayTag) > 0)
+	//			{
+	//				SetInterruptCondition();
+	//			}
+
+	//			break;
+
+	//		case ECharacterActionEndType::WaitTagRemoved:
+
+	//			if (GetAbilitySystemComponentFromActorInfo()->GetGameplayTagCount(InterruptGameplayTag) <= 0)
+	//			{
+	//				SetInterruptCondition();
+	//			}
+
+	//			break;
+
+	//		case ECharacterActionEndType::WaitTime:
+	//		default:
+
+	//			break;
+
+	//		}
+	//	}
+	//}
 
 	K2_DoSomething_Activate();
 }
@@ -60,6 +112,10 @@ void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 	// 어트리뷰트 종료
 	ResetArmorAttributeToBase();
 
+	// 딜레이 종료
+	//GetWorld()->GetTimerManager().ClearTimer(TimerHandleInterruptDelay);
+	//TimerHandleInterruptDelay.Invalidate();
+
 	K2_DoSomething_Cancel();
 }
 
@@ -69,6 +125,10 @@ void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 
 	// 어트리뷰트 종료
 	ResetArmorAttributeToBase();
+
+	// 딜레이 종료
+	//GetWorld()->GetTimerManager().ClearTimer(TimerHandleInterruptDelay);
+	//TimerHandleInterruptDelay.Invalidate();
 
 	K2_DoSomething_End();
 }
@@ -395,6 +455,36 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 	}
 
+	// 인터럽트 조건 설정
+	//UAT_WaitGameplayTagAdded* WaitGameplayTagAdded_Interrupt = nullptr;
+	//UAT_WaitGameplayTagRemoved* WaitGameplayTagRemoved_Interrupt = nullptr;
+
+	//switch (InterruptType)
+	//{
+
+	//case ECharacterActionEndType::WaitTagAdded:
+
+	//	WaitGameplayTagAdded_Interrupt = UAT_WaitGameplayTagAdded::GetNewAbilityTask_WaitGameplayTagAdded(this, InterruptGameplayTag);
+	//	WaitGameplayTagAdded_Interrupt->Added.AddDynamic(this, &UGA_CharacterAction::SetInterruptCondition);
+	//	WaitGameplayTagAdded_Interrupt->ReadyForActivation();
+
+	//	break;
+
+	//case ECharacterActionEndType::WaitTagRemoved:
+
+	//	WaitGameplayTagRemoved_Interrupt = UAT_WaitGameplayTagRemoved::GetNewAbilityTask_WaitGameplayTagRemoved(this, InterruptGameplayTag);
+	//	WaitGameplayTagRemoved_Interrupt->Removed.AddDynamic(this, &UGA_CharacterAction::SetInterruptCondition);
+	//	WaitGameplayTagRemoved_Interrupt->ReadyForActivation();
+
+	//	break;
+
+	//case ECharacterActionEndType::WaitTime:
+	//default:
+
+	//	break;
+
+	//}
+
 	// 서버에서 판정 수행
 	if (UKismetSystemLibrary::IsServer(GetWorld())
 		|| UKismetSystemLibrary::IsStandalone(GetWorld()))
@@ -483,3 +573,23 @@ void UGA_CharacterAction::ResetArmorAttributeToBase()
 		}
 	}
 }
+
+//void UGA_CharacterAction::SetInterruptDelayOver()
+//{
+//	bIsInterruptDelayOver = true;
+//
+//	if (bIsInterruptCondtion == true && bIsInterruptDelayOver == true)
+//	{
+//		SimpleEndAbility();
+//	}
+//}
+//
+//void UGA_CharacterAction::SetInterruptCondition()
+//{
+//	bIsInterruptCondtion = true;
+//
+//	if (bIsInterruptCondtion == true && bIsInterruptDelayOver == true)
+//	{
+//		SimpleEndAbility();
+//	}
+//}

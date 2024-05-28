@@ -132,34 +132,73 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 		float AttackDamage = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamage;
 		float AttackTraceRadius = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackTraceRadius;
 
-		TArray<FHitResult> HitResults;
-		UKismetSystemLibrary::SphereTraceMulti(GetWorld(),
-			AttackStartTraceLocation,
-			AttackEndTraceLocation,
-			AttackTraceRadius,
-			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
-			false,
-			IgnoreActors,
-			EDrawDebugTrace::ForDuration,
-			HitResults,
-			true,
-			FLinearColor::Red,
-			FLinearColor::Green,
-			0.1f);
-
-		for (FHitResult HitResult : HitResults)
+		// 싱글 트래이스
+		if (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].bIsUsingSigleTrace == true)
 		{
-			ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+			FHitResult HitResult;
+			UKismetSystemLibrary::SphereTraceSingle
+			(GetWorld(),
+				AttackStartTraceLocation,
+				AttackEndTraceLocation,
+				AttackTraceRadius,
+				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
+				false,
+				IgnoreActors,
+				EDrawDebugTrace::ForDuration,
+				HitResult,
+				true,
+				FLinearColor::Red,
+				FLinearColor::Green,
+				0.1f);
 
-			if (OutCharacter == nullptr)
+			if (HitResult.bBlockingHit == true)
 			{
-				continue;
+				ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+
+				if (OutCharacter == nullptr)
+				{
+					continue;
+				}
+
+				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
+				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+
+				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
+		}
+		// 멀티 트래이스
+		else
+		{
+			TArray<FHitResult> HitResults;
+			UKismetSystemLibrary::SphereTraceMulti
+			(GetWorld(),
+				AttackStartTraceLocation,
+				AttackEndTraceLocation,
+				AttackTraceRadius,
+				UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
+				false,
+				IgnoreActors,
+				EDrawDebugTrace::ForDuration,
+				HitResults,
+				true,
+				FLinearColor::Red,
+				FLinearColor::Green,
+				0.1f);
 
-			TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
-			FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+			for (FHitResult HitResultOne : HitResults)
+			{
+				ACharacter* OutCharacter = Cast <ACharacter>(HitResultOne.GetActor());
 
-			OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+				if (OutCharacter == nullptr)
+				{
+					continue;
+				}
+
+				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
+				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResultOne, AttackDirection, AttackDamageType);
+
+				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+			}
 		}
 
 		PrevAttackTraceTime = FMath::Max(PrevAttackTraceTime, NextSpawnTime);

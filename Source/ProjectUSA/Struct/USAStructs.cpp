@@ -216,9 +216,13 @@ FAttackTraceSceneInfo::FAttackTraceSceneInfo
 	DefaultAttackTraceInfo.bIsDirectToTarget = InDefault.bIsDirectToTarget;
 	DefaultAttackTraceInfo.bIsPinnedLocation = InDefault.bIsPinnedLocation;
 	DefaultAttackTraceInfo.bIsPinnedRotation = InDefault.bIsPinnedRotation;
+	DefaultAttackTraceInfo.bIsUsingSigleTrace = InDefault.bIsUsingSigleTrace;
 
 	DefaultAttackTraceInfo.OffsetTraceLocation = InDefault.OffsetTraceLocation;
 	DefaultAttackTraceInfo.OffsetTraceEndLocation = InDefault.OffsetTraceEndLocation;
+
+	DefaultAttackTraceInfo.AttackEndGameplayTag_Added = InDefault.AttackEndGameplayTag_Added;
+	DefaultAttackTraceInfo.AttackEndGameplayTag_Removed = InDefault.AttackEndGameplayTag_Removed;
 
 	//
 
@@ -299,40 +303,82 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 	float AttackDamage = DefaultAttackTraceInfo.AttackDamage;
 	float AttackTraceRadius = DefaultAttackTraceInfo.AttackTraceRadius;
 
-	TArray<FHitResult> HitResults;
-	UKismetSystemLibrary::SphereTraceMulti(InWorld,
-		AttackStartTraceLocation,
-		AttackEndTraceLocation,
-		AttackTraceRadius,
-		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
-		false,
-		CheckedActorList,
-		EDrawDebugTrace::ForDuration,
-		HitResults,
-		true,
-		FLinearColor::Red,
-		FLinearColor::Green,
-		0.1f);
-
-	for (FHitResult HitResult : HitResults)
+	if (DefaultAttackTraceInfo.bIsUsingSigleTrace == true)
 	{
-		if (IsValid(HitResult.GetActor()) == true)
+		FHitResult HitResult;
+		UKismetSystemLibrary::SphereTraceSingle
+		(InWorld,
+			AttackStartTraceLocation,
+			AttackEndTraceLocation,
+			AttackTraceRadius,
+			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
+			false,
+			CheckedActorList,
+			EDrawDebugTrace::ForDuration,
+			HitResult,
+			true,
+			FLinearColor::Red,
+			FLinearColor::Green,
+			0.1f);
+
+		if (HitResult.bBlockingHit == true)
 		{
-			CheckedActorList.Add(HitResult.GetActor());
+			if (IsValid(HitResult.GetActor()) == true)
+			{
+				CheckedActorList.Add(HitResult.GetActor());
+			}
+
+			ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+
+			if (IsValid (OutCharacter) == true)
+			{
+				TSubclassOf<UDamageType> AttackDamageType = DefaultAttackTraceInfo.AttackDamageType;
+				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+
+				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+			}
+
 		}
-
-		ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
-
-		if (OutCharacter == nullptr)
-		{
-			continue;
-		}
-
-		TSubclassOf<UDamageType> AttackDamageType = DefaultAttackTraceInfo.AttackDamageType;
-		FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
-
-		OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 	}
+	else
+	{
+		TArray<FHitResult> HitResults;
+		UKismetSystemLibrary::SphereTraceMulti
+		(InWorld,
+			AttackStartTraceLocation,
+			AttackEndTraceLocation,
+			AttackTraceRadius,
+			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
+			false,
+			CheckedActorList,
+			EDrawDebugTrace::ForDuration,
+			HitResults,
+			true,
+			FLinearColor::Red,
+			FLinearColor::Green,
+			0.1f);
+
+		for (FHitResult HitResult : HitResults)
+		{
+			if (IsValid(HitResult.GetActor()) == true)
+			{
+				CheckedActorList.Add(HitResult.GetActor());
+			}
+
+			ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+
+			if (OutCharacter == nullptr)
+			{
+				continue;
+			}
+
+			TSubclassOf<UDamageType> AttackDamageType = DefaultAttackTraceInfo.AttackDamageType;
+			FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+
+			OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+		}
+	}
+
 }
 
 bool FAttackTraceSceneInfo::GetIsAttackEnded(UWorld* InWorld)

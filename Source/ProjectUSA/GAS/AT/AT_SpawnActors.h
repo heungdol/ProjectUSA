@@ -4,37 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GAS/AT/USAAbilityTask.h"
+
+#include "Struct/USAStructs.h"
+
 #include "AT_SpawnActors.generated.h"
-
-USTRUCT(BlueprintType)
-struct FSpawnActorDetail
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Detail")
-	TSubclassOf<AActor> DesiredActorClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Detail")
-	float SpawnTime = -1.0f;
-
-};
-
-
-USTRUCT(BlueprintType)
-struct FSpawnActorData
-{
-	GENERATED_BODY()
-
-public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Data")
-	TArray <FSpawnActorDetail> SpawnActorDetails;
-
-};
-
-
-// ========================================================================================
 
 
 /**

@@ -19,42 +19,59 @@ struct FAttackTraceInfo
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	bool bIsDirectToTarget = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	bool bIsUsingSigleTrace = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	bool bIsPinnedLocation = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	bool bIsPinnedRotation = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	TSubclassOf<UDamageType> AttackDamageType;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting Trace")
 	FVector OffsetTraceLocation = FVector::ZeroVector;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting Trace")
 	FVector OffsetTraceEndLocation = FVector::ZeroVector;
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
-	bool bIsDirectToTarget = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
-	bool bIsPinnedLocation = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
-	bool bIsPinnedRotation = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting Trace")
+	float AttackTraceRadius = 100.0f;
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
-	float AttackTraceRadius = 100.0f;
-
-	// 타이밍
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
-	float AttackTime = -1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
-	float AttackDuration = -1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting Damage")
 	float AttackDamage = -1.0f;
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info")
-	TSubclassOf<UDamageType> AttackDamageType;
+	// 타이밍
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting Timing")
+	float AttackTime = -1.0f;
+
+	//
+
+	// Attack Component에서 사용되는 변수들
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting End Condition")
+	float AttackDuration = -1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting End Condition")
+	FGameplayTag AttackEndGameplayTag_Added;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting End Condition")
+	FGameplayTag AttackEndGameplayTag_Removed;
+
+	//
 
 };
 
@@ -120,6 +137,38 @@ public:
 
 	bool GetIsAttackEnded(UWorld* InWorld);
 };
+
+// ========================================================================================
+
+
+USTRUCT(BlueprintType)
+struct FSpawnActorDetail
+{
+	GENERATED_BODY()
+
+	public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Detail")
+	TSubclassOf<AActor> DesiredActorClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Detail")
+	float SpawnTime = -1.0f;
+
+};
+
+
+USTRUCT(BlueprintType)
+struct FSpawnActorData
+{
+	GENERATED_BODY()
+
+	public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Data")
+	TArray <FSpawnActorDetail> SpawnActorDetails;
+
+};
+
+
 
 
 // ========================================================================================
@@ -219,3 +268,76 @@ struct FUSAGameplayTagInputInfo
 };
 
 // ========================================================================================
+
+// 이동 수치 설정
+
+USTRUCT(BlueprintType)
+struct FCharacterMovementWalkInfo
+{
+	GENERATED_BODY()
+
+	public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
+	float MaxWalkSpeed = 500;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
+	FRotator RotationRate = FRotator(0, 500, 0);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
+	float MaxAcceleration = 2000;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
+	float GroundFriction = 8;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
+	float BrakingDecelerationWalking = 2000;
+
+public:
+
+	void RenewCharacterMovementInfo(class UCharacterMovementComponent* InMovementComponent);
+};
+
+// ========================================================================================
+
+// 애니메이션 재생 구조체
+
+USTRUCT(BlueprintType)
+struct FPlayAnimMontageData
+{
+	GENERATED_BODY()
+
+	public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	TObjectPtr <UAnimMontage> AnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	float AnimMontageRate = 1.0f;
+
+	//
+
+	//FPlayAnimMontageSectionDetail StartAnimMontageSectionDetail;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	FName StartAnimMontageSectionName = NAME_None;
+
+	//
+
+	//TArray <FPlayAnimMontageSectionDetail> MiddleAnimMontageSectionDetails;
+	// <GameplayTag, SectionName>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	TMap<FGameplayTag, FName> AnimMontageSectionMapByGameplayTagAdded;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	TMap<FGameplayTag, FName> AnimMontageSectionMapByGameplayTagRemoved;
+
+
+	//
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	//bool bHasEndSection = false;
+
+	//FPlayAnimMontageSectionDetail EndAnimMontageSectionDetail;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	FName EndAnimMontageSectionName = NAME_None;
+
+
+};

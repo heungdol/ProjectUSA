@@ -4,34 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GAS/AT/USAAbilityTask.h"
+
+#include "Struct/USAStructs.h"
+
 #include "AT_ChangeCharacterMovementInfo.generated.h"
-
-
-USTRUCT(BlueprintType)
-struct FCharacterMovementWalkInfo
-{
-	GENERATED_BODY()
-
-	public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float MaxWalkSpeed = 500;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	FRotator RotationRate = FRotator(0, 500, 0);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float MaxAcceleration = 2000;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float GroundFriction = 8;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Movement Info")
-	float BrakingDecelerationWalking = 2000;
-
-public:
-
-	void RenewCharacterMovementInfo(class UCharacterMovementComponent* InMovementComponent);
-};
 
 
 /**
