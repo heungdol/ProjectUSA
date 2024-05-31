@@ -137,6 +137,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
 	struct FAttackTraceInfos AttackTraceData;
 
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
+	//bool bHasToAttachedAllWeaponToHolder = false;
+
 	//
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attribute")

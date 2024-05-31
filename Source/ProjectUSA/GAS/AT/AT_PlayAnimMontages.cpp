@@ -157,7 +157,7 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 			{
 				if (IsValid (PlayAnimMontageData->EndAnimMontage) == true)
 				{
-					MyCharacter->StopAnimMontage();
+					//MyCharacter->StopAnimMontage();
 					MyCharacter->PlayAnimMontage
 					(PlayAnimMontageData->EndAnimMontage,
 						PlayAnimMontageData->AnimMontageRate);

@@ -319,13 +319,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHolderSocket(class AUSAWeaponBase* InWeapon);
 
+	UFUNCTION(BlueprintCallable)
+	void AttachAllWeaponToHolderSocket();
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
 	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
-	
+
 	//
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUpdateHUDUserWidget", ScriptName = "OnUSAUpdateHUDUserWidget"))
 	void K2_OnUSAUpdateHUDUserWidget(class UUserWidget* InUserWidget);
+
+	//
+
+	UFUNCTION()
+	void USACharacterAnimInstanceMontageNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
 
 
 protected:

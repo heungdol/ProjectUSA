@@ -64,15 +64,46 @@ void UUSASpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLoc
 
 	//
 
-	PreviousArmOrigin = GetComponentLocation() + TargetOffset;
-	PreviousDesiredLoc = CurrentCameraLocation;
+	FVector ArmOrigin = GetComponentLocation() + TargetOffset;
+	FVector DesiredLoc = CurrentCameraLocation - GetTargetRotation().Vector() * TargetArmLength + FVector::UpVector * OffsetLocation;
 
-	FVector InLocation = CurrentCameraLocation - GetTargetRotation().Vector() * TargetArmLength + FVector::UpVector * OffsetLocation;
-	FRotator InRotation = GetTargetRotation();
+	PreviousArmOrigin = ArmOrigin;
+	PreviousDesiredLoc = DesiredLoc;
 
-	FTransform WorldCamTM(InRotation, InLocation);
+	FVector ResultLoc;
+	if (bDoTrace && (TargetArmLength != 0.0f))
+	{
+		bIsCameraFixed = true;
+		FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SpringArm), false, GetOwner());
+
+		FHitResult Result;
+		GetWorld()->SweepSingleByChannel(Result, ArmOrigin, DesiredLoc, FQuat::Identity, ProbeChannel, FCollisionShape::MakeSphere(ProbeSize), QueryParams);
+
+		UnfixedCameraPosition = DesiredLoc;
+
+		ResultLoc = BlendLocations(DesiredLoc, Result.Location, Result.bBlockingHit, DeltaTime);
+
+		if (ResultLoc == DesiredLoc)
+		{
+			bIsCameraFixed = false;
+		}
+	}
+	else
+	{
+		ResultLoc = DesiredLoc;
+		bIsCameraFixed = false;
+		UnfixedCameraPosition = ResultLoc;
+	}
+
+	//
+
+
+	// Form a transform for new world transform for camera
+	FTransform WorldCamTM(GetTargetRotation(), ResultLoc);
+	// Convert to relative to component
 	FTransform RelCamTM = WorldCamTM.GetRelativeTransform(GetComponentTransform());
 
+	// Update socket location/rotation
 	RelativeSocketLocation = RelCamTM.GetLocation();
 	RelativeSocketRotation = RelCamTM.GetRotation();
 

@@ -45,6 +45,23 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		return;
 	}
 
+	// 무기 어태치 수행
+	//if (bHasToAttachedAllWeaponToHolder == true)
+	//{
+	//	AUSACharacterBase* MyUSACharacter = nullptr;
+	//	UCharacterMovementComponent* MyCharacaterMovementComponent = nullptr;
+
+	//	if (CurrentActorInfo != nullptr)
+	//	{
+	//		MyUSACharacter = Cast <AUSACharacterBase>(CurrentActorInfo->AvatarActor);
+	//	}
+
+	//	if (MyUSACharacter != nullptr)
+	//	{
+	//		MyUSACharacter->AttachAllWeaponToHolderSocket();
+	//	}
+	//}
+
 	// Target Vector 활용
 	ActivateAbilityUsingTargetVector(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 

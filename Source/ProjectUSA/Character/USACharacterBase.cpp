@@ -158,6 +158,8 @@ AUSACharacterBase::AUSACharacterBase()
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
+
+	
 	//GetMesh()->bSimulationUpdatesChildTransforms = true;
 	//GetMesh()->SetOwner
 	
@@ -234,7 +236,10 @@ void AUSACharacterBase::BeginPlay()
 
 	//
 
-	
+	if (IsValid(GetMesh()->GetAnimInstance()) == true)
+	{
+		GetMesh()->GetAnimInstance()->OnPlayMontageNotifyBegin.AddDynamic(this, &AUSACharacterBase::USACharacterAnimInstanceMontageNotify);
+	}
 
 	//
 
@@ -693,6 +698,38 @@ void AUSACharacterBase::AddMovementInput(FVector WorldDirection, float ScaleValu
 	}
 
 	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
+}
+
+void AUSACharacterBase::USACharacterAnimInstanceMontageNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
+{
+	if (NotifyName == TEXT("AllWeapon_Holder"))
+	{
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+	}
+
+	//
+
+	if (NotifyName == TEXT("FirstWeapon_Holder"))
+	{
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+	}
+
+	if (NotifyName == TEXT("FirstWeapon_Hand"))
+	{
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+	}
+
+	if (NotifyName == TEXT("SecondWeapon_Holder"))
+	{
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+	}
+
+	if (NotifyName == TEXT("SecondWeapon_Hand"))
+	{
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+	}
 }
 
 void AUSACharacterBase::Move(const FInputActionValue& Value)
@@ -1237,12 +1274,12 @@ void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag
 	if (NewCount > 0)
 	{
 		//USA_LOG(LogTemp, Log, TEXT("First on Hand"));
-		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+		//AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
 	}
 	else
 	{
 		//USA_LOG(LogTemp, Log, TEXT("First on Spine"));
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+		//AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
 	}
 }
 
@@ -1260,11 +1297,11 @@ void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTa
 
 	if (NewCount > 0)
 	{
-		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+		//AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
 	}
 	else
 	{
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+		//AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
 	}
 }
 
@@ -1351,6 +1388,14 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 	(EAttachmentRule::SnapToTarget, true);
 
 	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHolderSocketName());
+}
+
+void AUSACharacterBase::AttachAllWeaponToHolderSocket()
+{
+	for (AUSAWeaponBase* Weapon : CurrentEquipedWeapons)
+	{
+		AttachWeaponToHolderSocket(Weapon);
+	}
 }
 
 bool AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeaponBase* InWeapon)

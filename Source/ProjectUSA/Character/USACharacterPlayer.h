@@ -18,11 +18,14 @@ class PROJECTUSA_API AUSACharacterPlayer : public AUSACharacterBase
 public:
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Camera Info: Player Only")
 	TSubclassOf <class AUSATargetingCameraActor> TargetingCameraActorClass;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Camera Info: Player Only")
 	TObjectPtr <class AUSATargetingCameraActor> TargetingCameraActor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Camera Info: Player Only")
+	TObjectPtr <class AUSAPlacedCameraActor> PlacedCameraActor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr <class APlayerController> PlayerController;
@@ -56,16 +59,35 @@ public:
 	void ChangeTargeting();
 	void FinishTargeting();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartTargeting", ScriptName = "OnStartTargeting"))
+	//
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartTargetingCamera", ScriptName = "OnStartTargetingCamera"))
 	void K2_OnStartTargeting();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnKeepTargeting", ScriptName = "OnStartTargeting"))
-	void K2_OnKeepTargeting();
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnKeepTargetingCamera", ScriptName = "OnStartTargetingCamera"))
+	//void K2_OnKeepTargeting();
 	
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishTargeting", ScriptName = "OnFinishTargeting"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishTargetingCamera", ScriptName = "OnFinishTargetingCamera"))
 	void K2_OnFinishTargeting();
 
 	//
+
+	void StartPlacedCamera(AUSAPlacedCameraActor* InActor);
+	
+	void FinishPlacedCamera(AUSAPlacedCameraActor* InActor);
+	
+	//
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartPlacedCamera", ScriptName = "OnStartPlacedCamera"))
+	void K2_OnStartPlacedCamera();
+
+	//
+
+	void ManageAllCamera();
+
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishPlacedCamera", ScriptName = "OnFinishPlacedCamera"))
+	//void K2_OnFinishPlacedCamera();
+
 
 	virtual void DoDrop(const struct FInputActionValue& Value) override;
 

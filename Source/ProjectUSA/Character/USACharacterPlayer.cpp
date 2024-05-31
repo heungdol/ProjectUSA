@@ -15,6 +15,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Camera/USATargetingCameraActor.h"
+#include "Camera/USAPlacedCameraActor.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -28,7 +29,6 @@
 #include "ProjectUSA.h"
 
 
-
 AUSACharacterPlayer::AUSACharacterPlayer()
 {
 	//ASC = nullptr;
@@ -37,38 +37,6 @@ AUSACharacterPlayer::AUSACharacterPlayer()
 void AUSACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//if (GetPlayerState() != nullptr)
-	//{
-	//	if (GetPlayerState()->HasAuthority())
-	//	{
-	//		USA_LOG(LogTemp, Log, TEXT("Player State Has Authority"));
-	//	}
-	//	else
-	//	{
-	//		USA_LOG(LogTemp, Log, TEXT("Player State Has No Authority"));
-	//	}
-	//}
-	//else
-	//{
-	//	USA_LOG(LogTemp, Log, TEXT("No Player State"));
-	//}
-
-	//if (GetController<APlayerController>() != nullptr)
-	//{
-	//	if (GetController<APlayerController>()->HasAuthority())
-	//	{
-	//		USA_LOG(LogTemp, Log, TEXT("Player Constroller Has Authority"));
-	//	}
-	//	else
-	//	{
-	//		USA_LOG(LogTemp, Log, TEXT("Player Constroller Has No Authority"));
-	//	}
-	//}
-	//else
-	//{
-	//	USA_LOG(LogTemp, Log, TEXT("No Player Constroller"));
-	//}
 
 	InitPlayerController();
 	InitTargetingCameraActor();
@@ -80,7 +48,7 @@ void AUSACharacterPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (bIsTargetingCamera != 0)
+	if (IsValid(CurrentTargetableActor) == true)
 	{
 		KeepTargeting();
 	}
@@ -95,31 +63,34 @@ void AUSACharacterPlayer::Tick(float DeltaTime)
 
 }
 
+//
 
-void AUSACharacterPlayer::DoDrop(const FInputActionValue& Value)
+void AUSACharacterPlayer::InitPlayerController()
 {
-	Super::DoDrop(Value);
-
-	DropWeapons();
+	PlayerController = GetController<APlayerController>();
 }
 
-void AUSACharacterPlayer::StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType)
+void AUSACharacterPlayer::InitTargetingCameraActor()
 {
-	Super::StartCameraShake_HitSuccess(DamageType);
-
-	if (HitSuccessCameraShakes.Contains(DamageType) == false)
+	if (PlayerController == nullptr)
 	{
 		return;
 	}
 
-	if (PlayerController == nullptr
-		|| PlayerController->PlayerCameraManager == nullptr)
+	if (PlayerController->IsLocalController() == false)
 	{
 		return;
 	}
 
-	PlayerController->PlayerCameraManager->StartCameraShake(HitSuccessCameraShakes[DamageType]);
+	TargetingCameraActor = GetWorld()->SpawnActor<AUSATargetingCameraActor>(TargetingCameraActorClass, GetActorTransform());
+
+	if (IsValid(TargetingCameraActor) == true)
+	{
+		TargetingCameraActor->SetSourceActor(this);
+	}
 }
+
+//
 
 void AUSACharacterPlayer::Look(const FInputActionValue& Value)
 {
@@ -143,25 +114,6 @@ void AUSACharacterPlayer::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y * LookSensitivityRatio);
 	}
 }
-
-void AUSACharacterPlayer::SetupGAS()
-{
-	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
-
-	if (USAPlayerState != nullptr)
-	{
-		ASC = USAPlayerState->GetAbilitySystemComponent();
-
-		if (ASC != nullptr)
-		{
-			ASC->InitAbilityActorInfo(USAPlayerState, this);
-		}
-	}
-
-	Super::SetupGAS();
-}
-
-//
 
 
 void AUSACharacterPlayer::Move(const FInputActionValue& Value)
@@ -187,6 +139,32 @@ void AUSACharacterPlayer::Move(const FInputActionValue& Value)
 	USACharacterInputMovementDirection += RightDirection * MovementVector.X;
 }
 
+//
+
+void AUSACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AUSACharacterPlayer::SetupGAS()
+{
+	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
+
+	if (USAPlayerState != nullptr)
+	{
+		ASC = USAPlayerState->GetAbilitySystemComponent();
+
+		if (ASC != nullptr)
+		{
+			ASC->InitAbilityActorInfo(USAPlayerState, this);
+		}
+	}
+
+	Super::SetupGAS();
+}
+
+//
+
 void AUSACharacterPlayer::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
@@ -209,6 +187,63 @@ void AUSACharacterPlayer::OnRep_ASC()
 
 	CheckCharacterByGameplayTags();
 }
+
+//
+
+void AUSACharacterPlayer::DoDrop(const FInputActionValue& Value)
+{
+	Super::DoDrop(Value);
+
+	DropWeapons();
+}
+
+void AUSACharacterPlayer::OnWeaponDetectBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
+		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	{
+		return;
+	}
+
+	AUSAWeaponBase* InWeapon = Cast<AUSAWeaponBase>(OtherActor);
+
+	if (InWeapon == nullptr)
+	{
+		return;
+	}
+
+	PickupWeapon(InWeapon);
+}
+
+//
+
+void AUSACharacterPlayer::DoTarget(const struct FInputActionValue& Value)
+{
+	Super::DoTarget(Value);
+
+	if (TargetingCameraActor == nullptr)
+	{
+		InitTargetingCameraActor();
+	}
+
+	if (TargetingCameraActor == nullptr)
+	{
+		return;
+	}
+
+	if (bIsTargetingCamera == false)
+	{
+		UpdateCurrentTargetableActor();
+
+		StartTargeting();
+	}
+	else
+	{
+		FinishTargeting();
+	}
+}
+
+//
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 {
@@ -298,9 +333,16 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 			FVector DirectionFromSourceToTarget = TempActor->GetActorLocation() - SourceLocation;
 			DirectionFromSourceToTarget.Normalize();
 
-			// 임시와 포커스의 차이점
-			CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, InDirection);
-		
+			// 만약 PlaceCamera가 작동 중이라면 캐릭터의 방향으로 판단
+			if (IsValid(PlacedCameraActor) == true)
+			{
+				CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, GetActorForwardVector());
+			}
+			else
+			{
+				// 임시와 포커스의 차이점
+				CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, InDirection);
+			}
 
 			// 만약 정 반대의 방향을 가리키면 무시
 			if (CurrentTempActorScore_Direction < DotCutoff)
@@ -328,104 +370,7 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 	}
 }
 
-void AUSACharacterPlayer::OnWeaponDetectBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
-	{
-		return;
-	}
-
-	AUSAWeaponBase* InWeapon = Cast<AUSAWeaponBase>(OtherActor);
-
-	if (InWeapon == nullptr)
-	{
-		return;
-	}
-
-	PickupWeapon(InWeapon);
-}
-
-void AUSACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void AUSACharacterPlayer::InitTargetingCameraActor()
-{
-	//if (UKismetSystemLibrary::IsServer(GetWorld()) == true
-	//	|| UKismetSystemLibrary::IsStandalone(GetWorld()) == true)
-	//{
-	//	if (GetLocalRole() == ENetRole::ROLE_Authority
-	//		&& GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
-	//	{
-	//		// 리슨 서버의 클라이언트
-	//	}
-	//	else
-	//	{
-	//		return;
-	//	}
-	//}
-	//else
-	//{
-	//	if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	//	{
-	//		// 클라이언트
-	//	}
-	//	else
-	//	{
-	//		return;
-	//	}
-	//}
-
-	if (PlayerController == nullptr)
-	{
-		return;
-	}
-
-	if (PlayerController->IsLocalController() == false)
-	{
-		return;
-	}
-
-	TargetingCameraActor = GetWorld()->SpawnActor<AUSATargetingCameraActor>(TargetingCameraActorClass, GetActorTransform());
-
-	if (IsValid(TargetingCameraActor) == true)
-	{
-		TargetingCameraActor->SetSourceActor(this);
-	}
-}
-
-
-void AUSACharacterPlayer::InitPlayerController()
-{
-	PlayerController = GetController<APlayerController>();
-}
-
-
-void AUSACharacterPlayer::DoTarget(const struct FInputActionValue& Value)
-{
-	Super::DoTarget(Value);
-
-	if (TargetingCameraActor == nullptr)
-	{
-		InitTargetingCameraActor();
-	}
-
-	if (TargetingCameraActor == nullptr)
-	{
-		return;
-	}
-
-	if (bIsTargetingCamera == false)
-	{
-		StartTargeting();
-	}
-	else
-	{
-		FinishTargeting();
-	}
-}
+//
 
 void AUSACharacterPlayer::StartTargeting()
 {
@@ -434,10 +379,9 @@ void AUSACharacterPlayer::StartTargeting()
 		return;
 	}
 
-	UpdateCurrentTargetableActor();
-
 	if (CurrentTargetableActor == nullptr)
 	{
+		FinishTargeting();
 		return;
 	}
 
@@ -447,13 +391,16 @@ void AUSACharacterPlayer::StartTargeting()
 	//TargetingCameraActor->SetOnOff(true);
 	bIsTargetingCamera = true;
 
-	K2_OnStartTargeting();
+	ManageAllCamera();
+
+	//K2_OnStartTargeting();
 }
 
 void AUSACharacterPlayer::KeepTargeting()
 {
 	if (TargetingCameraActor == nullptr)
 	{
+		FinishTargeting();
 		return;
 	}
 
@@ -477,11 +424,11 @@ void AUSACharacterPlayer::KeepTargeting()
 		return;
 	}
 
-	if (PlayerController
-		&& TargetingCameraActor != nullptr)
-	{
-		PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
-	}
+	//if (PlayerController
+	//	&& TargetingCameraActor != nullptr)
+	//{
+	//	PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
+	//}
 
 	FVector SourceLocation = GetActorLocation();
 	FVector TargetLocation = CurrentTargetableActor->GetActorLocation();
@@ -492,7 +439,10 @@ void AUSACharacterPlayer::KeepTargeting()
 		return;
 	}
 
-	K2_OnKeepTargeting();
+	//if (IsValid(PlacedCameraActor) == false)
+	//{
+	//	K2_OnKeepTargeting();
+	//}
 }
 
 void AUSACharacterPlayer::ChangeTargeting()
@@ -524,17 +474,125 @@ void AUSACharacterPlayer::FinishTargeting()
 	TargetingCameraActor->SetSourceActor(this);
 	TargetingCameraActor->SetTargetActor(nullptr);
 
+	//if (PlayerController
+//	&& TargetingCameraActor != nullptr)
+//{
+//	PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
+//}
+
+	if (PlayerController != nullptr
+		&& CameraSpringArmComponent != nullptr
+		&& TargetingCameraActor != nullptr
+		&& bIsTargetingCamera != false)
+	{
+		PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
+		CameraSpringArmComponent->SetWorldRotation(TargetingCameraActor->GetActorRotation());
+		CameraSpringArmComponent->UpdateChildTransforms();
+	}
+
 	//TargetingCameraActor->SetOnOff(false);
 	bIsTargetingCamera = false;
 
 	TargetingCameraActor->SetTargetActor(nullptr);
 	CurrentTargetableActor = nullptr;
 
-	if (CameraSpringArmComponent != nullptr
-		&& TargetingCameraActor != nullptr)
+
+	ManageAllCamera();
+
+	//K2_OnFinishTargeting();
+}
+
+//
+
+void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
+{
+	PlacedCameraActor = InActor;
+
+	USA_LOG(LogTemp, Log, TEXT("Rotation IN: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
+
+	if (IsValid(PlacedCameraActor) == true)
 	{
-		CameraSpringArmComponent->SetWorldRotation(TargetingCameraActor->GetActorRotation());
+		FVector ActorForward = GetActorForwardVector();
+		FVector CameraForward = GetActorForwardVector();
+
+		if (IsValid(PlayerController) == true
+			&& IsValid(PlayerController->PlayerCameraManager) == true)
+		{
+			CameraForward = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
+		}
+
+		PlacedCameraActor->InitPlacedCameraActor(ActorForward, CameraForward);
 	}
 
-	K2_OnFinishTargeting();
+	ManageAllCamera();
+
+	//K2_OnStartPlacedCamera();
+}
+
+void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
+{
+	if (PlacedCameraActor != InActor)
+	{
+		return;
+	}
+
+	USA_LOG(LogTemp, Log, TEXT("Rotation From: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
+
+	if (PlayerController != nullptr
+		&& CameraSpringArmComponent != nullptr
+		&& PlacedCameraActor != nullptr)
+	{
+		PlayerController->SetControlRotation(PlacedCameraActor->GetActiveCameraRotation());
+		CameraSpringArmComponent->SetWorldRotation(PlacedCameraActor->GetActiveCameraRotation());
+		CameraSpringArmComponent->UpdateChildTransforms();
+	}
+
+	USA_LOG(LogTemp, Log, TEXT("Rotation To: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
+
+	PlacedCameraActor = nullptr;
+
+	//ManageAllCame(ra();
+
+	StartTargeting();
+}
+
+//
+
+void AUSACharacterPlayer::ManageAllCamera()
+{
+	if (IsValid(PlacedCameraActor) == false)
+	{
+		if (CurrentTargetableActor)
+		{
+			K2_OnStartTargeting();
+		}
+		else
+		{
+			K2_OnFinishTargeting();
+		}
+	}
+	else
+	{
+		K2_OnStartPlacedCamera();
+	}
+}
+
+//
+
+void AUSACharacterPlayer::StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType)
+{
+	Super::StartCameraShake_HitSuccess(DamageType);
+
+	if (HitSuccessCameraShakes.Contains(DamageType) == false)
+	{
+		return;
+	}
+
+	if (PlayerController == nullptr
+		|| PlayerController->PlayerCameraManager == nullptr)
+	{
+		return;
+	}
+
+	PlayerController->PlayerCameraManager->StartCameraShake(HitSuccessCameraShakes[DamageType]);
 }
