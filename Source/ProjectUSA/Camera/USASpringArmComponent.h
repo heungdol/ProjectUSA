@@ -23,8 +23,8 @@ public:
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SpringArm)
-	FVector OffsetLocation;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SpringArm)
+	//FVector OffsetLocation;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SpringArm)
 	bool bIsUsingCustomLag = false;

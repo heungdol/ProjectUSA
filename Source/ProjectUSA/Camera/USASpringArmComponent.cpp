@@ -64,8 +64,8 @@ void UUSASpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLoc
 
 	//
 
-	FVector ArmOrigin = GetComponentLocation() + TargetOffset;
-	FVector DesiredLoc = CurrentCameraLocation - GetTargetRotation().Vector() * TargetArmLength + FVector::UpVector * OffsetLocation;
+	FVector ArmOrigin = Character->GetMesh()->GetComponentLocation() + TargetOffset;
+	FVector DesiredLoc = CurrentCameraLocation - GetTargetRotation().Vector() * TargetArmLength + SocketOffset;
 
 	PreviousArmOrigin = ArmOrigin;
 	PreviousDesiredLoc = DesiredLoc;
@@ -80,9 +80,7 @@ void UUSASpringArmComponent::UpdateDesiredArmLocation(bool bDoTrace, bool bDoLoc
 		GetWorld()->SweepSingleByChannel(Result, ArmOrigin, DesiredLoc, FQuat::Identity, ProbeChannel, FCollisionShape::MakeSphere(ProbeSize), QueryParams);
 
 		UnfixedCameraPosition = DesiredLoc;
-
 		ResultLoc = BlendLocations(DesiredLoc, Result.Location, Result.bBlockingHit, DeltaTime);
-
 		if (ResultLoc == DesiredLoc)
 		{
 			bIsCameraFixed = false;

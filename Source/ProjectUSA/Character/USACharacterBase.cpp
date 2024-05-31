@@ -48,24 +48,24 @@
 #include "ProjectUSA.h"
 
 
-void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
-{
-	ServerRPC_SetWeaponDetectBoxComponentActive(InActive);
-}
-
-void AUSACharacterBase::ServerRPC_SetWeaponDetectBoxComponentActive_Implementation(bool InActive)
-{
-	MulticastRPC_SetWeaponDetectBoxComponentActive(InActive);
-}
-
-void AUSACharacterBase::MulticastRPC_SetWeaponDetectBoxComponentActive_Implementation(bool InActive)
-{
-	if (IsValid(GetCapsuleComponent()) == true)
-	{
-		USA_LOG(LogTemp, Log, TEXT("A"));
-		GetCapsuleComponent()->SetGenerateOverlapEvents(InActive);
-	}
-}
+//void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
+//{
+//	ServerRPC_SetWeaponDetectBoxComponentActive(InActive);
+//}
+//
+//void AUSACharacterBase::ServerRPC_SetWeaponDetectBoxComponentActive_Implementation(bool InActive)
+//{
+//	MulticastRPC_SetWeaponDetectBoxComponentActive(InActive);
+//}
+//
+//void AUSACharacterBase::MulticastRPC_SetWeaponDetectBoxComponentActive_Implementation(bool InActive)
+//{
+//	if (IsValid(GetCapsuleComponent()) == true)
+//	{
+//		//USA_LOG(LogTemp, Log, TEXT("A"));
+//		GetCapsuleComponent()->SetGenerateOverlapEvents(InActive);
+//	}
+//}
 
 void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> PrevWeapons)
 {
@@ -1136,6 +1136,23 @@ void AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge(const FGameplay
 	}
 }
 
+void AUSACharacterBase::OnGameplayTagCallback_OffOverlapEvent(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (IsValid(GetCapsuleComponent()) == false)
+	{
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+	}
+	else
+	{
+		GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+	}
+}
+
 void AUSACharacterBase::OnGameplayTagCallback_Walk(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
@@ -2108,6 +2125,13 @@ void AUSACharacterBase::PostSetupGAS()
 		USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE,
 		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_CANNOTWALKOFFLEDGE, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge)
+	);
+
+	RegisteredGameplayTagEvents.Add
+	(
+		USA_CHARACTER_ADJUST_OFFOVERLAPEVENT,
+		ASC->RegisterGameplayTagEvent(USA_CHARACTER_ADJUST_OFFOVERLAPEVENT, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_OffOverlapEvent)
 	);
 
 	//

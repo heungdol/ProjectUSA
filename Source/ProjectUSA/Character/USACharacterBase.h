@@ -263,14 +263,14 @@ public:
 	//
 
 
-	UFUNCTION()
-	void SetWeaponDetectBoxComponentActive(bool InActive);
+	//UFUNCTION()
+	//void SetWeaponDetectBoxComponentActive(bool InActive);
 
-	UFUNCTION(Server, Reliable)
-	void ServerRPC_SetWeaponDetectBoxComponentActive(bool InActive);
+	//UFUNCTION(Server, Reliable)
+	//void ServerRPC_SetWeaponDetectBoxComponentActive(bool InActive);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_SetWeaponDetectBoxComponentActive(bool InActive);
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_SetWeaponDetectBoxComponentActive(bool InActive);
 	
 	//
 
@@ -522,6 +522,8 @@ protected:
 	void OnGameplayTagCallback_IgnoreMoveInput(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_VelocityZero(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_CanNotWalkOffLedge(const struct FGameplayTag CallbackTag, int32 NewCount);
+	void OnGameplayTagCallback_OffOverlapEvent(const struct FGameplayTag CallbackTag, int32 NewCount);
+
 
 	void OnGameplayTagCallback_Walk(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);

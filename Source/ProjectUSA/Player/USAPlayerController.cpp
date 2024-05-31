@@ -31,7 +31,7 @@ void AUSAPlayerController::BeginPlayingState()
         if (AUSACharacterBase* USACharacterOwner = Cast<AUSACharacterBase>(GetPawn()))
         {
             //UE_LOG(LogTemp, Warning, TEXT("Player has fully joined the game"));
-            USACharacterOwner->SetWeaponDetectBoxComponentActive(true);
+            //USACharacterOwner->SetWeaponDetectBoxComponentActive(true);
             USACharacterOwner->SetCurrentWeaponsUsingStartWeaponClassList();
             USACharacterOwner->K2_OnUSAUpdateHUDUserWidget(PlayerHUDUserWidget);
         }
