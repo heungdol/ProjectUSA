@@ -1330,7 +1330,7 @@ void AUSACharacterBase::AttachWeaponToHandSocket(AUSAWeaponBase* InWeapon)
 	}
 
 	FAttachmentTransformRules AttachmentTransformRules
-	(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+	(EAttachmentRule::SnapToTarget, true);
 
 	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHandSocketName());
 }
@@ -1343,12 +1343,12 @@ void AUSACharacterBase::AttachWeaponToHolderSocket(AUSAWeaponBase* InWeapon)
 	}
 
 	if (GetMesh() == nullptr)
-	{
+	{	 
 		return;
 	}
 
 	FAttachmentTransformRules AttachmentTransformRules
-	(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+	(EAttachmentRule::SnapToTarget, true);
 
 	InWeapon->AttachToComponent(GetMesh(), AttachmentTransformRules, InWeapon->GetWeaponHolderSocketName());
 }

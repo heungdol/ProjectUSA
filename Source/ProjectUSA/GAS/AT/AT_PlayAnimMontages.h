@@ -10,30 +10,6 @@
 #include "AT_PlayAnimMontages.generated.h"
 
 
-//USTRUCT(BlueprintType)
-//struct FPlayAnimMontageSectionDetail
-//{
-//	GENERATED_BODY()
-//
-//public:
-//	//float SectionPlayTime = -1.0f;
-//	
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
-//	FGameplayTag SectionGameplayTagAdded;
-//
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
-//	FGameplayTag SectionGameplayTagRemoved;
-//
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Section Detail")
-//	FName SectionName = NAME_None;
-//};
-//
-
-
-
-// ========================================================================================
-
-
 /**
  * 
  */

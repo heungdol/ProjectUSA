@@ -336,8 +336,13 @@ struct FPlayAnimMontageData
 	//bool bHasEndSection = false;
 
 	//FPlayAnimMontageSectionDetail EndAnimMontageSectionDetail;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
-	FName EndAnimMontageSectionName = NAME_None;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	//FName EndAnimMontageSectionName = NAME_None;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	bool bIsStopWhenFinished= true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anim Montage Info")
+	TObjectPtr <UAnimMontage> EndAnimMontage;
 
 };

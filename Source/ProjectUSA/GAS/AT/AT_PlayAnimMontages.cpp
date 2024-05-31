@@ -149,17 +149,23 @@ void UAT_PlayAnimMontages::SimpleEndAbilityTask()
 	{
 		if (MyCharacter->GetCurrentMontage() == PlayAnimMontageData->AnimMontage)
 		{
-			if (PlayAnimMontageData->EndAnimMontageSectionName != NAME_None)
+			if (PlayAnimMontageData->bIsStopWhenFinished == true)
 			{
 				MyCharacter->StopAnimMontage();
-				MyCharacter->PlayAnimMontage
-				(PlayAnimMontageData->AnimMontage, 
-					PlayAnimMontageData->AnimMontageRate, 
-					PlayAnimMontageData->EndAnimMontageSectionName);
 			}
 			else
 			{
-				MyCharacter->StopAnimMontage();
+				if (IsValid (PlayAnimMontageData->EndAnimMontage) == true)
+				{
+					MyCharacter->StopAnimMontage();
+					MyCharacter->PlayAnimMontage
+					(PlayAnimMontageData->EndAnimMontage,
+						PlayAnimMontageData->AnimMontageRate);
+				}
+				else
+				{
+					// ...
+				}
 			}
 		}
 	}
