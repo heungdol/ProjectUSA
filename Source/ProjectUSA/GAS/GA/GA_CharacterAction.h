@@ -48,6 +48,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action End")
 	FGameplayTag EndGameplayTag;
 
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
+	ECharacterActionEndType InterruptType = ECharacterActionEndType::None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
+	FGameplayTag InterruptGameplayTag;
+
+	//
+
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
 	//ECharacterActionEndType InterruptType = ECharacterActionEndType::WaitTagAdded;

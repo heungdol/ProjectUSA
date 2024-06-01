@@ -87,6 +87,14 @@ public:
 
 	//
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	TObjectPtr <UAnimMontage> WeaponPickUpAnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	float WeaponPickUpAnimMontageRate = 1.0f;
+
+	//
+
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
 	class AUSACharacterBase* WeaponOwner = nullptr;
 

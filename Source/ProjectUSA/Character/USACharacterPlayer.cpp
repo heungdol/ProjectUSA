@@ -205,6 +205,11 @@ void AUSACharacterPlayer::OnWeaponDetectBoxOverlapBegin(UPrimitiveComponent* Ove
 		return;
 	}
 
+	if (bIsPickable == false)
+	{
+		return;
+	}
+
 	AUSAWeaponBase* InWeapon = Cast<AUSAWeaponBase>(OtherActor);
 
 	if (InWeapon == nullptr)

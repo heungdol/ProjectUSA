@@ -21,13 +21,18 @@ AUSAWeaponStaticMesh::AUSAWeaponStaticMesh()
 	RootComponent = WeaponMeshComponent;
 
 	WeaponMeshComponent->SetCollisionProfileName(TEXT("Item"), false);
-	WeaponMeshComponent->SetGenerateOverlapEvents(true);
+	WeaponMeshComponent->SetGenerateOverlapEvents(/*true*/false);
 	WeaponMeshComponent->SetSimulatePhysics(true);
-	WeaponMeshComponent->SetMassOverrideInKg(NAME_None, 100.0f, true);
-
+	WeaponMeshComponent->SetMassOverrideInKg(NAME_None, 200.0f, true);
+	WeaponMeshComponent->SetAngularDamping(1.0f);
 	WeaponMeshComponent->SetNotifyRigidBodyCollision(false);
-}
 
+	WeaponBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Box Component"));
+	WeaponBoxComponent->SetupAttachment(RootComponent);
+	WeaponBoxComponent->SetGenerateOverlapEvents(true);
+
+}
+ 
 void AUSAWeaponStaticMesh::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);

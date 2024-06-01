@@ -153,8 +153,8 @@ AUSACharacterBase::AUSACharacterBase()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnWeaponDetectBoxOverlapBegin);
-	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
@@ -211,10 +211,10 @@ void AUSACharacterBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (IsValid(GetCapsuleComponent()) == true)
-	{
-		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-	}
+	//if (IsValid(GetCapsuleComponent()) == true)
+	//{
+	//	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -626,7 +626,7 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoTarget);
 
-		EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoDrop);
+		//EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoDrop);
 
 		for (const auto& GameplayActiveAbility : GameplayAbilities_Active)
 		{
@@ -1138,18 +1138,19 @@ void AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge(const FGameplay
 
 void AUSACharacterBase::OnGameplayTagCallback_OffOverlapEvent(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if (IsValid(GetCapsuleComponent()) == false)
-	{
-		return;
-	}
+	//if (IsValid(GetCapsuleComponent()) == false)
+	//{
+	//	return;
+	//}
 
 	if (NewCount > 0)
 	{
-		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+		bIsPickable = false;
+		//GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 	}
 	else
 	{
-		GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+		bIsPickable = true;
 	}
 }
 

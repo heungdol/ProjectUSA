@@ -335,6 +335,8 @@ public:
 	UFUNCTION()
 	void USACharacterAnimInstanceMontageNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
 
+	UFUNCTION(BlueprintCallable)
+	void DropWeapons(bool bIsAbsolute = false);
 
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
@@ -370,6 +372,9 @@ protected:
 
 	void PickupWeapon(class AUSAWeaponBase* InWeapon);
 
+	UPROPERTY (VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
+	bool bIsPickable = false;
+
 	//UFUNCTION(Server, Reliable)
 	//void ServerRPC_PickupWeapon(class AUSAWeaponBase* InWeapon);
 
@@ -379,7 +384,7 @@ protected:
 
 	//
 
-	void DropWeapons(bool bIsAbsolute = false);
+	//void DropWeapons(bool bIsAbsolute = false);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_DropWeapons();

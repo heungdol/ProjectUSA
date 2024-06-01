@@ -284,9 +284,19 @@ void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 	{
 		if (GiveGameplayWeaponAbilitesToASC(WeaponOwner))
 		{
-			WeaponOwner->AttachWeaponToHolderSocket(this);
-
 			WeaponOwner->K2_OnUSACurrentWeaponChanged(WeaponType, this);
+
+			UAnimInstance* AnimInstance = (WeaponOwner->GetMesh()) ? WeaponOwner->GetMesh()->GetAnimInstance() : nullptr;
+
+			if (IsValid(WeaponPickUpAnimMontage) == true && IsValid(AnimInstance) == true)
+			{
+				WeaponOwner->AttachWeaponToHandSocket(this);
+				AnimInstance->Montage_Play(WeaponPickUpAnimMontage, WeaponPickUpAnimMontageRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
+			}
+			else
+			{
+				WeaponOwner->AttachWeaponToHolderSocket(this);
+			}
 
 			SetWeaponPhysics(false);
 		}

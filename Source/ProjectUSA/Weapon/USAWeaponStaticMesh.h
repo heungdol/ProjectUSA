@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
 	TObjectPtr <class UStaticMeshComponent> WeaponMeshComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	TObjectPtr <class UBoxComponent> WeaponBoxComponent;
+
 public:
 
 	virtual void BeginPlay() override;
