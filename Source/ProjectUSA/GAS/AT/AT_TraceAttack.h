@@ -80,7 +80,8 @@ public:
 
 	/** Wait specified time. This is functionally the same as a standard Delay node. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_TraceAttack* GetNewAbilityTask_TraceAttack(UGameplayAbility* OwningAbility, const FAttackTraceInfos& InAttackTraceData);
+	static UAT_TraceAttack* GetNewAbilityTask_TraceAttack
+	(UGameplayAbility* OwningAbility, const FAttackTraceInfos& InAttackTraceData, const FVector& InTargetVector);
 
 	virtual void Activate() override;
 
@@ -94,5 +95,5 @@ public:
 	float PrevAttackTraceTime = 0.0f;
 	int CurrentAttackTraceIndex = 0;
 
-	
+	FVector TargetVector;
 };

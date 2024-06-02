@@ -1637,6 +1637,11 @@ float AUSACharacterBase::GetTargetableCapsuleRadius()
 	//}
 //}
 
+//float AUSACharacterBase::USATakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+//{
+//	return TakeDamage (DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+//}
+
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float ResultDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -1647,7 +1652,13 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	MulticastRPC_TakeDamage(ResultDamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	// 넉백 어빌리티 수행
-	ApplyDamageMomentum(ResultDamageAmount, DamageEvent, EventInstigator->GetPawn(), DamageCauser);
+	APawn* EventInstigatorPawn = nullptr;
+	if (IsValid(EventInstigator) == true)
+	{
+		EventInstigatorPawn = EventInstigator->GetPawn();
+	}
+
+	ApplyDamageMomentum(ResultDamageAmount, DamageEvent, EventInstigatorPawn, DamageCauser);
 
 	return ResultDamageAmount;
 }

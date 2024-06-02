@@ -3,16 +3,19 @@
 #include "GAS/AT/AT_SpawnActors.h"
 
 #include "GameFramework/Character.h"
-
 #include "GameFramework/Actor.h"
 
+#include "Interface/USAAttackableInterface.h"
+#include "Interface/USASpawnableInterface.h"
 
 
-UAT_SpawnActors* UAT_SpawnActors::GetNewAbilityTask_SpawnActors(UGameplayAbility* OwningAbility, const FSpawnActorData& InSpawnActorData)
+UAT_SpawnActors* UAT_SpawnActors::GetNewAbilityTask_SpawnActors
+(UGameplayAbility* OwningAbility, const FSpawnActorData& InSpawnActorData, const FVector& InTargetVector)
 {
 	UAT_SpawnActors* MyObj = NewAbilityTask<UAT_SpawnActors>(OwningAbility);
 
 	MyObj->SpawnActorData = &InSpawnActorData;
+	MyObj->TargetVector = InTargetVector;
 
 	MyObj->bIsCancelable = true;
 
@@ -51,6 +54,18 @@ void UAT_SpawnActors::SpawnActorAndSetNextTimer()
 
 	float NextSpawnTime = SpawnActorData->SpawnActorDetails[CurrentSpwanActorIndex].SpawnTime;
 
+	//
+
+	AActor* OriginActor = GetAvatarActor();
+	APawn* OriginPawn = Cast<APawn>(OriginActor);
+	AController* OriginController = nullptr;
+	if (IsValid(OriginPawn) == true)
+	{
+		OriginController = OriginPawn->GetController();
+	}
+
+	//
+
 	while (CurrentSpwanActorIndex < SpawnActorData->SpawnActorDetails.Num()
 		&& PrevSpawnActorTime + SMALL_NUMBER >= NextSpawnTime)
 	{
@@ -84,11 +99,30 @@ void UAT_SpawnActors::SpawnActorAndSetNextTimer()
 			FVector SpawnLocation = GetAvatarActor()->GetActorLocation();
 			FRotator SpawnRotation = GetAvatarActor()->GetActorRotation();
 
+			//IUSAAttackableInterface* AttackableInterface = nullptr;
+
+			//if (Ability != nullptr)
+			//{
+			//	AttackableInterface = Cast<IUSAAttackableInterface>(Ability->GetAvatarActorFromActorInfo());
+			//}
+
+			if (SpawnActorData->SpawnActorDetails[CurrentSpwanActorIndex].bIsDirectToTarget == true
+				&& TargetVector.Length() > SMALL_NUMBER)
+			{
+				SpawnRotation = TargetVector.Rotation();
+			}
+
 			AActor* NewActor = GetWorld()->SpawnActor<AActor> (ActorClass, SpawnLocation, SpawnRotation);
 
 			if (NewActor)
 			{
 				// 스폰된 액터 처리
+				IUSASpawnableInterface* USASpawnableInterface = Cast<IUSASpawnableInterface>(NewActor);
+
+				if (USASpawnableInterface != nullptr)
+				{
+					USASpawnableInterface->InitUSASpawnableActor(OriginActor, OriginController);
+				}
 			}
 			else
 			{

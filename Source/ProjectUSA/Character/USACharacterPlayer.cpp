@@ -511,6 +511,16 @@ void AUSACharacterPlayer::FinishTargeting()
 
 void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 {
+	if (IsValid(PlayerController) == false)
+	{
+		return;
+	}
+
+	if (PlayerController->IsLocalPlayerController() == false)
+	{
+		return;
+	}
+
 	PlacedCameraActor = InActor;
 
 	USA_LOG(LogTemp, Log, TEXT("Rotation IN: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
@@ -536,6 +546,16 @@ void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 
 void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 {
+	if (IsValid(PlayerController) == false)
+	{
+		return;
+	}
+
+	if (PlayerController->IsLocalPlayerController() == false)
+	{
+		return;
+	}
+
 	if (PlacedCameraActor != InActor)
 	{
 		return;
@@ -565,6 +585,16 @@ void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 
 void AUSACharacterPlayer::ManageAllCamera()
 {
+	if (IsValid(PlayerController) == false)
+	{
+		return;
+	}
+
+	if (PlayerController->IsLocalPlayerController() == false)
+	{
+		return;
+	}
+
 	if (IsValid(PlacedCameraActor) == false)
 	{
 		if (CurrentTargetableActor)

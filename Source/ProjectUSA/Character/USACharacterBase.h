@@ -11,6 +11,7 @@
 #include "Interface/USACharacterInterface.h"
 #include "Interface/USATargetableInterface.h"
 #include "Interface/USAAttackableInterface.h"
+#include "Interface/USADamageableInterface.h"
 
 // 어트리뷰트 접근을 위한 헤더
 #include "GameplayEffectTypes.h"
@@ -34,7 +35,12 @@
 // FCharacterReachedApexSignature
 
 UCLASS()
-class PROJECTUSA_API AUSACharacterBase : public ACharacter, public IAbilitySystemInterface, public IUSACharacterInterface, public IUSATargetableInterface, public IUSAAttackableInterface
+class PROJECTUSA_API AUSACharacterBase : public ACharacter, 
+	public IAbilitySystemInterface, 
+	public IUSACharacterInterface, 
+	public IUSATargetableInterface, 
+	public IUSAAttackableInterface, 
+	public IUSADamageableInterface
 {
 	GENERATED_BODY()
 
@@ -350,6 +356,8 @@ protected:
 	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	//
+
+	//virtual void USATakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 

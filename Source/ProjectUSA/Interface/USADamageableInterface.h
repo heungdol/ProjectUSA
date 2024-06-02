@@ -23,4 +23,5 @@ class PROJECTUSA_API IUSADamageableInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) = 0;
 };

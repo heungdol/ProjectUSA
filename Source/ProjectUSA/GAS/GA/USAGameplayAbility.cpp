@@ -152,7 +152,7 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 			}
 			else
 			{
-				ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector(), GetTargetDistance());
+				ServerRPC_SetTargetVectorAndDoSomething(GetTargetVector_Move(), GetTargetVector_Attack(), GetTargetDistance());
 
 				DoSomethingWithTargetVector();
 			}
@@ -164,11 +164,13 @@ void UUSAGameplayAbility::ActivateAbilityUsingTargetVector(const FGameplayAbilit
 	}
 }
 
-void UUSAGameplayAbility::ServerRPC_SetTargetVectorAndDoSomething_Implementation(const FVector& InVector, float InDistance)
+void UUSAGameplayAbility::ServerRPC_SetTargetVectorAndDoSomething_Implementation
+(const FVector& InVector, const FVector& InVector_Attack, float InDistance)
 {
 	//MulticastRPC_SetTargetVectorAndDoSomething(InVector);
 	
-	TargetVector = InVector;
+	TargetVector_Move = InVector;
+	TargetVector_Attack = InVector_Attack;
 	TargetDistance = InDistance;
 
 	DoSomethingWithTargetVector();

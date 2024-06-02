@@ -167,7 +167,8 @@ void UGA_CharacterAction::CalculateTargetVector()
 
 		MyCharacaterMovementComponent = MyCharacter->GetCharacterMovement();
 
-		TargetVector = MyCharacter->GetActorForwardVector();
+		TargetVector_Move = MyCharacter->GetActorForwardVector();
+		TargetVector_Attack = FVector::ZeroVector;
 	}
 
 	// 액션 수행 전마다 임시 타겟팅 업데이트
@@ -178,37 +179,43 @@ void UGA_CharacterAction::CalculateTargetVector()
 
 	bool bIsFinalMoveToTargetAction = false;
 	float TempDistance = -1.0f;
-	FVector TempVector = FVector::ZeroVector;
+	FVector TempVector = MyCharacter->GetActorForwardVector();
 
 	IUSAAttackableInterface* AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
 	IUSATargetableInterface* TargetableActorInterface = nullptr;
 
+	//
 	
-	if (bIsMoveToTargetAction)
+	if (AttackableInterface != nullptr
+		&& AttackableInterface->GetIsTargeting() == true)
 	{
-		if (AttackableInterface != nullptr
-			&& AttackableInterface->GetIsTargeting() == true)
+		TargetableActorInterface = AttackableInterface->GetTargetableInterface();
+
+		FVector TargetableActorLocation = AttackableInterface->GetTargetableActorLocation();
+
+		TargetVector_Attack = (TargetableActorLocation - MyCharacter->GetActorLocation());
+		TargetVector_Attack.Normalize();
+
+		//
+
+		if (IsValid(MyCharacaterMovementComponent) == true
+			&& MyCharacaterMovementComponent->IsFalling() == false)
 		{
-			TargetableActorInterface = AttackableInterface->GetTargetableInterface();
-
-			FVector TargetableActorLocation = AttackableInterface->GetTargetableActorLocation();
-
-			if (IsValid(MyCharacaterMovementComponent) == true
-				&& MyCharacaterMovementComponent->IsFalling() == false)
-			{
-				TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
-			}
-
-			TempVector = (TargetableActorLocation - MyCharacter->GetActorLocation());
-			TempVector.Normalize();
-
-			TempDistance = (TargetableActorLocation - MyCharacter->GetActorLocation()).Length();
-
-			bIsFinalMoveToTargetAction = (TempDistance <= MoveToTargetRange);
+			TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
 		}
-	}
 
-	if (bIsFinalMoveToTargetAction == true)
+		TempVector = (TargetableActorLocation - MyCharacter->GetActorLocation());
+		TempVector.Normalize();
+
+		TempDistance = (TargetableActorLocation - MyCharacter->GetActorLocation()).Length();
+
+		bIsFinalMoveToTargetAction = (TempDistance <= MoveToTargetRange);
+
+	}
+	
+	//
+
+	if (bIsMoveToTargetAction == true && bIsFinalMoveToTargetAction == true)
 	{
 		float TargetRadius = 0.0f;
 		if (TargetableActorInterface != nullptr)
@@ -223,8 +230,7 @@ void UGA_CharacterAction::CalculateTargetVector()
 		}
 
 		TargetDistance = FMath::Max(TempDistance - TargetRadius - SourceRadius - MoveToTargetGap, 0.0f);
-		TargetVector = TempVector;
-
+		TargetVector_Move = TempVector;
 	}
 	else
 	{
@@ -237,16 +243,19 @@ void UGA_CharacterAction::CalculateTargetVector()
 			if (MyUSACharacter != nullptr
 				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
 			{
-				TargetVector = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+				TargetVector_Move = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+				//TargetVector_Attack = TargetVector_Move;
 			}
 			else if (MyCharacter != nullptr
 				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
 			{
-				TargetVector = MyCharacter->GetPendingMovementInputVector();
+				TargetVector_Move = MyCharacter->GetPendingMovementInputVector();
+				//TargetVector_Attack = TargetVector_Move;
 			}
 			else
 			{
-				TargetVector = MyCharacter->GetActorForwardVector();
+				TargetVector_Move = MyCharacter->GetActorForwardVector();
+				//TargetVector_Attack = TargetVector_Move;
 			}
 
 			break;
@@ -255,16 +264,25 @@ void UGA_CharacterAction::CalculateTargetVector()
 			if (MyUSACharacter != nullptr
 				&& MyUSACharacter->GetUSACharacterDirection_Target().SquaredLength() > SMALL_NUMBER)
 			{
-				TargetVector = MyUSACharacter->GetUSACharacterDirection_Target();
+				TargetVector_Move = MyUSACharacter->GetUSACharacterDirection_Target();
+				//TargetVector_Attack = TempVector;
+			}
+			else if (MyUSACharacter != nullptr
+				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
+			{
+				TargetVector_Move = MyUSACharacter->GetUSACharacterDirection_InputMovement();
+				//TargetVector_Attack = TargetVector_Move;
 			}
 			else if (MyCharacter != nullptr
 				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
 			{
-				TargetVector = MyCharacter->GetPendingMovementInputVector();
+				TargetVector_Move = MyCharacter->GetPendingMovementInputVector();
+				//TargetVector_Attack = TargetVector_Move;
 			}
 			else
 			{
-				TargetVector = MyCharacter->GetActorForwardVector();
+				TargetVector_Move = MyCharacter->GetActorForwardVector();
+				//TargetVector_Attack = TargetVector_Move;
 			}
 
 			break;
@@ -275,7 +293,7 @@ void UGA_CharacterAction::CalculateTargetVector()
 
 			break;
 		}
-	}
+	}	
 }
 
 void UGA_CharacterAction::DoSomethingWithTargetVector()
@@ -305,7 +323,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
-		FVector	ForwardDirection = TargetVector;
+		FVector	ForwardDirection = TargetVector_Move;
 		ForwardDirection.Z = 0.0f;
 		ForwardDirection.Normalize();
 
@@ -376,7 +394,7 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("B"));
 			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("%f %f %f"), EndMoveDistance, TargetRadius, SourceRadius);
 
-			EndLocation = MyCharacter->GetActorLocation() + TargetVector * TargetDistance;
+			EndLocation = MyCharacter->GetActorLocation() + TargetVector_Move * TargetDistance;
 
 			AfterVelocity = (ForwardDirection * MoveToTargetAfterVelocity.X)
 				+ (RightDirection * MoveToTargetAfterVelocity.Y)
@@ -507,11 +525,11 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		|| UKismetSystemLibrary::IsStandalone(GetWorld()))
 	{
 		// 스폰 설정
-		UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData);
+		UAT_SpawnActors* AbiltiyTaskSpawn = UAT_SpawnActors::GetNewAbilityTask_SpawnActors(this, SpawnActorData, TargetVector_Attack);
 		AbiltiyTaskSpawn->ReadyForActivation();
 
 		// 공격 설정
-		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData);
+		UAT_TraceAttack* AbiltiyTaskAttack = UAT_TraceAttack::GetNewAbilityTask_TraceAttack(this, AttackTraceData, TargetVector_Attack);
 		AbiltiyTaskAttack->ReadyForActivation();
 	}
 

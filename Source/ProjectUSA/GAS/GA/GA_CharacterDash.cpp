@@ -70,11 +70,11 @@ void UGA_CharacterDash::CalculateTargetVector()
 
 		if (DashForwardDirection.Length() > SMALL_NUMBER)
 		{
-			TargetVector = DashForwardDirection;
+			TargetVector_Move = DashForwardDirection;
 		}
 		else
 		{
-			TargetVector = MyCharacter->GetActorForwardVector();
+			TargetVector_Move = MyCharacter->GetActorForwardVector();
 		}
 	}
 }
@@ -94,7 +94,7 @@ void UGA_CharacterDash::DoSomethingWithTargetVector()
 		MyCharacter = Cast <ACharacter>(CurrentActorInfo->AvatarActor);
 	}
 
-	FVector	ForwardDirection = TargetVector;
+	FVector	ForwardDirection = TargetVector_Move;
 	ForwardDirection.Normalize();
 
 	FVector	RightDirection = FVector::CrossProduct(FVector::UpVector, ForwardDirection);

@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+
 #include "Debug/DebugDrawComponent.h"
 
 #include "Engine/DamageEvents.h"
@@ -15,6 +16,8 @@
 #include "AbilitySystemComponent.h"
 
 #include "Interface/USAAttackableInterface.h"
+#include "Interface/USADamageableInterface.h"
+
 
 #include "Component/USACharacterAttackComponent.h"
 
@@ -24,11 +27,13 @@ UAT_TraceAttack::UAT_TraceAttack()
 }
 
 
-UAT_TraceAttack* UAT_TraceAttack::GetNewAbilityTask_TraceAttack(UGameplayAbility* OwningAbility, const FAttackTraceInfos& InAttackTraceData)
+UAT_TraceAttack* UAT_TraceAttack::GetNewAbilityTask_TraceAttack
+(UGameplayAbility* OwningAbility, const FAttackTraceInfos& InAttackTraceData, const FVector& InTargetVector)
 {
 	UAT_TraceAttack* MyObj = NewAbilityTask<UAT_TraceAttack>(OwningAbility);
 
 	MyObj->AttackTraceData = &InAttackTraceData;
+	MyObj->TargetVector = InTargetVector;
 
 	MyObj->bIsCancelable = true;
 
@@ -89,9 +94,9 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 		FVector FinalAttackDirectionUp = FVector::UpVector;
 
 		if (AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].bIsDirectToTarget == true
-			&& AttackableInterface != nullptr)
+			&& TargetVector.Length() > SMALL_NUMBER)
 		{
-			FinalAttackDirection = AttackableInterface->GetTargetingDirection();
+			FinalAttackDirection = TargetVector;
 			FinalAttackDirectionRight = FVector::CrossProduct(FVector::UpVector, FinalAttackDirection);
 			FinalAttackDirectionUp = FVector::CrossProduct(FinalAttackDirection, FinalAttackDirectionRight);
 		}
@@ -149,21 +154,28 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 				true,
 				FLinearColor::Red,
 				FLinearColor::Green,
-				0.1f);
+				0.5f);
 
 			if (HitResult.bBlockingHit == true)
 			{
-				ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+				//ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
 
-				if (OutCharacter == nullptr)
+				//if (OutCharacter == nullptr)
+				//{
+				//	continue;
+				//}
+
+				IUSADamageableInterface* USADamageableInterface = Cast<IUSADamageableInterface>(HitResult.GetActor());
+
+				if (USADamageableInterface == nullptr)
 				{
-					continue;
+					return;
 				}
 
 				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
 
-				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
 		}
 		// 멀티 트래이스
@@ -183,13 +195,20 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 				true,
 				FLinearColor::Red,
 				FLinearColor::Green,
-				0.1f);
+				0.5f);
 
 			for (FHitResult HitResultOne : HitResults)
 			{
-				ACharacter* OutCharacter = Cast <ACharacter>(HitResultOne.GetActor());
+				//ACharacter* OutCharacter = Cast <ACharacter>(HitResultOne.GetActor());
 
-				if (OutCharacter == nullptr)
+				//if (OutCharacter == nullptr)
+				//{
+				//	continue;
+				//}
+
+				IUSADamageableInterface* USADamageableInterface = Cast<IUSADamageableInterface>(HitResultOne.GetActor());
+
+				if (USADamageableInterface == nullptr)
 				{
 					continue;
 				}
@@ -197,7 +216,7 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResultOne, AttackDirection, AttackDamageType);
 
-				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
 		}
 

@@ -21,7 +21,8 @@ class PROJECTUSA_API UAT_SpawnActors : public UUSAAbilityTask
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_SpawnActors* GetNewAbilityTask_SpawnActors(UGameplayAbility* OwningAbility, const FSpawnActorData& InSpawnActorData);
+	static UAT_SpawnActors* GetNewAbilityTask_SpawnActors
+	(UGameplayAbility* OwningAbility, const FSpawnActorData& InSpawnActorData, const FVector& InTargetVector);
 
 	virtual void Activate() override;
 
@@ -34,4 +35,7 @@ public:
 
 	float PrevSpawnActorTime = 0.0f;
 	int CurrentSpwanActorIndex = 0;
+
+	// 방향
+	FVector TargetVector;
 };

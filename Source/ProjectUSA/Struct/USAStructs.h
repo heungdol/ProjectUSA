@@ -153,6 +153,9 @@ struct FSpawnActorDetail
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Detail")
 	float SpawnTime = -1.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn Actor Detail")
+	bool bIsDirectToTarget = false;
+
 };
 
 

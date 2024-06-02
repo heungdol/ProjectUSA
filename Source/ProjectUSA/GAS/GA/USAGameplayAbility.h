@@ -54,7 +54,8 @@ public:
 	virtual void DoSomethingWithTargetVector();
 	virtual bool GetIsAbleToActivateCondition();
 
-	FORCEINLINE FVector GetTargetVector() { return TargetVector; }
+	FORCEINLINE FVector GetTargetVector_Move() { return TargetVector_Move; }
+	FORCEINLINE FVector GetTargetVector_Attack() { return TargetVector_Attack; }
 	FORCEINLINE float GetTargetDistance() { return TargetDistance; }
 
 	FUSAGASimpleDelegate OnActivateAbility;
@@ -73,7 +74,8 @@ private:
 	//void ActivateAbilityWithTargetData_ClientServer(const FGameplayAbilityTargetDataHandle& TargetDataHandle, FGameplayTag ApplicationTag);
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPC_SetTargetVectorAndDoSomething(const FVector& InVector, float InDistance = -1.0f);
+	void ServerRPC_SetTargetVectorAndDoSomething
+	(const FVector& InVector, const FVector& InVector_Attack, float InDistance = -1.0f);
 	
 	//UFUNCTION(NetMulticast, Reliable)
 	//void MulticastRPC_SetTargetVectorAndDoSomething(const FVector& InVector);
@@ -81,7 +83,10 @@ private:
 
 protected:
 	UPROPERTY()
-	FVector TargetVector;
+	FVector TargetVector_Move;
+
+	UPROPERTY()
+	FVector TargetVector_Attack;
 
 	UPROPERTY()
 	float TargetDistance = -1.0f;
