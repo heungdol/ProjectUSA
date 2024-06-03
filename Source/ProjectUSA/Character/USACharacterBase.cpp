@@ -154,7 +154,7 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnWeaponDetectBoxOverlapBegin);
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AUSACharacterBase::OnPickableDetectBoxOverlapBegin);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
@@ -531,12 +531,12 @@ void AUSACharacterBase::DoTarget(const struct FInputActionValue& Value)
 	// ...
 }
 
-void AUSACharacterBase::DoDrop(const FInputActionValue& Value)
-{
-	// ...
-}
+//void AUSACharacterBase::DoDrop(const FInputActionValue& Value)
+//{
+//	// ...
+//}
 
-void AUSACharacterBase::OnWeaponDetectBoxOverlapBegin
+void AUSACharacterBase::OnPickableDetectBoxOverlapBegin
 (UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// ...
@@ -1443,7 +1443,7 @@ bool AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeapon
 	return true;
 }
 
-void AUSACharacterBase::PickupWeapon(AUSAWeaponBase* InWeapon)
+void AUSACharacterBase::PickUpSomething(IUSAPickableInterface* InPick)
 {
 	// 서버에서만 수행하도록
 	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
@@ -1452,47 +1452,14 @@ void AUSACharacterBase::PickupWeapon(AUSAWeaponBase* InWeapon)
 		return;
 	}
 
-	if (IsValid (ASC) == false)
+	if (InPick == nullptr)
 	{
 		return;
 	}
 
-	if (IsValid (InWeapon) == false)
-	{
-		return;
-	}
-
-	if (InWeapon->GetWeaponOwner() != nullptr)
-	{
-		return;
-	}
-
-	if (IsValid(GetController()) == false)
-	{
-		return;
-	}
-
-	//if (GetController()->GetPlayerState)
-	//{
-	//	return;
-	//}
-
-	EUSAWeaponType InWeaponType = InWeapon->GetWeaponType();
-
-	if ((uint8)InWeaponType < 0 || CurrentEquipedWeapons.Num() <= (uint8)InWeaponType)
-	{
-		return;
-	}
-
-	if (CurrentEquipedWeapons[(uint8)InWeaponType] != nullptr)
-	{
-		return;
-	}
-
-	// ASC 새 갱신
-	InWeapon->SetWeaponOwner(this);
-
+	InPick->PickUpByUSACharacter(ASC, this);
 }
+
 
 void AUSACharacterBase::DropWeapons(bool bIsAbsolute)
 {
@@ -1525,7 +1492,10 @@ void AUSACharacterBase::ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList_Imp
 		}
 
 		AUSAWeaponBase* StartWeapon = GetWorld()->SpawnActor<AUSAWeaponBase>(StartWeaponClass, GetActorTransform());
-		PickupWeapon(StartWeapon);
+		//PickupWeapon(StartWeapon);
+
+		IUSAPickableInterface* StartWeaponInterface = Cast<IUSAPickableInterface>(StartWeapon);
+		PickUpSomething(StartWeaponInterface);
 	}
 }
 

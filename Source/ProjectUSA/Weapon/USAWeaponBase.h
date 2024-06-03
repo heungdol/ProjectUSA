@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "Interface/USAPickableInterface.h"
+
 #include "USAWeaponBase.generated.h"
 
 // ========================================================================
@@ -19,7 +22,7 @@ enum class EUSAWeaponType : uint8
 // ========================================================================
 
 UCLASS()
-class PROJECTUSA_API AUSAWeaponBase : public AActor
+class PROJECTUSA_API AUSAWeaponBase : public AActor, public IUSAPickableInterface
 {
 	GENERATED_BODY()
 	
@@ -143,6 +146,12 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	//
+
+	virtual void PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
+
+	//virtual void DropDownFromUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 
 	//
 

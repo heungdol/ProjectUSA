@@ -133,7 +133,41 @@ void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 
 }
 
+void AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
+{
+	if (IsValid(InASC) == false)
+	{
+		return;
+	}
 
+	if (IsValid(InCharacter) == false)
+	{
+		return;
+	}
+
+	if (GetWeaponOwner() != nullptr)
+	{
+		return;
+	}
+
+	if ((uint8)WeaponType < 0 || InCharacter->CurrentEquipedWeapons.Num() <= (uint8)WeaponType)
+	{
+		return;
+	}
+
+	if (InCharacter->CurrentEquipedWeapons[(uint8)WeaponType] != nullptr)
+	{
+		return;
+	}
+
+	// ASC 새 갱신
+	SetWeaponOwner(InCharacter);
+}
+
+//void AUSAWeaponBase::DropDownFromUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
+//{
+//
+//}
 
 
 bool AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharacter)

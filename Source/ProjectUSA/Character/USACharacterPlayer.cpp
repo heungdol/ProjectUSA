@@ -190,14 +190,14 @@ void AUSACharacterPlayer::OnRep_ASC()
 
 //
 
-void AUSACharacterPlayer::DoDrop(const FInputActionValue& Value)
-{
-	Super::DoDrop(Value);
+//void AUSACharacterPlayer::DoDrop(const FInputActionValue& Value)
+//{
+//	Super::DoDrop(Value);
+//
+//	DropWeapons();
+//}
 
-	DropWeapons();
-}
-
-void AUSACharacterPlayer::OnWeaponDetectBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AUSACharacterPlayer::OnPickableDetectBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
 		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
@@ -210,14 +210,12 @@ void AUSACharacterPlayer::OnWeaponDetectBoxOverlapBegin(UPrimitiveComponent* Ove
 		return;
 	}
 
-	AUSAWeaponBase* InWeapon = Cast<AUSAWeaponBase>(OtherActor);
 
-	if (InWeapon == nullptr)
+	IUSAPickableInterface* PickableInterface = Cast<IUSAPickableInterface>(OtherActor);
+	if (PickableInterface != nullptr)
 	{
-		return;
+		PickUpSomething(PickableInterface);
 	}
-
-	PickupWeapon(InWeapon);
 }
 
 //

@@ -23,8 +23,13 @@ public:
 
 	virtual void OnRep_bIsASCInitialized() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Non Player Info")
+	float LifeSpanAfterDead = 5.0f;
+
 protected:
 	virtual void SetupGAS() override;
 
 	virtual void UpdateCurrentTargetableActor() override;
+
+	virtual void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount) override;
 };

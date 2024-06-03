@@ -61,3 +61,17 @@ void AUSACharacterNonPlayer::UpdateCurrentTargetableActor()
 	// ... 
 
 }
+
+void AUSACharacterNonPlayer::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	Super::OnGameplayTagCallback_Dead(CallbackTag, NewCount);
+
+	if (NewCount > 0)
+	{
+		SetLifeSpan(LifeSpanAfterDead);
+	}
+	else
+	{
+
+	}
+}

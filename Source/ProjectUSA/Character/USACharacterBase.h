@@ -12,6 +12,7 @@
 #include "Interface/USATargetableInterface.h"
 #include "Interface/USAAttackableInterface.h"
 #include "Interface/USADamageableInterface.h"
+#include "Interface/USAPickableInterface.h"
 
 // 어트리뷰트 접근을 위한 헤더
 #include "GameplayEffectTypes.h"
@@ -349,11 +350,11 @@ protected:
 	virtual void MoveEnd(const struct FInputActionValue& Value);
 	virtual void Look(const struct FInputActionValue& Value);
 	virtual void DoTarget(const struct FInputActionValue& Value);
-	virtual void DoDrop(const struct FInputActionValue& Value);
+	//virtual void DoDrop(const struct FInputActionValue& Value);
 
 
 	UFUNCTION()
-	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void OnPickableDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	//
 
@@ -378,7 +379,9 @@ protected:
 
 	//
 
-	void PickupWeapon(class AUSAWeaponBase* InWeapon);
+	//void PickupWeapon(class AUSAWeaponBase* InWeapon);
+
+	void PickUpSomething(IUSAPickableInterface* InPick);
 
 	UPROPERTY (VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
 	bool bIsPickable = false;
@@ -547,7 +550,7 @@ protected:
 	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount);
+	virtual void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Action(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
@@ -557,4 +560,7 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override; 
 
+	//
+
+	friend class AUSAWeaponBase;
 };

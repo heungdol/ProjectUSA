@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Character/USACharacterBase.h"
 
+#include "Interface/USAPickableInterface.h"
+
 #include "USACharacterPlayer.generated.h"
 
 /**
@@ -89,7 +91,7 @@ public:
 	//void K2_OnFinishPlacedCamera();
 
 
-	virtual void DoDrop(const struct FInputActionValue& Value) override;
+	//virtual void DoDrop(const struct FInputActionValue& Value) override;
 
 	//
 
@@ -107,7 +109,7 @@ protected:
 
 	void SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection, TObjectPtr<class AActor>& InOutTargetActorPointer);
 
-	virtual void OnWeaponDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	virtual void OnPickableDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
 
 };
