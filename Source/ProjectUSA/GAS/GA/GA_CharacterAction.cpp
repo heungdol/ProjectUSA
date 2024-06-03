@@ -210,11 +210,12 @@ void UGA_CharacterAction::CalculateTargetVector()
 		TempDistance = (TargetableActorLocation - MyCharacter->GetActorLocation()).Length();
 
 		bIsFinalMoveToTargetAction = (TempDistance <= MoveToTargetRange);
-
 	}
+
 	
 	//
 
+	// 스냅 이동
 	if (bIsMoveToTargetAction == true && bIsFinalMoveToTargetAction == true)
 	{
 		float TargetRadius = 0.0f;
@@ -232,6 +233,17 @@ void UGA_CharacterAction::CalculateTargetVector()
 		TargetDistance = FMath::Max(TempDistance - TargetRadius - SourceRadius - MoveToTargetGap, 0.0f);
 		TargetVector_Move = TempVector;
 	}
+	// 커스텀 이동
+	else if (MoveType == ECharacterActionMoveType::Custom)
+	{
+		FVector CustomLocation = MyUSACharacter->GetActionCustomLocation();
+
+		TargetVector_Move = (CustomLocation - MyCharacter->GetActorLocation());
+		TargetVector_Move.Normalize();
+
+		TempDistance = (CustomLocation - MyCharacter->GetActorLocation()).Length();
+	}
+	// 그 외
 	else
 	{
 		TargetDistance = -1.0f;
@@ -389,7 +401,8 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 		//}
 
 
-		if (TargetDistance > -SMALL_NUMBER)
+		if (TargetDistance > -SMALL_NUMBER
+			&& MoveType != ECharacterActionMoveType::Custom)
 		{
 			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("B"));
 			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("%f %f %f"), EndMoveDistance, TargetRadius, SourceRadius);
@@ -445,6 +458,18 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 				AbilityTask_LaunchCharacter->ReadyForActivation();
 
+				break;
+			case ECharacterActionMoveType::Custom:
+				EndLocation = MyCharacter->GetActorLocation() + TargetVector_Move * TargetDistance;
+
+				AfterVelocity = (ForwardDirection * CustomMoveAfterVelocity.X)
+					+ (RightDirection * CustomMoveAfterVelocity.Y)
+					+ (FVector::UpVector * CustomMoveAfterVelocity.Z);
+
+				AbilityTask_MoveToLocation = UAT_MoveToLocationByVelocity::GetNewAbilityTask_MoveToLocationByVelocity
+				(this, TEXT("CustomMove"), EndLocation, AfterVelocity, CustomMoveDuration, CustomMoveCurveFloat, CustomMoveCurveVector);
+
+				AbilityTask_MoveToLocation->ReadyForActivation();
 				break;
 
 			case ECharacterActionMoveType::None:

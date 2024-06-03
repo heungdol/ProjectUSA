@@ -1754,15 +1754,39 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	TSubclassOf<UDamageType> DamageType;
 
 	DamageEvent.GetBestHitInfo(nullptr, nullptr, HitResult, AttackDirection);
+	DamageType = DamageEvent.DamageTypeClass;
 
-	NewDirection = AttackDirection * -1.0f;
-	NewDirection.Z = 0.0f;
-	NewDirection.Normalize();
+	// 공격 타입 판단
+
+	// 폭파
+	if (IsValid(CustomUSADamageType_Explosion) == true
+		&& CustomUSADamageType_Explosion == DamageType)
+	{
+		NewDirection = ((HitResult.TraceStart + HitResult.TraceEnd) * 0.5f) - GetActorLocation();
+		NewDirection.Z = 0.0f;
+		NewDirection.Normalize();
+	}
+	// 그랩
+	else if (IsValid(CustomUSADamageType_Grab) == true
+		&& CustomUSADamageType_Grab == DamageType)
+	{
+		// 커스텀 로케이션
+		ActionCustomLocation = HitResult.TraceStart;
+
+		NewDirection = AttackDirection * -1.0f;
+		NewDirection.Z = 0.0f;
+		NewDirection.Normalize();
+	}
+	// 그 외
+	else
+	{
+		NewDirection = AttackDirection * -1.0f;
+		NewDirection.Z = 0.0f;
+		NewDirection.Normalize();
+	}
 
 	//SetActorRotation(NewDirection.Rotation());
 	//UpdateComponentTransforms();
-
-	DamageType = DamageEvent.DamageTypeClass;
 
 	// 죽음
 	if (bIsJustDead)

@@ -130,6 +130,20 @@ public:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	FVector CustomMoveAfterVelocity = FVector::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	float CustomMoveDuration = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	UCurveFloat* CustomMoveCurveFloat;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
+	class UCurveVector* CustomMoveCurveVector;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Move")
 	FCharacterMovementWalkInfo WalkMovementInfo;
 
 	//

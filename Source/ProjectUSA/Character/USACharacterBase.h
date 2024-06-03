@@ -473,6 +473,19 @@ public:
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TSubclassOf<class UDamageType> CustomUSADamageType_Explosion;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TSubclassOf<class UDamageType> CustomUSADamageType_Grab;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
+	FVector ActionCustomLocation;
+
+	FORCEINLINE FVector GetActionCustomLocation() {return ActionCustomLocation;}
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayAbilities_ETC;
 
 	
@@ -489,14 +502,6 @@ public:
 
 	//UPROPERTY()
 	TMap<FGameplayTag, FDelegateHandle> RegisteredGameplayTagEvents;
-
-	//bool bIsAction;
-
-	//bool bIsSliding;
-
-	//bool bIsFalling;
-
-	//bool bIsWalking;
 
 public:
 	void TryGameplayAbilityByGameplayTag(FName GameplayTag);

@@ -43,7 +43,10 @@ protected:
 	bool bIsAttackableBySelf = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Attack Actor Info")
-	bool bIsSingleTrace = false;
+	bool bIsDetectingStaticMesh = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Attack Actor Info")
+	bool bIsUsingSingleTrace = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
 	TObjectPtr<AActor> OriginActor;
@@ -56,6 +59,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
 	bool bIsInitialized = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
+	bool bIsHittingActor = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
+	bool bIsHittingStaticMeshActor = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
 	FVector PrevLocation;

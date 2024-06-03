@@ -37,6 +37,7 @@ enum class ECharacterActionMoveType : uint8
 	Move UMETA(DisplayName = "Move"),
 	Walk UMETA(DisplayName = "Walk"),
 	Launch UMETA(DisplayName = "Launch"),
+	Custom UMETA(DisplayName = "Custom"),
 	//MoveToTarget UMETA(DisplayName = "MoveToTarget"), -> 우선 순위가 높으므로 변수들로 따로 빼 놓음
 };
 
