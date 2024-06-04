@@ -78,8 +78,8 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		AbilityTask0->ReadyForActivation();
 
 		UAT_PlayAnimMontages* AbilityTaskMontage = UAT_PlayAnimMontages::GetNewAbilityTask_PlayAnimMontages(this, StompAnimMontageData);
-		OnEndAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
-		OnCancelAbility.AddUObject(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+		OnEndAbility.AddDynamic(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
+		OnCancelAbility.AddDynamic(AbilityTaskMontage, &UAT_PlayAnimMontages::SimpleEndAbilityTask);
 
 		AbilityTaskMontage->ReadyForActivation();
 

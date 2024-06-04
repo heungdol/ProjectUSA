@@ -44,7 +44,10 @@
 
 #include "Weapon/USAWeaponBase.h"
 
+#include "Item/USAItemBase.h"
+
 #include "Tag/USAGameplayTags.h"
+#include "GameInstance/USAGameInstance.h"
 #include "ProjectUSA.h"
 
 
@@ -66,34 +69,6 @@
 //		GetCapsuleComponent()->SetGenerateOverlapEvents(InActive);
 //	}
 //}
-
-void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> PrevWeapons)
-{
-	for (int i = 0; i < PrevWeapons.Num() || i < CurrentEquipedWeapons.Num(); i++)
-	{
-		if (PrevWeapons[i] != CurrentEquipedWeapons[i])
-		{
-			if (IsValid(PrevWeapons[i]) == true && IsValid(CurrentEquipedWeapons[i]) == false)
-			{
-				FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
-				PrevWeapons[i]->DetachFromActor(DetachmentTransformRules);
-
-				K2_OnUSACurrentWeaponChanged(PrevWeapons[i]->GetWeaponType(), nullptr);
-			
-				PrevWeapons[i]->SetWeaponPhysics(true);
-			}
-
-			if (IsValid(PrevWeapons[i]) == false && IsValid(CurrentEquipedWeapons[i]) == true)
-			{
-				AttachWeaponToHolderSocket(CurrentEquipedWeapons[i]);
-
-				K2_OnUSACurrentWeaponChanged(CurrentEquipedWeapons[i]->GetWeaponType(), CurrentEquipedWeapons[i]);
-
-				CurrentEquipedWeapons[i]->SetWeaponPhysics(false);
-			}
-		}
-	}
-}
 
 //void AUSACharacterBase::AddStartWeapon(AUSAWeaponBase* InWeapon)
 //{
@@ -215,6 +190,16 @@ void AUSACharacterBase::PostInitializeComponents()
 	//{
 	//	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 	//}
+
+	UUSAGameInstance* USAGameInstance = Cast<UUSAGameInstance>(GetGameInstance());
+	if (IsValid(USAGameInstance) == true)
+	{
+		USADamageType_Explosion = USAGameInstance->GetUSADamageType_Explosion();
+		USADamageType_Grab = USAGameInstance->GetUSADamageType_Grab();
+		
+		USAItemOrder = USAGameInstance->GetUSAItemOrder();
+		CurrentUSAItemOrderIndex = 0;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -526,15 +511,40 @@ void AUSACharacterBase::StartCameraShake_HitSuccess(TSubclassOf<class UDamageTyp
 	// ...
 }
 
-void AUSACharacterBase::DoTarget(const struct FInputActionValue& Value)
+void AUSACharacterBase::LookTarget(const struct FInputActionValue& Value)
 {
 	// ...
 }
 
-//void AUSACharacterBase::DoDrop(const FInputActionValue& Value)
-//{
-//	// ...
-//}
+//
+
+void AUSACharacterBase::PrevItem(const FInputActionValue& Value)
+{
+	if (bIsUsingItem == true)
+	{
+		return;
+	}
+
+	CurrentUSAItemOrderIndex += USAItemOrder.Num() - 1;
+	CurrentUSAItemOrderIndex %= USAItemOrder.Num();
+
+	K2_OnCurrentItemOrderIndexChanged(CurrentUSAItemOrderIndex);
+}
+
+void AUSACharacterBase::NextItem(const FInputActionValue& Value)
+{
+	if (bIsUsingItem == true)
+	{
+		return;
+	}
+
+	CurrentUSAItemOrderIndex += 1;
+	CurrentUSAItemOrderIndex %= USAItemOrder.Num();
+
+	K2_OnCurrentItemOrderIndexChanged(CurrentUSAItemOrderIndex);
+}
+
+//
 
 void AUSACharacterBase::OnPickableDetectBoxOverlapBegin
 (UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -623,9 +633,13 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AUSACharacterBase::MoveEnd);
 
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
+		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::LookTarget);
 
-		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoTarget);
+		EnhancedInputComponent->BindAction(PrevItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::PrevItem);
+		EnhancedInputComponent->BindAction(NextItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::NextItem);
 
+
+		//EnhancedInputComponent->BindAction(ItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::UseItem);
 		//EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoDrop);
 
 		for (const auto& GameplayActiveAbility : GameplayAbilities_Active)
@@ -773,15 +787,15 @@ void AUSACharacterBase::Look(const FInputActionValue& Value)
 
 void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 {
-	if (bIsCurrentInputPressedIDMap.Contains(InputID) == false)
-	{
-		bIsCurrentInputPressedIDMap.Add({ InputID , false });
-	}
+	//if (bIsCurrentInputPressedIDMap.Contains(InputID) == false)
+	//{
+	//	bIsCurrentInputPressedIDMap.Add({ InputID , false });
+	//}
 
-	if (bIsCurrentInputPressedIDMap[InputID] == true)
-	{
-		return;
-	}
+	//if (bIsCurrentInputPressedIDMap[InputID] == true)
+	//{
+	//	return;
+	//}
 
 	if (ASC == nullptr)
 	{
@@ -806,20 +820,20 @@ void AUSACharacterBase::InputPressGameplayAbilityByInputID(int32 InputID)
 		ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 	}
 
-	bIsCurrentInputPressedIDMap[InputID] = true;
+	//bIsCurrentInputPressedIDMap[InputID] = true;
 }
 
 void AUSACharacterBase::InputReleaseGameplayAbilityByInputID(int32 InputID)
 {
-	if (bIsCurrentInputPressedIDMap.Contains(InputID) == false)
-	{
-		bIsCurrentInputPressedIDMap.Add({ InputID , true });
-	}
+	//if (bIsCurrentInputPressedIDMap.Contains(InputID) == false)
+	//{
+	//	bIsCurrentInputPressedIDMap.Add({ InputID , true });
+	//}
 
-	if (bIsCurrentInputPressedIDMap[InputID] == false)
-	{
-		return;
-	}
+	//if (bIsCurrentInputPressedIDMap[InputID] == false)
+	//{
+	//	return;
+	//}
 
 	if (ASC == nullptr)
 	{
@@ -838,128 +852,128 @@ void AUSACharacterBase::InputReleaseGameplayAbilityByInputID(int32 InputID)
 		ASC->AbilitySpecInputReleased(*GameplayAbilitySpec);
 	}
 
-	bIsCurrentInputPressedIDMap[InputID] = false;
+	//bIsCurrentInputPressedIDMap[InputID] = false;
 }
+//
+//void AUSACharacterBase::ActiveGameplayTagInput_Pressed(UInputAction* InInput)
+//{
+//	if (bIsCurrentInputPressedMap.Contains(InInput) == false)
+//	{
+//		bIsCurrentInputPressedMap.Add({ InInput, false });
+//	}
+//
+//	if (bIsCurrentInputPressedMap[InInput] == true)
+//	{
+//		return;
+//	}
+//	
+//	if (ASC == nullptr)
+//	{
+//		return;
+//	}
+//
+//	if (GameplayTagInputInfos.Contains(InInput) == false)
+//	{
+//		return;
+//	}
+//
+//	USA_LOG(LogTemp, Log, TEXT("Input Pressed "));
+//
+//	//ASC->AddLooseGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding);
+//	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, true);
+//	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding, true);
+//	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
+//
+//	if (CurrentInputTimerHandleMap.Contains(InInput) == false)
+//	{
+//		CurrentInputTimerHandleMap.Add({ InInput , FTimerHandle()});
+//	}
+//	else
+//	{
+//		CurrentInputTimerHandleMap[InInput].Invalidate();
+//	}
+//
+//	GetWorld()->GetTimerManager().SetTimer(CurrentInputTimerHandleMap[InInput], FTimerDelegate::CreateLambda([=]()
+//		{
+//			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
+//			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
+//		}
+//	), CurrentInputMaintainTime, false);
+//
+//	bIsCurrentInputPressedMap[InInput] = true;
+//}
+//
+//void AUSACharacterBase::ActiveGameplayTagInput_Released(UInputAction* InInput)
+//{
+//	if (bIsCurrentInputPressedMap.Contains(InInput) == false)
+//	{
+//		bIsCurrentInputPressedMap.Add({ InInput, true });
+//	}
+//
+//	if (bIsCurrentInputPressedMap[InInput] == false)
+//	{
+//		return;
+//	}
+//
+//	if (ASC == nullptr)
+//	{
+//		return;
+//	}
+//
+//	if (GameplayTagInputInfos.Contains(InInput) == false)
+//	{
+//		return;
+//	}
+//
+//	USA_LOG(LogTemp, Log, TEXT("Input Released"));
+//
+//	//ASC->RemoveLooseGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding);
+//	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
+//	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding, false);
+//	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, true);
+//
+//	if (CurrentInputTimerHandleMap.Contains(InInput) == false)
+//	{
+//		CurrentInputTimerHandleMap.Add({ InInput , FTimerHandle() });
+//	}
+//	else
+//	{
+//		CurrentInputTimerHandleMap[InInput].Invalidate();
+//	}
+//
+//	GetWorld()->GetTimerManager().SetTimer(CurrentInputTimerHandleMap[InInput], FTimerDelegate::CreateLambda([=]()
+//		{
+//			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
+//			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
+//		}
+//	), CurrentInputMaintainTime, false);
+//
+//	bIsCurrentInputPressedMap[InInput] = false;
+//}
 
-void AUSACharacterBase::ActiveGameplayTagInput_Pressed(UInputAction* InInput)
-{
-	if (bIsCurrentInputPressedMap.Contains(InInput) == false)
-	{
-		bIsCurrentInputPressedMap.Add({ InInput, false });
-	}
-
-	if (bIsCurrentInputPressedMap[InInput] == true)
-	{
-		return;
-	}
-	
-	if (ASC == nullptr)
-	{
-		return;
-	}
-
-	if (GameplayTagInputInfos.Contains(InInput) == false)
-	{
-		return;
-	}
-
-	USA_LOG(LogTemp, Log, TEXT("Input Pressed "));
-
-	//ASC->AddLooseGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding);
-	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, true);
-	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding, true);
-	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
-
-	if (CurrentInputTimerHandleMap.Contains(InInput) == false)
-	{
-		CurrentInputTimerHandleMap.Add({ InInput , FTimerHandle()});
-	}
-	else
-	{
-		CurrentInputTimerHandleMap[InInput].Invalidate();
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(CurrentInputTimerHandleMap[InInput], FTimerDelegate::CreateLambda([=]()
-		{
-			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
-			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
-		}
-	), CurrentInputMaintainTime, false);
-
-	bIsCurrentInputPressedMap[InInput] = true;
-}
-
-void AUSACharacterBase::ActiveGameplayTagInput_Released(UInputAction* InInput)
-{
-	if (bIsCurrentInputPressedMap.Contains(InInput) == false)
-	{
-		bIsCurrentInputPressedMap.Add({ InInput, true });
-	}
-
-	if (bIsCurrentInputPressedMap[InInput] == false)
-	{
-		return;
-	}
-
-	if (ASC == nullptr)
-	{
-		return;
-	}
-
-	if (GameplayTagInputInfos.Contains(InInput) == false)
-	{
-		return;
-	}
-
-	USA_LOG(LogTemp, Log, TEXT("Input Released"));
-
-	//ASC->RemoveLooseGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding);
-	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
-	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Holding, false);
-	ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, true);
-
-	if (CurrentInputTimerHandleMap.Contains(InInput) == false)
-	{
-		CurrentInputTimerHandleMap.Add({ InInput , FTimerHandle() });
-	}
-	else
-	{
-		CurrentInputTimerHandleMap[InInput].Invalidate();
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(CurrentInputTimerHandleMap[InInput], FTimerDelegate::CreateLambda([=]()
-		{
-			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Pressed, false);
-			ServerRPC_AddRemovedGameplayTag(GameplayTagInputInfos[InInput].InputGameplayTag_Released, false);
-		}
-	), CurrentInputMaintainTime, false);
-
-	bIsCurrentInputPressedMap[InInput] = false;
-}
-
-void AUSACharacterBase::ServerRPC_AddRemovedGameplayTag_Implementation(const FGameplayTag InTag, bool InAdded)
-{
-	MulticastRPC_AddRemovedGameplayTag(InTag, InAdded);
-}
-
-void AUSACharacterBase::MulticastRPC_AddRemovedGameplayTag_Implementation(const FGameplayTag InTag, bool InAdded)
-{
-	if (ASC == nullptr)
-	{
-		return;
-	}
-
-	if (InAdded)
-	{
-		ASC->AddLooseGameplayTag(InTag);
-
-		TryGameplayAbilityByGameplayTag(InTag.GetTagName());
-	}
-	else
-	{
-		ASC->RemoveLooseGameplayTag(InTag);
-	}
-}
+//void AUSACharacterBase::ServerRPC_AddRemovedGameplayTag_Implementation(const FGameplayTag InTag, bool InAdded)
+//{
+//	MulticastRPC_AddRemovedGameplayTag(InTag, InAdded);
+//}
+//
+//void AUSACharacterBase::MulticastRPC_AddRemovedGameplayTag_Implementation(const FGameplayTag InTag, bool InAdded)
+//{
+//	if (ASC == nullptr)
+//	{
+//		return;
+//	}
+//
+//	if (InAdded)
+//	{
+//		ASC->AddLooseGameplayTag(InTag);
+//
+//		TryGameplayAbilityByGameplayTag(InTag.GetTagName());
+//	}
+//	else
+//	{
+//		ASC->RemoveLooseGameplayTag(InTag);
+//	}
+//}
 
 
 void AUSACharacterBase::TryGameplayAbilityByGameplayTag(FName GameplayTag)
@@ -1276,53 +1290,6 @@ void AUSACharacterBase::OnGameplayTagCallback_Action(const FGameplayTag Callback
 	}
 }
 
-
-void AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon(const FGameplayTag CallbackTag, int32 NewCount)
-{
-	if ((uint8)EUSAWeaponType::First < 0 || CurrentEquipedWeapons.Num() <= (uint8)EUSAWeaponType::First)
-	{
-		return;
-	}
-
-	if (CurrentEquipedWeapons[(uint8)EUSAWeaponType::First] == false)
-	{
-		return;
-	}
-
-	if (NewCount > 0)
-	{
-		//USA_LOG(LogTemp, Log, TEXT("First on Hand"));
-		//AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
-	}
-	else
-	{
-		//USA_LOG(LogTemp, Log, TEXT("First on Spine"));
-		//AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
-	}
-}
-
-void AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon(const FGameplayTag CallbackTag, int32 NewCount)
-{
-	if ((uint8)EUSAWeaponType::Second < 0 || CurrentEquipedWeapons.Num() <= (uint8)EUSAWeaponType::Second)
-	{
-		return;
-	}
-
-	if (CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second] == false)
-	{
-		return;
-	}
-
-	if (NewCount > 0)
-	{
-		//AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
-	}
-	else
-	{
-		//AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
-	}
-}
-
 void AUSACharacterBase::CheckCharacterByGameplayTags()
 {
 	int32 Count = 0;
@@ -1457,9 +1424,28 @@ void AUSACharacterBase::PickUpSomething(IUSAPickableInterface* InPick)
 		return;
 	}
 
+	TArray<AUSAWeaponBase*> PrevWeapons = CurrentEquipedWeapons;
+	TArray<TSubclassOf<class AUSAItemBase>> PrevItems = CurrentOwnedItems;
+
 	InPick->PickUpByUSACharacter(ASC, this);
+
+	OnRep_CurrentEquipedWeapons(PrevWeapons);
+	OnRep_CurrentOwnedItems(PrevItems);
 }
 
+
+bool AUSACharacterBase::GetIsThereAnyWeapon()
+{
+	for (AUSAWeaponBase* Weapon : CurrentEquipedWeapons)
+	{
+		if (IsValid(Weapon) == true)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 
 void AUSACharacterBase::DropWeapons(bool bIsAbsolute)
 {
@@ -1518,7 +1504,7 @@ void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 			continue;
 		}
 
-		CurrentWeapon->SetWeaponOwner(nullptr);
+		CurrentWeapon->SetPickableActorOwner(nullptr);
 		
 		// 무기 소유자 설정
 		//if (UKismetSystemLibrary::IsServer(GetWorld()))
@@ -1582,6 +1568,68 @@ float AUSACharacterBase::GetTargetableCapsuleRadius()
 	}
 
 	return 50.0f;
+}
+
+bool AUSACharacterBase::PreUseItem()
+{
+	if (CurrentUSAItemOrderIndex < 0 || USAItemOrder.Num() <= CurrentUSAItemOrderIndex)
+	{
+		return false;
+	}
+
+	TSubclassOf<AUSAItemBase> CurrentItemClass = USAItemOrder[CurrentUSAItemOrderIndex];
+
+	if (IsValid(CurrentItemClass) == false)
+	{
+		return false;
+	}
+
+	if (CurrentOwnedItems.Contains(CurrentItemClass) == false)
+	{
+		return false;
+	}
+
+	Cast<AUSAItemBase>(CurrentItemClass->GetDefaultObject())->PlayUseAnimationMontageInUSACharacter(ASC, this);
+
+	bIsUsingItem = true;
+
+	return true;
+}
+
+bool AUSACharacterBase::PostUseItem()
+{
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
+		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	{
+		return false;
+	}
+
+	if (CurrentUSAItemOrderIndex < 0 || USAItemOrder.Num() <= CurrentUSAItemOrderIndex)
+	{
+		return false;
+	}
+
+	TSubclassOf<AUSAItemBase> CurrentItemClass = USAItemOrder[CurrentUSAItemOrderIndex];
+
+	if (IsValid(CurrentItemClass) == false)
+	{
+		return false;
+	}
+
+	if (CurrentOwnedItems.Contains(CurrentItemClass) == false)
+	{
+		return false;
+	}
+
+	Cast<AUSAItemBase>(CurrentItemClass->GetDefaultObject())->ActiveUSAItem(ASC, this);
+
+	bIsUsingItem = false;
+	
+	int ItemIndex = 0;
+	CurrentOwnedItems.Find(CurrentItemClass, ItemIndex);
+	CurrentOwnedItems.RemoveAt(ItemIndex);
+
+	return true;
 }
 
 // TODO: 추후 중력 때문에 미약하게 낙하하는 이슈 수정
@@ -1729,16 +1777,16 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 	// 공격 타입 판단
 
 	// 폭파
-	if (IsValid(CustomUSADamageType_Explosion) == true
-		&& CustomUSADamageType_Explosion == DamageType)
+	if (IsValid(USADamageType_Explosion) == true
+		&& USADamageType_Explosion == DamageType)
 	{
 		NewDirection = ((HitResult.TraceStart + HitResult.TraceEnd) * 0.5f) - GetActorLocation();
 		NewDirection.Z = 0.0f;
 		NewDirection.Normalize();
 	}
 	// 그랩
-	else if (IsValid(CustomUSADamageType_Grab) == true
-		&& CustomUSADamageType_Grab == DamageType)
+	else if (IsValid(USADamageType_Grab) == true
+		&& USADamageType_Grab == DamageType)
 	{
 		// 커스텀 로케이션
 		ActionCustomLocation = HitResult.TraceStart;
@@ -2179,22 +2227,6 @@ void AUSACharacterBase::PostSetupGAS()
 		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_Dead)
 	);
 
-	//
-
-	RegisteredGameplayTagEvents.Add
-	(
-		USA_CHARACTER_HAND_FIRSTWEAPON,
-		ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_FIRSTWEAPON, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandFirstWeapon)
-	);
-
-	RegisteredGameplayTagEvents.Add
-	(
-		USA_CHARACTER_HAND_SECONDWEAPON,
-		ASC->RegisterGameplayTagEvent(USA_CHARACTER_HAND_SECONDWEAPON, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &AUSACharacterBase::OnGameplayTagCallback_HandSecondWeapon)
-	);
-
 	RegisteredGameplayTagEvents.Add
 	(
 		USA_CHARACTER_ACTION,
@@ -2294,6 +2326,67 @@ void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
 	
 }
 
+void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> PrevWeapons)
+{
+	for (int i = 0; i < PrevWeapons.Num() || i < CurrentEquipedWeapons.Num(); i++)
+	{
+		if (PrevWeapons[i] != CurrentEquipedWeapons[i])
+		{
+			if (IsValid(PrevWeapons[i]) == true && IsValid(CurrentEquipedWeapons[i]) == false)
+			{
+				FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
+				PrevWeapons[i]->DetachFromActor(DetachmentTransformRules);
+
+				PrevWeapons[i]->SetWeaponPhysics(true);
+
+				K2_OnUSACurrentWeaponChanged(PrevWeapons[i]->GetWeaponType(), nullptr);
+			}
+
+			if (IsValid(PrevWeapons[i]) == false && IsValid(CurrentEquipedWeapons[i]) == true)
+			{
+				CurrentEquipedWeapons[i]->SetWeaponPhysics(false);
+
+				CurrentEquipedWeapons[i]->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
+
+				K2_OnUSACurrentWeaponChanged(CurrentEquipedWeapons[i]->GetWeaponType(), CurrentEquipedWeapons[i]);
+			}
+		}
+	}
+}
+
+void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>> PrevItems)
+{
+	if (CurrentOwnedItems.Num() <= PrevItems.Num())
+	{
+		return;
+	}
+
+	if (CurrentOwnedItems.Num() <= 0)
+	{
+		return;
+	}
+
+	//TSubclassOf<AUSAItemBase> TargetItem = nullptr;
+
+	//int Index = 0;
+	//for (; Index < CurrentOwnedItems.Num() && Index < PrevItems.Num(); Index++)
+	//{
+	//	if (CurrentOwnedItems[Index] != PrevItems[Index])
+	//	{
+	//		TargetItem
+	//	}
+	//}
+
+	// 항상 뒤로 Add 되니...
+	TSubclassOf<AUSAItemBase> TargetItem = CurrentOwnedItems[CurrentOwnedItems.Num() - 1];
+
+	if (IsValid(TargetItem) == true
+		&& IsValid(TargetItem->GetDefaultObject()) == true)
+	{
+		Cast<AUSAItemBase>(TargetItem->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
+	}
+}
+
 
 void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -2302,6 +2395,7 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AUSACharacterBase, ASC);
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
 	DOREPLIFETIME(AUSACharacterBase, CurrentEquipedWeapons);
+	DOREPLIFETIME(AUSACharacterBase, CurrentOwnedItems);
 
 	//DOREPLIFETIME(AUSACharacterBase, StartWeapons);
 

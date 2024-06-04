@@ -26,6 +26,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 
+#include "Item/USAItemBase.h"
+
 #include "ProjectUSA.h"
 
 
@@ -210,7 +212,6 @@ void AUSACharacterPlayer::OnPickableDetectBoxOverlapBegin(UPrimitiveComponent* O
 		return;
 	}
 
-
 	IUSAPickableInterface* PickableInterface = Cast<IUSAPickableInterface>(OtherActor);
 	if (PickableInterface != nullptr)
 	{
@@ -220,9 +221,9 @@ void AUSACharacterPlayer::OnPickableDetectBoxOverlapBegin(UPrimitiveComponent* O
 
 //
 
-void AUSACharacterPlayer::DoTarget(const struct FInputActionValue& Value)
+void AUSACharacterPlayer::LookTarget(const struct FInputActionValue& Value)
 {
-	Super::DoTarget(Value);
+	Super::LookTarget(Value);
 
 	if (TargetingCameraActor == nullptr)
 	{

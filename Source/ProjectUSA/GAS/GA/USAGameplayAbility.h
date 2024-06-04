@@ -58,14 +58,14 @@ public:
 	FORCEINLINE FVector GetTargetVector_Attack() { return TargetVector_Attack; }
 	FORCEINLINE float GetTargetDistance() { return TargetDistance; }
 
-	FUSAGASimpleDelegate OnActivateAbility;
-	FUSAGASimpleDelegate OnCancelAbility;
-	FUSAGASimpleDelegate OnEndAbility;
+	FUSAGASimpleDynamicDelegate OnActivateAbility;
+	FUSAGASimpleDynamicDelegate OnCancelAbility;
+	FUSAGASimpleDynamicDelegate OnEndAbility;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SimpleCancelAbility ();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SimpleEndAbility();
 
 private:

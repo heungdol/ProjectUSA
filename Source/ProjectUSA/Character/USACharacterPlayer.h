@@ -54,7 +54,7 @@ public:
 	//
 
 	int8 bIsTargetingCamera : 1;
-	virtual void DoTarget(const struct FInputActionValue& Value) override;
+	virtual void LookTarget(const struct FInputActionValue& Value) override;
 	
 	void StartTargeting();
 	void KeepTargeting();

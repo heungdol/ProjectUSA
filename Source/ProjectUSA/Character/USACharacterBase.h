@@ -91,6 +91,15 @@ protected:
 	TObjectPtr <class UInputAction> TargetAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
+	TObjectPtr <class UInputAction> ItemAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
+	TObjectPtr <class UInputAction> PrevItemAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
+	TObjectPtr <class UInputAction> NextItemAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
 	TObjectPtr <class UInputAction> DropAction;
 
 	//
@@ -120,7 +129,7 @@ protected:
 
 	//const float WeaponDetectBoxComponentActiveDelay = 1.0f;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquipedWeapons, EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Weapon")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquipedWeapons, VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Weapon")
 	TArray<TObjectPtr <class AUSAWeaponBase>> CurrentEquipedWeapons;
 
 	UFUNCTION()
@@ -128,8 +137,17 @@ protected:
 
 	//
 
-	UPROPERTY(/*ReplicatedUsing = OnRep_StartWeapons, */EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(/*ReplicatedUsing = OnRep_StartWeapons, */EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Weapon")
 	TArray<TSubclassOf <class AUSAWeaponBase>> StartWeaponClassList;
+
+	//
+
+	// 간이 아이템 인벤토리
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentOwnedItems, VisibleAnywhere, BlueprintReadOnly, Category = "USA Character Item")
+	TArray<TSubclassOf<class AUSAItemBase>> CurrentOwnedItems;
+
+	UFUNCTION()
+	void OnRep_CurrentOwnedItems(TArray<TSubclassOf<class AUSAItemBase>> PrevItems);
 
 
 
@@ -178,7 +196,6 @@ public:
 
 	virtual void Destroyed() override;
 
-public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void BeginDestroy() override;
@@ -187,11 +204,7 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	//
-
 	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
-
-	//
 
 	virtual void Falling() override;
 
@@ -286,7 +299,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList();
 
-
 	//
 
 	float GetCharacterCurrentHealth_Implementation() override;
@@ -329,6 +341,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttachAllWeaponToHolderSocket();
 
+	UFUNCTION(BlueprintCallable)
+	bool GetIsThereAnyWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void DropWeapons(bool bIsAbsolute = false);
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
 	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
 
@@ -342,23 +360,26 @@ public:
 	UFUNCTION()
 	void USACharacterAnimInstanceMontageNotify(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
 
+	//
+
 	UFUNCTION(BlueprintCallable)
-	void DropWeapons(bool bIsAbsolute = false);
+	virtual bool PreUseItem();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool PostUseItem();
+
 
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
 	virtual void MoveEnd(const struct FInputActionValue& Value);
+
 	virtual void Look(const struct FInputActionValue& Value);
-	virtual void DoTarget(const struct FInputActionValue& Value);
-	//virtual void DoDrop(const struct FInputActionValue& Value);
+	virtual void LookTarget(const struct FInputActionValue& Value);
 
-
-	UFUNCTION()
-	virtual void OnPickableDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void PrevItem(const struct FInputActionValue& Value);
+	virtual void NextItem(const struct FInputActionValue& Value);
 
 	//
-
-	//virtual void USATakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -375,27 +396,16 @@ protected:
 
 	//
 
-	//void SetCurrentTargetableActorNullptr();
-
-	//
-
-	//void PickupWeapon(class AUSAWeaponBase* InWeapon);
+	UFUNCTION()
+	virtual void OnPickableDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void PickUpSomething(IUSAPickableInterface* InPick);
 
 	UPROPERTY (VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
 	bool bIsPickable = false;
 
-	//UFUNCTION(Server, Reliable)
-	//void ServerRPC_PickupWeapon(class AUSAWeaponBase* InWeapon);
-
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MulticastRPC_PickupWeapon(class AUSAWeaponBase* InWeapon);
-
 
 	//
-
-	//void DropWeapons(bool bIsAbsolute = false);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_DropWeapons();
@@ -411,6 +421,15 @@ protected:
 	virtual FVector GetTargetablePivotlocation() override;
 
 	virtual float GetTargetableCapsuleRadius() override;
+
+	//
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthRatioChanged", ScriptName = "OnUSACurrentHealthRatioChanged"))
+	void K2_OnCurrentItemOrderIndexChanged(float InValue);
+
+	UPROPERTY()
+	bool bIsUsingItem = false;
+
 
 // Gameplay Abiltiy System Section...
 
@@ -442,16 +461,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TArray <FUSAGameplayAbilityHandle> GameplayAbilities_Active;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TMap <class UInputAction*, FUSAGameplayTagInputInfo> GameplayTagInputInfos;
+	// GameplayTag를 직접 붙이는 과정은 보류
 
-	TMap <class UInputAction*, bool> bIsCurrentInputPressedMap;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	//TMap <class UInputAction*, FUSAGameplayTagInputInfo> GameplayTagInputInfos;
 
-	TMap <int32, bool> bIsCurrentInputPressedIDMap;
+	//TMap <class UInputAction*, bool> bIsCurrentInputPressedMap;
 
-	TMap <class UInputAction*, FTimerHandle> CurrentInputTimerHandleMap;
+	//TMap <int32, bool> bIsCurrentInputPressedIDMap;
 
-	const float CurrentInputMaintainTime = 0.3f;
+	//TMap <class UInputAction*, FTimerHandle> CurrentInputTimerHandleMap;
+
+	//const float CurrentInputMaintainTime = 0.3f;
 
 
 	//
@@ -475,11 +496,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TSubclassOf<class UDamageType> CustomUSADamageType_Explosion;
+	UPROPERTY()
+	TSubclassOf<class UDamageType> USADamageType_Explosion;
+	
+	UPROPERTY()
+	TSubclassOf<class UDamageType> USADamageType_Grab;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TSubclassOf<class UDamageType> CustomUSADamageType_Grab;
+	UPROPERTY()
+	TArray<TSubclassOf<class AUSAItemBase>> USAItemOrder;
+	
+	UPROPERTY()
+	int32 CurrentUSAItemOrderIndex; 
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
 	FVector ActionCustomLocation;
@@ -529,14 +557,14 @@ protected:
 	void InputPressGameplayAbilityByInputID(int32 InputID);
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);
 
-	void ActiveGameplayTagInput_Pressed(class UInputAction* InInput);
-	void ActiveGameplayTagInput_Released(class UInputAction* InInput);
+	//void ActiveGameplayTagInput_Pressed(class UInputAction* InInput);
+	//void ActiveGameplayTagInput_Released(class UInputAction* InInput);
 
-	UFUNCTION(Server, Reliable)
-	void ServerRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
+	//UFUNCTION(Server, Reliable)
+	//void ServerRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
 
 
 	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);
@@ -550,11 +578,9 @@ protected:
 	void OnGameplayTagCallback_Fall(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Slide(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Crouch(const struct FGameplayTag CallbackTag, int32 NewCount);
-	virtual void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount);
 	void OnGameplayTagCallback_Action(const struct FGameplayTag CallbackTag, int32 NewCount);
+	virtual void OnGameplayTagCallback_Dead(const struct FGameplayTag CallbackTag, int32 NewCount);
 
-	void OnGameplayTagCallback_HandFirstWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
-	void OnGameplayTagCallback_HandSecondWeapon(const struct FGameplayTag CallbackTag, int32 NewCount);
 
 	virtual void CheckCharacterByGameplayTags();
 
@@ -563,4 +589,5 @@ protected:
 	//
 
 	friend class AUSAWeaponBase;
+	friend class AUSAItemBase;
 };

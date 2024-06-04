@@ -98,8 +98,8 @@ public:
 
 	//
 
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
-	class AUSACharacterBase* WeaponOwner = nullptr;
+	UPROPERTY(ReplicatedUsing = OnRep_PickableActorOwner, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Info")
+	class AUSACharacterBase* PickableActorOwner = nullptr;
 
 	//
 	//UPROPERTY(VisibleAnywhere, Category = "Weapon Drop")
@@ -129,8 +129,6 @@ protected:
 	//UFUNCTION()
 	//void OnRep_WeaponOwnerASC(class UAbilitySystemComponent* PrevASC);
 
-	UFUNCTION()
-	void OnRep_WeaponOwner(class AUSACharacterBase* PrevCharacter);
 
 
 	UFUNCTION(BlueprintCallable)
@@ -151,18 +149,25 @@ public:
 
 	virtual void PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 
+	virtual void PlayPickUpAnimationMontageInUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
+
+	virtual void SetPickableActorOwner(class AUSACharacterBase* InCharacter);
+
+	UFUNCTION()
+	void OnRep_PickableActorOwner(class AUSACharacterBase* PrevCharacter);
+
 	//virtual void DropDownFromUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 
 	//
 
-	void SetWeaponOwner(class AUSACharacterBase* InCharacter);
+	//void SetWeaponOwner(class AUSACharacterBase* InCharacter);
 
 	virtual void SetWeaponPhysics(bool IsDropping, bool IsFirst = false);
 
 	//UFUNCTION(NetMulticast, Unreliable)
 	//virtual void MulticastRPC_ImpulseWeapon(const FVector& InImpulse);
 
-	FORCEINLINE class AUSACharacterBase* GetWeaponOwner() { return WeaponOwner; }
+	//FORCEINLINE class AUSACharacterBase* GetWeaponOwner() { return PickableActorOwner; }
 
 	//
 

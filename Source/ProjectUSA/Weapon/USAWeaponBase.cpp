@@ -17,12 +17,14 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Character/USACharacterBase.h"
-#include "Character/USACharacterPlayer.h"
+//#include "Character/USACharacterPlayer.h"
 
 #include "GameFramework/RotatingMovementComponent.h"
 
 
 #include "Kismet/KismetSystemLibrary.h"
+
+#include "Tag/USAGameplayTags.h"
 
 #include "ProjectUSA.h"
 
@@ -113,28 +115,25 @@ void AUSAWeaponBase::Tick(float DeltaTime)
 	//}
 }
 
-void AUSAWeaponBase::SetWeaponOwner(AUSACharacterBase* InCharacter)
-{
-	if (UKismetSystemLibrary::IsServer (GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone (GetWorld()) == false)
-	{
-		return;
-	}
+//void AUSAWeaponBase::SetWeaponOwner(AUSACharacterBase* InCharacter)
+//{
 
-	AUSACharacterBase* PrevCharacter = WeaponOwner;
-	WeaponOwner = InCharacter;
-
-	OnRep_WeaponOwner(PrevCharacter);
-}
+//}
 
 void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 {
-
-
+	// ...
 }
 
 void AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
 {
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
+		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	{
+		return;
+	}
+
+
 	if (IsValid(InASC) == false)
 	{
 		return;
@@ -145,7 +144,7 @@ void AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACh
 		return;
 	}
 
-	if (GetWeaponOwner() != nullptr)
+	if (PickableActorOwner != nullptr)
 	{
 		return;
 	}
@@ -161,8 +160,48 @@ void AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACh
 	}
 
 	// ASC 새 갱신
-	SetWeaponOwner(InCharacter);
+	SetPickableActorOwner(InCharacter);
 }
+
+void AUSAWeaponBase::PlayPickUpAnimationMontageInUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
+{
+	if (IsValid(InCharacter) == false)
+	{
+		return;
+
+	}
+	UAnimInstance* AnimInstance = (InCharacter->GetMesh()) ? InCharacter->GetMesh()->GetAnimInstance() : nullptr;
+
+	if (IsValid(WeaponPickUpAnimMontage) == true
+		&& IsValid(AnimInstance) == true
+		&& IsValid(InASC) == true
+		&& InASC->GetGameplayTagCount(USA_CHARACTER_ACTION) <= 0)
+	{
+		InCharacter->AttachWeaponToHandSocket(this);
+
+		AnimInstance->Montage_StopGroupByName(0.0f, WeaponPickUpAnimMontage->GetGroupName());
+		AnimInstance->Montage_Play(WeaponPickUpAnimMontage, WeaponPickUpAnimMontageRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
+	}
+	else
+	{
+		InCharacter->AttachWeaponToHolderSocket(this);
+	}
+}
+
+void AUSAWeaponBase::SetPickableActorOwner(AUSACharacterBase* InCharacter)
+{
+	if (UKismetSystemLibrary::IsServer (GetWorld()) == false
+	&& UKismetSystemLibrary::IsStandalone (GetWorld()) == false)
+	{
+		return;
+	}
+
+	AUSACharacterBase* PrevCharacter = PickableActorOwner;
+	PickableActorOwner = InCharacter;
+
+	OnRep_PickableActorOwner(PrevCharacter);
+}
+
 
 //void AUSAWeaponBase::DropDownFromUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
 //{
@@ -300,7 +339,7 @@ bool AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 //	}
 //}
 
-void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
+void AUSAWeaponBase::OnRep_PickableActorOwner(AUSACharacterBase* PrevCharacter)
 {
 	if (IsValid(PrevCharacter) == true)
 	{
@@ -314,27 +353,15 @@ void AUSAWeaponBase::OnRep_WeaponOwner(AUSACharacterBase* PrevCharacter)
 		SetWeaponPhysics(true);
 	}
 
-	if (IsValid(WeaponOwner) == true)
+	if (IsValid(PickableActorOwner) == true)
 	{
-		if (GiveGameplayWeaponAbilitesToASC(WeaponOwner))
-		{
-			WeaponOwner->K2_OnUSACurrentWeaponChanged(WeaponType, this);
+		GiveGameplayWeaponAbilitesToASC(PickableActorOwner);
+		
+		PickableActorOwner->K2_OnUSACurrentWeaponChanged(WeaponType, this);
 
-			UAnimInstance* AnimInstance = (WeaponOwner->GetMesh()) ? WeaponOwner->GetMesh()->GetAnimInstance() : nullptr;
-
-			if (IsValid(WeaponPickUpAnimMontage) == true && IsValid(AnimInstance) == true)
-			{
-				WeaponOwner->AttachWeaponToHandSocket(this);
-				AnimInstance->Montage_Play(WeaponPickUpAnimMontage, WeaponPickUpAnimMontageRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
-			}
-			else
-			{
-				WeaponOwner->AttachWeaponToHolderSocket(this);
-			}
-
-			SetWeaponPhysics(false);
-		}
+		SetWeaponPhysics(false);
 	}
+	
 }
 
 void AUSAWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -342,6 +369,6 @@ void AUSAWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// DOREPLIFETIME(AUSAWeaponBase, WeaponOwnerASC);
-	DOREPLIFETIME(AUSAWeaponBase, WeaponOwner);
+	DOREPLIFETIME(AUSAWeaponBase, PickableActorOwner);
 }
 
