@@ -30,7 +30,10 @@ protected:
 	TObjectPtr <class AUSAPlacedCameraActor> PlacedCameraActor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr <class APlayerController> PlayerController;
+	TObjectPtr <class APlayerController> LocalPlayerController;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr <class AUSAPlayerController> LocalUSAPlayerController;
 
 	//
 
@@ -111,5 +114,7 @@ protected:
 
 	virtual void OnPickableDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
+	//
 
+	friend class AUSAPlayerController;
 };

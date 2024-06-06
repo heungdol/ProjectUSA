@@ -352,8 +352,8 @@ public:
 
 	//
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUpdateHUDUserWidget", ScriptName = "OnUSAUpdateHUDUserWidget"))
-	void K2_OnUSAUpdateHUDUserWidget(class UUserWidget* InUserWidget);
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAUpdateHUDUserWidget", ScriptName = "OnUSAUpdateHUDUserWidget"))
+	//void K2_OnUSAUpdateHUDUserWidget(class UUserWidget* InUserWidget);
 
 	//
 

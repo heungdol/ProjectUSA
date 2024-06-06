@@ -20,6 +20,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Player/USAPlayerState.h"
+#include "Player/USAPlayerController.h"
 
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
@@ -44,6 +45,20 @@ void AUSACharacterPlayer::BeginPlay()
 	InitTargetingCameraActor();
 
 	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+
+	AGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode();
+	AGameStateBase* GameStateBase = GetWorld()->GetGameState();
+
+	if (GameModeBase)
+	{
+		USA_LOG(LogTemp, Log, TEXT("GameMode is Valid"));
+	}
+
+	if (GameStateBase)
+	{
+		USA_LOG(LogTemp, Log, TEXT("GameState is Valid"));
+	}
+
 }
 
 void AUSACharacterPlayer::Tick(float DeltaTime)
@@ -69,17 +84,23 @@ void AUSACharacterPlayer::Tick(float DeltaTime)
 
 void AUSACharacterPlayer::InitPlayerController()
 {
-	PlayerController = GetController<APlayerController>();
+	LocalPlayerController = GetController<APlayerController>();
+
+	if (IsValid(LocalPlayerController) == false
+		|| LocalPlayerController->IsLocalPlayerController() == false)
+	{
+		LocalPlayerController = nullptr;
+		LocalUSAPlayerController = nullptr;
+		
+		return;
+	}
+
+	LocalUSAPlayerController = GetController<AUSAPlayerController>();
 }
 
 void AUSACharacterPlayer::InitTargetingCameraActor()
 {
-	if (PlayerController == nullptr)
-	{
-		return;
-	}
-
-	if (PlayerController->IsLocalController() == false)
+	if (LocalPlayerController == nullptr)
 	{
 		return;
 	}
@@ -122,13 +143,13 @@ void AUSACharacterPlayer::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (PlayerController == nullptr
-		|| PlayerController->PlayerCameraManager == nullptr)
+	if (LocalPlayerController == nullptr
+		|| LocalPlayerController->PlayerCameraManager == nullptr)
 	{
 		return;
 	}
 
-	const FRotator MoveRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+	const FRotator MoveRotation = LocalPlayerController->PlayerCameraManager->GetCameraRotation();
 	const FRotator YawRotation(0, MoveRotation.Yaw, 0);
 
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -251,14 +272,14 @@ void AUSACharacterPlayer::LookTarget(const struct FInputActionValue& Value)
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor()
 {
-	if (PlayerController == nullptr
-		|| PlayerController->PlayerCameraManager == nullptr)
+	if (LocalPlayerController == nullptr
+		|| LocalPlayerController->PlayerCameraManager == nullptr)
 	{
 		return;
 	}
 
 	// 카메라 방향 기준으로 타깃 설정
-	SetCurrentTargetableActorUsingForwardVector(PlayerController->PlayerCameraManager->GetCameraRotation().Vector(), CurrentTargetableActor);
+	SetCurrentTargetableActorUsingForwardVector(LocalPlayerController->PlayerCameraManager->GetCameraRotation().Vector(), CurrentTargetableActor);
 }
 
 void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
@@ -271,14 +292,14 @@ void AUSACharacterPlayer::UpdateCurrentTargetableActor_Instant()
 	// 플레이어 방향 기준으로 타깃 설정
 	//SetCurrentTargetableActorUsingForwardVector(GetUSACharacterDirection_InputMovement(), CurrentTargetableActor_Instant);
 
-	if (PlayerController == nullptr
-		|| PlayerController->PlayerCameraManager == nullptr)
+	if (LocalPlayerController == nullptr
+		|| LocalPlayerController->PlayerCameraManager == nullptr)
 	{
 		return;
 	}
 
 	// 카메라 방향 기준으로 타깃 설정
-	SetCurrentTargetableActorUsingForwardVector(PlayerController->PlayerCameraManager->GetCameraRotation().Vector(), CurrentTargetableActor_Instant);
+	SetCurrentTargetableActorUsingForwardVector(LocalPlayerController->PlayerCameraManager->GetCameraRotation().Vector(), CurrentTargetableActor_Instant);
 }
 
 void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVector& InDirection, TObjectPtr<class AActor>& InOutTargetActorPointer)
@@ -484,12 +505,12 @@ void AUSACharacterPlayer::FinishTargeting()
 //	PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
 //}
 
-	if (PlayerController != nullptr
+	if (LocalPlayerController != nullptr
 		&& CameraSpringArmComponent != nullptr
 		&& TargetingCameraActor != nullptr
 		&& bIsTargetingCamera != false)
 	{
-		PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
+		LocalPlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
 		CameraSpringArmComponent->SetWorldRotation(TargetingCameraActor->GetActorRotation());
 		CameraSpringArmComponent->UpdateChildTransforms();
 	}
@@ -510,12 +531,7 @@ void AUSACharacterPlayer::FinishTargeting()
 
 void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 {
-	if (IsValid(PlayerController) == false)
-	{
-		return;
-	}
-
-	if (PlayerController->IsLocalPlayerController() == false)
+	if (IsValid(LocalPlayerController) == false)
 	{
 		return;
 	}
@@ -529,10 +545,10 @@ void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 		FVector ActorForward = GetActorForwardVector();
 		FVector CameraForward = GetActorForwardVector();
 
-		if (IsValid(PlayerController) == true
-			&& IsValid(PlayerController->PlayerCameraManager) == true)
+		if (IsValid(LocalPlayerController) == true
+			&& IsValid(LocalPlayerController->PlayerCameraManager) == true)
 		{
-			CameraForward = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
+			CameraForward = LocalPlayerController->PlayerCameraManager->GetCameraRotation().Vector();
 		}
 
 		PlacedCameraActor->InitPlacedCameraActor(ActorForward, CameraForward);
@@ -545,12 +561,7 @@ void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 
 void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 {
-	if (IsValid(PlayerController) == false)
-	{
-		return;
-	}
-
-	if (PlayerController->IsLocalPlayerController() == false)
+	if (IsValid(LocalPlayerController) == false)
 	{
 		return;
 	}
@@ -562,11 +573,11 @@ void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 
 	USA_LOG(LogTemp, Log, TEXT("Rotation From: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
 
-	if (PlayerController != nullptr
+	if (LocalPlayerController != nullptr
 		&& CameraSpringArmComponent != nullptr
 		&& PlacedCameraActor != nullptr)
 	{
-		PlayerController->SetControlRotation(PlacedCameraActor->GetActiveCameraRotation());
+		LocalPlayerController->SetControlRotation(PlacedCameraActor->GetActiveCameraRotation());
 		CameraSpringArmComponent->SetWorldRotation(PlacedCameraActor->GetActiveCameraRotation());
 		CameraSpringArmComponent->UpdateChildTransforms();
 	}
@@ -584,12 +595,7 @@ void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 
 void AUSACharacterPlayer::ManageAllCamera()
 {
-	if (IsValid(PlayerController) == false)
-	{
-		return;
-	}
-
-	if (PlayerController->IsLocalPlayerController() == false)
+	if (IsValid(LocalPlayerController) == false)
 	{
 		return;
 	}
@@ -622,11 +628,11 @@ void AUSACharacterPlayer::StartCameraShake_HitSuccess(TSubclassOf<class UDamageT
 		return;
 	}
 
-	if (PlayerController == nullptr
-		|| PlayerController->PlayerCameraManager == nullptr)
+	if (LocalPlayerController == nullptr
+		|| LocalPlayerController->PlayerCameraManager == nullptr)
 	{
 		return;
 	}
 
-	PlayerController->PlayerCameraManager->StartCameraShake(HitSuccessCameraShakes[DamageType]);
+	LocalPlayerController->PlayerCameraManager->StartCameraShake(HitSuccessCameraShakes[DamageType]);
 }

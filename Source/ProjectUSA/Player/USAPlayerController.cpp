@@ -4,18 +4,21 @@
 #include "Player/USAPlayerController.h"
 
 #include "Character/USACharacterBase.h"
+#include "Character/USACharacterPlayer.h"
+
+#include "Weapon/USAWeaponBase.h"
 
 
 void AUSAPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-    
+
     // 시작시 호출
     if (IsLocalController() == true)
     {
-        if (AUSACharacterBase* USACharacterOwner = Cast<AUSACharacterBase>(GetPawn()))
+        if (AUSACharacterPlayer* USACharacterOwner = Cast<AUSACharacterPlayer>(GetPawn()))
         {
-            USACharacterOwner->K2_OnUSAUpdateHUDUserWidget(PlayerHUDUserWidget);
+            K2_InitPlayerHUD(USACharacterOwner);
         }
     }
 }
@@ -28,12 +31,64 @@ void AUSAPlayerController::BeginPlayingState()
     {
         // 클라이언트가 완전히 접속되었음을 알리는 코드
         //         
-        if (AUSACharacterBase* USACharacterOwner = Cast<AUSACharacterBase>(GetPawn()))
+        if (AUSACharacterPlayer* USACharacterOwner = Cast<AUSACharacterPlayer>(GetPawn()))
         {
-            //UE_LOG(LogTemp, Warning, TEXT("Player has fully joined the game"));
-            //USACharacterOwner->SetWeaponDetectBoxComponentActive(true);
             USACharacterOwner->SetCurrentWeaponsUsingStartWeaponClassList();
-            USACharacterOwner->K2_OnUSAUpdateHUDUserWidget(PlayerHUDUserWidget);
+            K2_InitPlayerHUD(USACharacterOwner);
         }
     }
 }
+
+//
+
+void AUSAPlayerController::PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw)
+{
+    if (bIsShowing)
+    {
+        if (bIsRaw)
+        {
+            K2_PlayUserWidgetAnimation_PanelWhite();
+        }
+        else
+        {
+            K2_PlayUserWidgetAnimation_PanelShow();
+        }
+    }
+    else
+    {
+        if (bIsRaw)
+        {
+            K2_PlayUserWidgetAnimation_PanelBlack();
+        }
+        else
+        {
+            K2_PlayUserWidgetAnimation_PanelHide();
+        }
+    }
+}
+
+//
+
+void AUSAPlayerController::ShowHideCharacterHUD(bool bIsShowing)
+{
+    K2_ShowHideUserWidget_PlayerHUD(bIsShowing);
+}
+
+void AUSAPlayerController::ShowHideBossHPBar(bool bIsShowing)
+{
+    K2_ShowHideUserWidget_BossHPBar(bIsShowing);
+}
+
+//
+
+void AUSAPlayerController::UpdatePlayerWeapon(EUSAWeaponType InType, AUSAWeaponBase* InWeapon)
+{
+    K2_UpdatePlayerWeapon(InType, InWeapon);
+}
+
+void AUSAPlayerController::UpdatePlayerHPBar(float InRatio)
+{
+    K2_UpdatePlayerHPBar(InRatio);
+}
+
+//
