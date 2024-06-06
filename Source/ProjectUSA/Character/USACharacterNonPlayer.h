@@ -26,6 +26,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Non Player Info")
 	float LifeSpanAfterDead = 5.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Non Player Info")
+	TObjectPtr<class UBehaviorTree> StartBehaviorTree;
+
 protected:
 	virtual void SetupGAS() override;
 

@@ -31,7 +31,6 @@ public:
 	AUSAWeaponBase();
 
 public:
-
 	virtual void OnConstruction(const FTransform& Transform) override;
 	
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
@@ -55,10 +54,10 @@ public:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr<class USkeletalMesh> WeaponSkeletalMeshMeshRef;
+	TObjectPtr<class USkeletalMesh> WeaponDisplaySkeletalMeshMeshRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
-	TObjectPtr<class UStaticMesh> WeaponStaticMeshRef;
+	TObjectPtr<class UStaticMesh> WeaponDisplayStaticMeshRef;
 
 
 	//

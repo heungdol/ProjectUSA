@@ -40,10 +40,10 @@ void AUSAWeaponStaticMesh::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 	
-	if (IsValid(WeaponMeshComponent) == true)
-	{
-		WeaponMeshComponent->SetStaticMesh(WeaponStaticMeshRef);
-	}
+	//if (IsValid(WeaponMeshComponent) == true)
+	//{
+	//	WeaponMeshComponent->SetStaticMesh(WeaponStaticMeshRef);
+	//}
 }
 
 void AUSAWeaponStaticMesh::BeginPlay()

@@ -15,6 +15,8 @@
 
 #include "Controller/USAAIController.h"
 
+#include "BehaviorTree/BehaviorTree.h"
+
 #include "ProjectUSA.h"
 
 

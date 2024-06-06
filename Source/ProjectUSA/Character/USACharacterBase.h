@@ -187,6 +187,13 @@ protected:
 	//
 
 public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Info")
+	TObjectPtr<class USkeletalMesh> CharacterDisplaySkeletalMeshMeshRef;
+
+
+
+public:
 	// Sets default values for this character's properties
 	AUSACharacterBase();
 
