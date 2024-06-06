@@ -23,16 +23,6 @@ void AUSAGameModeBase::SetAllPlayerControllerInput(bool InActive)
 	}
 }
 
-void AUSAGameModeBase::PlayLevelSequenceToAllPlayer(ALevelSequenceActor* InLevelSequnce)
-{
-	AUSAGameStateBase* USAGameState = GetGameState<AUSAGameStateBase>();
-
-	if (IsValid(USAGameState) == true)
-	{
-		USAGameState->PlayLevelSequence(InLevelSequnce);
-	}
-}
-
 void AUSAGameModeBase::SetBossUSACharacter(AUSACharacterBase* InCharacter)
 {
 	BossUSACharacter = InCharacter;
@@ -51,5 +41,35 @@ void AUSAGameModeBase::SetBossUSACharacter(AUSACharacterBase* InCharacter)
 	else
 	{
 		USAGameState->ShowHideBossHPBar(false);
+	}
+}
+
+void AUSAGameModeBase::UpdateBossHealthRatio(float InRatio)
+{
+	AUSAGameStateBase* USAGameState = GetGameState<AUSAGameStateBase>();
+
+	if (IsValid(USAGameState) == true)
+	{
+		USAGameState->UpdateBossHealthRatio(InRatio);
+	}
+}
+
+void AUSAGameModeBase::UpdateBossName(FName InName)
+{
+	AUSAGameStateBase* USAGameState = GetGameState<AUSAGameStateBase>();
+
+	if (IsValid(USAGameState) == true)
+	{
+		USAGameState->UpdateBossName(InName);
+	}
+}
+
+void AUSAGameModeBase::PlayLevelSequenceToAllPlayer(ALevelSequenceActor* InLevelSequnce)
+{
+	AUSAGameStateBase* USAGameState = GetGameState<AUSAGameStateBase>();
+
+	if (IsValid(USAGameState) == true)
+	{
+		USAGameState->PlayLevelSequence(InLevelSequnce);
 	}
 }

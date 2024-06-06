@@ -47,7 +47,18 @@ void AUSAGameStateBase::ShowHideBossHPBar(bool bIsShowing)
 	}
 }
 
-void AUSAGameStateBase::UpdateBossHPBarRatio(float InRatio)
+void AUSAGameStateBase::UpdateBossName(FName InName)
+{
+	CurrentBossName = InName;
+
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == true
+		|| UKismetSystemLibrary::IsStandalone(GetWorld()) == true)
+	{
+		OnRep_CurrentBossName();
+	}
+}
+
+void AUSAGameStateBase::UpdateBossHealthRatio(float InRatio)
 {
 	CurrentBossHealthRatio = InRatio;
 
@@ -63,9 +74,14 @@ void AUSAGameStateBase::OnRep_bIsShowingBossHPBar()
 	K2_ShowHideBossHPBar(bIsShowingBossHPBar);
 }
 
+void AUSAGameStateBase::OnRep_CurrentBossName()
+{
+	K2_UpdateBossName(CurrentBossName);
+}
+
 void AUSAGameStateBase::OnRep_CurrentBossHealthRatio()
 {
-	K2_UpdateBossHPBarRatio(CurrentBossHealthRatio);
+	K2_UpdateBossHealthRatio(CurrentBossHealthRatio);
 }
 
 void AUSAGameStateBase::PlayUserWidgetAnimationP_Panel(bool bIsShowing, bool bIsRaw)
@@ -154,5 +170,6 @@ void AUSAGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AUSAGameStateBase, bIsShowingBossHPBar);
+	DOREPLIFETIME(AUSAGameStateBase, CurrentBossName);
 	DOREPLIFETIME(AUSAGameStateBase, CurrentBossHealthRatio);
 }

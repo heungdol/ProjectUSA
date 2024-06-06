@@ -25,11 +25,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShowHideBossHPBar(bool bIsShowing);
 
-	//UFUNCTION(BlueprintCallable)
-	//void HideBossHPBar();
+	UFUNCTION(BlueprintCallable)
+	void UpdateBossName(FName InName);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateBossHPBarRatio(float InRatio);
+	void UpdateBossHealthRatio(float InRatio);
 
 	//
 
@@ -41,10 +41,8 @@ public:
 	//UFUNCTION(BlueprintCallable)
 	void PlayLevelSequence (class ALevelSequenceActor* InLevelSequence);
 
-	//UFUNCTION()
-	//void UpdateBossHPBar(float InCurrent, float InMax);
-
 protected:
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSACharacterBase> LocalUSACharacter;
 
@@ -82,6 +80,13 @@ protected:
 	bool bIsShowingBossHPBar = false;
 
 	UFUNCTION()
+	void OnRep_CurrentBossName();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentBossName, VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Info")
+	FName CurrentBossName = TEXT ("");
+
+
+	UFUNCTION()
 	void OnRep_CurrentBossHealthRatio();
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentBossHealthRatio, VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Info")
@@ -92,11 +97,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_ShowHideBossHPBar(bool InShowing);
 
-	//UFUNCTION(BlueprintImplementableEvent)
-	//void K2_HideBossHPBar();
-
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_UpdateBossHPBarRatio(float InRatio);
+	void K2_UpdateBossName(FName InName);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_UpdateBossHealthRatio(float InRatio);
 
 	//
 

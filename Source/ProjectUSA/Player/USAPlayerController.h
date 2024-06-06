@@ -27,8 +27,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShowHideCharacterHUD(bool bIsShowing);
 
+	//
+
 	UFUNCTION(BlueprintCallable)
 	void ShowHideBossHPBar(bool bIsShowing);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateBossName(FName InName);
+	
+	UFUNCTION(BlueprintCallable)
+	void UpdateBossHealthRatio(float InHealth);
+
 
 	//
 
@@ -86,4 +95,10 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_ShowHideUserWidget_BossHPBar(bool bIsShowing);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_UpdateBossName(FName InName);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_UpdateBossHealthRatio(float InRatio);
 };

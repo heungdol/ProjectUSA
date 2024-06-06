@@ -74,9 +74,21 @@ void AUSAPlayerController::ShowHideCharacterHUD(bool bIsShowing)
     K2_ShowHideUserWidget_PlayerHUD(bIsShowing);
 }
 
+//
+
 void AUSAPlayerController::ShowHideBossHPBar(bool bIsShowing)
 {
     K2_ShowHideUserWidget_BossHPBar(bIsShowing);
+}
+
+void AUSAPlayerController::UpdateBossName(FName InName)
+{
+    K2_UpdateBossName(InName);
+}
+
+void AUSAPlayerController::UpdateBossHealthRatio(float InHealth)
+{
+    K2_UpdateBossHealthRatio(InHealth);
 }
 
 //

@@ -19,11 +19,20 @@ public:
 	void SetAllPlayerControllerInput (bool InActive);
 
 	UFUNCTION(BlueprintCallable)
-	void PlayLevelSequenceToAllPlayer(class ALevelSequenceActor* InLevelSequnce);
-
-	UFUNCTION(BlueprintCallable)
 	void SetBossUSACharacter (class AUSACharacterBase* InCharacter);
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateBossHealthRatio(float InRatio);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateBossName(FName InName);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayLevelSequenceToAllPlayer(class ALevelSequenceActor* InLevelSequnce);
+
+
+
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Character");
 	TObjectPtr<class AUSACharacterBase> BossUSACharacter;
 
