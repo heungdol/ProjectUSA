@@ -130,7 +130,7 @@ void AUSAGameStateBase::SetPlayerControllerInputFinal(bool InActive)
 
 //
 
-void AUSAGameStateBase::PlayLevelSequence(ALevelSequenceActor* InLevelSequence)
+void AUSAGameStateBase::PlayLevelSequenceMulti(ALevelSequenceActor* InLevelSequence)
 {
 	ServerRPC_PlayLevelSequence(InLevelSequence);
 }
@@ -148,10 +148,34 @@ void AUSAGameStateBase::MulticastRPC_PlayLevelSequence_Implementation(ALevelSequ
 		return;
 	}
 
-	K2_PlayLevelSequence(InLevelSequence);
+	//MultiLevelSeqeunceActor = InLevelSequence;
+
+	K2_PlayLevelSequenceMulti(InLevelSequence);
 }
 
-void AUSAGameStateBase::PlayLevelSequenceFinal(ALevelSequenceActor* InLevelSequence)
+void AUSAGameStateBase::PlayLevelSequenceSingle(ALevelSequenceActor* InLevelSequence)
+{
+	if (InLevelSequence == nullptr
+		|| InLevelSequence->SequencePlayer == nullptr)
+	{
+		return;
+	}
+
+	if (IsValid(MultiLevelSeqeunceActor) == true
+		&& IsValid(MultiLevelSeqeunceActor->SequencePlayer) == true
+		&& MultiLevelSeqeunceActor->SequencePlayer->IsPlaying() == true)
+	{
+		return;
+	}
+
+	//SingleLevelSeqeunceActor = InLevelSequence;
+
+	K2_PlayLevelSequenceSingle(InLevelSequence);
+}
+
+//
+
+void AUSAGameStateBase::PlayLevelSequenceCore(ALevelSequenceActor* InLevelSequence)
 {
 	if (InLevelSequence == nullptr
 		|| InLevelSequence->SequencePlayer == nullptr)

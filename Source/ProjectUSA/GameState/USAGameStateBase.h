@@ -39,7 +39,10 @@ public:
 	//
 
 	//UFUNCTION(BlueprintCallable)
-	void PlayLevelSequence (class ALevelSequenceActor* InLevelSequence);
+	void PlayLevelSequenceMulti (class ALevelSequenceActor* InLevelSequence);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayLevelSequenceSingle(class ALevelSequenceActor* InLevelSequence);
 
 protected:
 
@@ -48,7 +51,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAPlayerController> LocalUSAPlayerController;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Level Sequence Info")
+	TObjectPtr<class ALevelSequenceActor> MultiLevelSeqeunceActor;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Level Sequence Info")
+	TObjectPtr<class ALevelSequenceActor> SingleLevelSeqeunceActor;
+
 	//
 
 	UFUNCTION(Server, Reliable)
@@ -69,7 +80,7 @@ protected:
 	void MulticastRPC_PlayLevelSequence(class ALevelSequenceActor* InLevelSequence);
 
 	UFUNCTION(BlueprintCallable)
-	void PlayLevelSequenceFinal(class ALevelSequenceActor* InLevelSequence);
+	void PlayLevelSequenceCore(class ALevelSequenceActor* InLevelSequence);
 
 	//
 
@@ -106,7 +117,10 @@ protected:
 	//
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_PlayLevelSequence(ALevelSequenceActor* InLevelSequence);
+	void K2_PlayLevelSequenceMulti(ALevelSequenceActor* InLevelSequence);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_PlayLevelSequenceSingle(ALevelSequenceActor* InLevelSequence);
 
 	//
 
