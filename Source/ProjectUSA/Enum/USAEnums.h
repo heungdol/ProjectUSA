@@ -49,3 +49,13 @@ enum class ECharacterActionDirectionType : uint8
 	Target UMETA(DisplayName = "Target"),
 	//Damage UMETA(DisplayName = "Damage"), <- 우선 CharacterBase에서 처리
 };
+
+// ========================================================================
+
+UENUM(BlueprintType)
+enum class EUSAWeaponType : uint8
+{
+	None = 0 UMETA(DisplayName = "None"),
+	First = 1 UMETA(DisplayName = "First"),
+	Second = 2 UMETA(DisplayName = "Second"),
+};

@@ -28,6 +28,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
 	TObjectPtr<class UStaticMeshComponent> ItemStaticMeshComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Item Info")
+	TObjectPtr <class UTexture2D> ItemTexture;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
 	TObjectPtr <UAnimMontage> ItemPickUpAnimMontage;
 
@@ -71,5 +74,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void PlayUseAnimationMontageInUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UTexture2D* GetItemTexture() const { return ItemTexture; }
 
 };

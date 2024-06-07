@@ -7,6 +7,7 @@
 #include "Character/USACharacterPlayer.h"
 
 #include "Weapon/USAWeaponBase.h"
+#include "Item/USAItemBase.h"
 
 
 void AUSAPlayerController::BeginPlay()
@@ -101,6 +102,18 @@ void AUSAPlayerController::UpdatePlayerWeapon(EUSAWeaponType InType, AUSAWeaponB
 void AUSAPlayerController::UpdatePlayerHPBar(float InRatio)
 {
     K2_UpdatePlayerHPBar(InRatio);
+}
+
+//
+
+void AUSAPlayerController::ChangePlayerItem(TSubclassOf<AUSAItemBase> InItemClass)
+{
+    K2_ChangePlayerItem(InItemClass);
+}
+
+void AUSAPlayerController::ChangePlayerItemCount(int32 InItemCount)
+{
+    K2_ChangePlayerItemCount(InItemCount);
 }
 
 //

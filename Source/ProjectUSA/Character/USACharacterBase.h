@@ -375,6 +375,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool PostUseItem();
 
+	//virtual void PrevItem(const struct FInputActionValue& Value);
+	//virtual void NextItem(const struct FInputActionValue& Value);
+	
+	//UFUNCTION(BlueprintCallable)
+	virtual void ChangeItem(bool InIsChangeToNext);
+
+	UFUNCTION(BlueprintPure)
+	TSubclassOf<class AUSAItemBase> GetCurrentItemClass();
+	
+	UFUNCTION(BlueprintPure)
+	int32 GetCurrentItemCount();
+
 
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
@@ -382,9 +394,6 @@ protected:
 
 	virtual void Look(const struct FInputActionValue& Value);
 	virtual void LookTarget(const struct FInputActionValue& Value);
-
-	virtual void PrevItem(const struct FInputActionValue& Value);
-	virtual void NextItem(const struct FInputActionValue& Value);
 
 	//
 
@@ -431,8 +440,11 @@ protected:
 
 	//
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthRatioChanged", ScriptName = "OnUSACurrentHealthRatioChanged"))
-	void K2_OnCurrentItemOrderIndexChanged(float InValue);
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnCurrentItemOrderIndexChanged(TSubclassOf<class AUSAItemBase> InItemClass);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnCurrentItemCountChanged(int32 InItemCount);
 
 	UPROPERTY()
 	bool bIsUsingItem = false;

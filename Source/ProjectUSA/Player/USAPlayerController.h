@@ -47,6 +47,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerHPBar(float InRatio);
 
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void ChangePlayerItem(TSubclassOf<class AUSAItemBase> InItemClass);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangePlayerItemCount(int32 InItemCount);
+
 	
 protected:
 	virtual void BeginPlay() override;
@@ -70,6 +78,15 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "UpdatePlayerHealth", ScriptName = "UpdatePlayerHealth"))
 	void K2_UpdatePlayerHPBar(float InRatio);
+
+
+	//
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ChangePlayerItem(TSubclassOf<class AUSAItemBase> InItemClass);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ChangePlayerItemCount(int32 InItemCount);
 
 
 	//

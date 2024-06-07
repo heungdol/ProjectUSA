@@ -7,17 +7,9 @@
 
 #include "Interface/USAPickableInterface.h"
 
+#include "Enum/USAEnums.h"
+
 #include "USAWeaponBase.generated.h"
-
-// ========================================================================
-
-UENUM(BlueprintType)
-enum class EUSAWeaponType : uint8
-{
-	None = 0 UMETA(DisplayName = "None"),
-	First = 1 UMETA(DisplayName = "First"),
-	Second = 2 UMETA(DisplayName = "Second"),
-};
 
 // ========================================================================
 
@@ -53,16 +45,16 @@ public:
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Weapon Info")
 	TObjectPtr<class USkeletalMesh> WeaponDisplaySkeletalMeshMeshRef;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Weapon Info")
 	TObjectPtr<class UStaticMesh> WeaponDisplayStaticMeshRef;
 
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Weapon Info")
 	TObjectPtr <class UTexture2D> WeaponTexture;
 
 	//
@@ -71,28 +63,28 @@ public:
 	//TObjectPtr <class URotatingMovementComponent> WeaponRotatingMovementCompont;
 	
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	EUSAWeaponType WeaponType = EUSAWeaponType::First;
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayWeaponAbilities;
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	FName WeaponHolderSocketName;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	FName WeaponHandSocketName;
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	TObjectPtr <UAnimMontage> WeaponPickUpAnimMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	float WeaponPickUpAnimMontageRate = 1.0f;
 
 	//
@@ -104,19 +96,19 @@ public:
 	//UPROPERTY(VisibleAnywhere, Category = "Weapon Drop")
 	//bool bIsDropping = false;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Weapon Drop Info")
 	bool bIsRandomDrop = true;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Weapon Drop Info")
 	float WeaponDropImpulseXY = 300.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Weapon Drop Info")
 	float WeaponDropImpulseZ = 300.0f;
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Drop Info")
 	//FRotator WeaponIdleRotationRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Drop Info")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Weapon Drop Info")
 	float bIsWeaponDropping = false;
 
 protected:

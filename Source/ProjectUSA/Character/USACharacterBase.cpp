@@ -516,33 +516,6 @@ void AUSACharacterBase::LookTarget(const struct FInputActionValue& Value)
 	// ...
 }
 
-//
-
-void AUSACharacterBase::PrevItem(const FInputActionValue& Value)
-{
-	if (bIsUsingItem == true)
-	{
-		return;
-	}
-
-	CurrentUSAItemOrderIndex += USAItemOrder.Num() - 1;
-	CurrentUSAItemOrderIndex %= USAItemOrder.Num();
-
-	K2_OnCurrentItemOrderIndexChanged(CurrentUSAItemOrderIndex);
-}
-
-void AUSACharacterBase::NextItem(const FInputActionValue& Value)
-{
-	if (bIsUsingItem == true)
-	{
-		return;
-	}
-
-	CurrentUSAItemOrderIndex += 1;
-	CurrentUSAItemOrderIndex %= USAItemOrder.Num();
-
-	K2_OnCurrentItemOrderIndexChanged(CurrentUSAItemOrderIndex);
-}
 
 //
 
@@ -635,8 +608,8 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::Look);
 		EnhancedInputComponent->BindAction(TargetAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::LookTarget);
 
-		EnhancedInputComponent->BindAction(PrevItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::PrevItem);
-		EnhancedInputComponent->BindAction(NextItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::NextItem);
+		//EnhancedInputComponent->BindAction(PrevItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::PrevItem);
+		//EnhancedInputComponent->BindAction(NextItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::NextItem);
 
 
 		//EnhancedInputComponent->BindAction(ItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::UseItem);
@@ -744,6 +717,71 @@ void AUSACharacterBase::USACharacterAnimInstanceMontageNotify(FName NotifyName, 
 	{
 		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
 	}
+}
+
+void AUSACharacterBase::ChangeItem(bool InIsChangeToNext)
+{
+	if (bIsUsingItem == true)
+	{
+		return;
+	}
+
+	if (USAItemOrder.Num() == 0)
+	{
+		K2_OnCurrentItemOrderIndexChanged(nullptr);
+		return;
+	}
+
+	if (InIsChangeToNext)
+	{
+		CurrentUSAItemOrderIndex += 1;
+		CurrentUSAItemOrderIndex %= USAItemOrder.Num();
+
+	}
+	else
+	{
+		CurrentUSAItemOrderIndex += USAItemOrder.Num() - 1;
+		CurrentUSAItemOrderIndex %= USAItemOrder.Num();
+
+	}
+	
+	K2_OnCurrentItemOrderIndexChanged(GetCurrentItemClass());
+	K2_OnCurrentItemCountChanged(GetCurrentItemCount());
+}
+
+TSubclassOf<class AUSAItemBase> AUSACharacterBase::GetCurrentItemClass()
+{
+	if (USAItemOrder.Num() == 0)
+	{
+		return nullptr;
+	}
+
+	if (USAItemOrder.IsValidIndex(CurrentUSAItemOrderIndex) == false)
+	{
+		return nullptr;
+	}
+
+	return USAItemOrder[CurrentUSAItemOrderIndex];
+}
+
+int32 AUSACharacterBase::GetCurrentItemCount()
+{
+	int32 ItemCount = 0;
+	
+	if (USAItemOrder.IsValidIndex(CurrentUSAItemOrderIndex))
+	{
+		TSubclassOf<AUSAItemBase> CurrentItemClass = USAItemOrder[CurrentUSAItemOrderIndex];
+
+		for (TSubclassOf<AUSAItemBase> Item : CurrentOwnedItems)
+		{
+			if (Item == CurrentItemClass)
+			{
+				ItemCount += 1;
+			}
+		}
+	}
+
+	return ItemCount;
 }
 
 void AUSACharacterBase::Move(const FInputActionValue& Value)
@@ -1598,12 +1636,6 @@ bool AUSACharacterBase::PreUseItem()
 
 bool AUSACharacterBase::PostUseItem()
 {
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
-	{
-		return false;
-	}
-
 	if (CurrentUSAItemOrderIndex < 0 || USAItemOrder.Num() <= CurrentUSAItemOrderIndex)
 	{
 		return false;
@@ -1623,11 +1655,20 @@ bool AUSACharacterBase::PostUseItem()
 
 	Cast<AUSAItemBase>(CurrentItemClass->GetDefaultObject())->ActiveUSAItem(ASC, this);
 
-	bIsUsingItem = false;
-	
-	int ItemIndex = 0;
-	CurrentOwnedItems.Find(CurrentItemClass, ItemIndex);
-	CurrentOwnedItems.RemoveAt(ItemIndex);
+	//bIsUsingItem = false;
+
+	TArray<TSubclassOf<AUSAItemBase>> PrevItems = CurrentOwnedItems;
+
+	if (UKismetSystemLibrary::IsServer(GetWorld()) == true
+		|| UKismetSystemLibrary::IsStandalone(GetWorld()) == true)
+	{
+		int ItemIndex = 0;
+		CurrentOwnedItems.Find(CurrentItemClass, ItemIndex);
+		CurrentOwnedItems.RemoveAt(ItemIndex);
+
+		OnRep_CurrentOwnedItems(PrevItems);
+		//K2_OnCurrentItemCountChanged(GetCurrentItemCount());
+	}
 
 	return true;
 }
@@ -2356,15 +2397,15 @@ void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> Prev
 
 void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>> PrevItems)
 {
-	if (CurrentOwnedItems.Num() <= PrevItems.Num())
-	{
-		return;
-	}
+	//if (CurrentOwnedItems.Num() <= PrevItems.Num())
+	//{
+	//	return;
+	//}
 
-	if (CurrentOwnedItems.Num() <= 0)
-	{
-		return;
-	}
+	//if (CurrentOwnedItems.Num() <= 0)
+	//{
+	//	return;
+	//}
 
 	//TSubclassOf<AUSAItemBase> TargetItem = nullptr;
 
@@ -2378,13 +2419,18 @@ void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>
 	//}
 
 	// 항상 뒤로 Add 되니...
-	TSubclassOf<AUSAItemBase> TargetItem = CurrentOwnedItems[CurrentOwnedItems.Num() - 1];
+	//TSubclassOf<AUSAItemBase> TargetItem = CurrentOwnedItems[CurrentOwnedItems.Num() - 1];
 
-	if (IsValid(TargetItem) == true
-		&& IsValid(TargetItem->GetDefaultObject()) == true)
-	{
-		Cast<AUSAItemBase>(TargetItem->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
-	}
+	//if (IsValid(TargetItem) == true
+	//	&& IsValid(TargetItem->GetDefaultObject()) == true)
+	//{
+	//	Cast<AUSAItemBase>(TargetItem->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
+	//}
+
+	//K2_OnCurrentItemOrderIndexChanged(GetCurrentItemClass());
+	bIsUsingItem = false;
+
+	K2_OnCurrentItemCountChanged(GetCurrentItemCount());
 }
 
 
