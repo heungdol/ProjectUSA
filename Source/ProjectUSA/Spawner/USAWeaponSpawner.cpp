@@ -47,8 +47,8 @@ void AUSAWeaponSpawner::OnConstruction(const FTransform& Transform)
 		WeaponSpawnStaticMeshComponent->SetStaticMesh(Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject())->WeaponDisplayStaticMeshRef);
 		WeaponSpawnSkeletalMeshComponent->SetSkeletalMesh(Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject())->WeaponDisplaySkeletalMeshMeshRef);
 
-		FText SpawnWeaponText = FText::Format(NSLOCTEXT("", "", "Spawn Weapon: {0}"), WeaponSpawnClass->GetDisplayNameText());
-		WeaponSpawnTextComponent->SetText(SpawnWeaponText);
+		//FText SpawnWeaponText = FText::Format(NSLOCTEXT("", "", "Spawn Weapon: {0}"), WeaponSpawnClass->GetDisplayNameText());
+		//WeaponSpawnTextComponent->SetText(SpawnWeaponText);
 	}
 }
 

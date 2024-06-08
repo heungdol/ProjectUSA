@@ -17,6 +17,7 @@
 
 #include "Player/USAPlayerController.h"
 #include "Character/USACharacterBase.h"
+#include "HUD/USAHUD.h"
 
 
 void AUSAGameStateBase::BeginPlay()
@@ -33,6 +34,16 @@ void AUSAGameStateBase::BeginPlay()
 		
 		LocalUSACharacter = Cast<AUSACharacterBase>(ControlledPawn);
 		LocalUSAPlayerController = Cast<AUSAPlayerController>(PlayerController);
+
+		if (LocalUSAPlayerController)
+		{
+			LocalUSAHUD = Cast<AUSAHUD>(LocalUSAPlayerController->GetHUD());
+		}
+
+		if (LocalUSAHUD)
+		{
+			LocalUSAHUD->InitLocalPlayerController(PlayerController, LocalUSAPlayerController);
+		}
 	}
 }
 
@@ -86,12 +97,12 @@ void AUSAGameStateBase::OnRep_CurrentBossHealthRatio()
 
 void AUSAGameStateBase::PlayUserWidgetAnimationP_Panel(bool bIsShowing, bool bIsRaw)
 {
-	if (IsValid(LocalUSAPlayerController) == false)
+	if (IsValid(LocalUSAHUD) == false)
 	{
 		return;
 	}
 
-	LocalUSAPlayerController->PlayUserWidgetAnimation_Panel(bIsShowing, bIsRaw);
+	LocalUSAHUD->PlayUserWidgetAnimation_Panel(bIsShowing, bIsRaw);
 }
 
 

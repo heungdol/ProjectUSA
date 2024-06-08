@@ -29,6 +29,8 @@
 
 #include "Item/USAItemBase.h"
 
+#include "HUD/USAHUD.h"
+
 #include "ProjectUSA.h"
 
 
@@ -96,6 +98,8 @@ void AUSACharacterPlayer::InitPlayerController()
 	}
 
 	LocalUSAPlayerController = GetController<AUSAPlayerController>();
+
+	LocalUSAHUD = Cast <AUSAHUD>(LocalPlayerController->GetHUD());
 }
 
 void AUSACharacterPlayer::InitTargetingCameraActor()

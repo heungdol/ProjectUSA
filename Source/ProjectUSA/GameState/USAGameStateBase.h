@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAPlayerController> LocalUSAPlayerController;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
+	TObjectPtr<class AUSAHUD> LocalUSAHUD;
+
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Level Sequence Info")

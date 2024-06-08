@@ -29,11 +29,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Camera Info: Player Only")
 	TObjectPtr <class AUSAPlacedCameraActor> PlacedCameraActor;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr <class APlayerController> LocalPlayerController;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr <class AUSAPlayerController> LocalUSAPlayerController;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
+	TObjectPtr<class AUSAHUD> LocalUSAHUD;
+
 
 	//
 
