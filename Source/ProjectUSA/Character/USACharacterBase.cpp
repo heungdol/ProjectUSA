@@ -531,33 +531,21 @@ void AUSACharacterBase::Falling()
 {
 	Super::Falling();
 
-	//if (GetLocalRole() == ENetRole::ROLE_Authority
-		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	{
-		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
-	}
+	ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
 }
 
 void AUSACharacterBase::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
-	//if (GetLocalRole() == ENetRole::ROLE_Authority
-		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	{
-		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
-	}
+	ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 }
 
 //
 
 void AUSACharacterBase::OnUSACrouch()
 {
-	//if (GetLocalRole() == ENetRole::ROLE_Authority
-		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	{
-		ServerRPC_OnUSACrouch();
-	}
+	ServerRPC_OnUSACrouch();
 }
 
 void AUSACharacterBase::ServerRPC_OnUSACrouch_Implementation()
@@ -574,11 +562,7 @@ void AUSACharacterBase::MulticastRPC_OnUSACrouch_Implementation()
 
 void AUSACharacterBase::OnUSAUnCrouch()
 {
-	//if (GetLocalRole() == ENetRole::ROLE_Authority
-		//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	{
-		ServerRPC_OnUSAUnCrouch();
-	}
+	ServerRPC_OnUSAUnCrouch();
 }
 
 void AUSACharacterBase::ServerRPC_OnUSAUnCrouch_Implementation()
@@ -592,7 +576,6 @@ void AUSACharacterBase::MulticastRPC_OnUSAUnCrouch_Implementation()
 }
 
 //
-
 
 
 // Called to bind functionality to input
@@ -610,7 +593,6 @@ void AUSACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		//EnhancedInputComponent->BindAction(PrevItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::PrevItem);
 		//EnhancedInputComponent->BindAction(NextItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::NextItem);
-
 
 		//EnhancedInputComponent->BindAction(ItemAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::UseItem);
 		//EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &AUSACharacterBase::DoDrop);
@@ -656,10 +638,6 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 
 	BeginStartAbilities();
 
-	//if (IsValid(WeaponDetectBoxComponent) == true)
-	//{
-	//	WeaponDetectBoxComponent->SetGenerateOverlapEvents(IsValid(ASC));
-	//}
 
 	// 시작할 때 자동으로 콘솔 입력
 	//APlayerController* PlayerController = Cast <APlayerController>(NewController);
@@ -673,11 +651,6 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 
 void AUSACharacterBase::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
 {
-	//if (bIsAction && !bIsSliding && !bIsFalling && !bIsWalking)
-	//{
-	//	return;
-	//}
-
 	if (ASC != nullptr
 		&& ASC->GetGameplayTagCount(USA_CHARACTER_ADJUST_IGNOREMOVEINPUT) > 0)
 	{
@@ -721,11 +694,6 @@ void AUSACharacterBase::USACharacterAnimInstanceMontageNotify(FName NotifyName, 
 
 void AUSACharacterBase::ChangeItem(bool InIsChangeToNext)
 {
-	if (bIsUsingItem == true)
-	{
-		return;
-	}
-
 	if (USAItemOrder.Num() == 0)
 	{
 		K2_OnCurrentItemOrderIndexChanged(nullptr);
@@ -807,9 +775,7 @@ void AUSACharacterBase::Move(const FInputActionValue& Value)
 
 void AUSACharacterBase::MoveEnd(const FInputActionValue& Value)
 {
-	//USA_LOG(LogTemp, Log, TEXT("End Move"));
-
-	//USACharacterInputMovementDirection = FVector::ZeroVector;
+	
 }
 
 void AUSACharacterBase::Look(const FInputActionValue& Value)
@@ -1096,16 +1062,6 @@ float AUSACharacterBase::GetCharacterCurrentHealthRatio_Implementation()
 	return Result;
 }
 
-//void AUSACharacterBase::OnCurrentHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
-//{
-//	K2_OnCurrentHealthChanged(ChangeData.NewValue);
-//}
-//
-//void AUSACharacterBase::OnMaxHealthChangedCallback(const FOnAttributeChangeData& ChangeData)
-//{
-//	K2_OnMaxHealthChanged(ChangeData.NewValue);
-//}
-
 void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	if (GetCharacterMovement() == nullptr)
@@ -1121,16 +1077,6 @@ void AUSACharacterBase::OnGameplayTagCallback_IgnoreRotateToMove(const FGameplay
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
-
-	//if (NewCount == 1)
-	//{
-	//	bIsFixRotation = true;
-	//	FixRotation = GetActorRotation();
-	//}
-	//else if (NewCount == 0)
-	//{
-	//	bIsFixRotation = false;
-	//}
 }
 
 void AUSACharacterBase::OnGameplayTagCallback_IgnoreMoveInput(const FGameplayTag CallbackTag, int32 NewCount)
@@ -1190,15 +1136,9 @@ void AUSACharacterBase::OnGameplayTagCallback_CanNotWalkOffLedge(const FGameplay
 
 void AUSACharacterBase::OnGameplayTagCallback_OffOverlapEvent(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	//if (IsValid(GetCapsuleComponent()) == false)
-	//{
-	//	return;
-	//}
-
 	if (NewCount > 0)
 	{
 		bIsPickable = false;
-		//GetCapsuleComponent()->SetGenerateOverlapEvents(false);
 	}
 	else
 	{
@@ -1215,13 +1155,11 @@ void AUSACharacterBase::OnGameplayTagCallback_Walk(const FGameplayTag CallbackTa
 
 	if (NewCount > 0)
 	{
-		//CharacterMovementRealWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-		//bIsWalking = true;
+		
 	}
 	else
 	{
-		//CharacterMovementWalkInfo.RenewCharacterMovementInfo(GetCharacterMovement());
-		//bIsWalking = false;
+		
 	}
 }
 
@@ -1229,8 +1167,6 @@ void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTa
 {
 	if (NewCount > 0)
 	{
-		//bIsFalling = true;
-
 		if (IsValid(GetCharacterMovement()))
 		{
 			GetCharacterMovement()->bUseFlatBaseForFloorChecks = false;
@@ -1238,8 +1174,6 @@ void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTa
 	}
 	else
 	{
-		//bIsFalling = false;
-	
 		if (IsValid(GetCharacterMovement()))
 		{
 			GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
@@ -1251,11 +1185,11 @@ void AUSACharacterBase::OnGameplayTagCallback_Slide(const FGameplayTag CallbackT
 {
 	if (NewCount > 0)
 	{
-		//bIsSliding = true;
+		
 	}
 	else
 	{
-		//bIsSliding = false;
+		
 	}
 }
 
@@ -1264,12 +1198,7 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 	if (NewCount > 0)
 	{
 		OnUSACrouch();
-
-		//if (GetLocalRole() == ENetRole::ROLE_Authority
-			//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-		{
-			ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_CROUCH);
-		}
+		ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_CROUCH);
 	}
 	else
 	{
@@ -1277,19 +1206,11 @@ void AUSACharacterBase::OnGameplayTagCallback_Crouch(const FGameplayTag Callback
 
 		if (GetMovementComponent()->IsFalling())
 		{
-			//if (GetLocalRole() == ENetRole::ROLE_Authority
-				//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)	
-			{
-				ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
-			}
+			ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_FALL);
 		}
 		else
 		{
-			//if (GetLocalRole() == ENetRole::ROLE_Authority
-				//|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-			{
-				ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
-			}
+			ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 		}
 	}
 }
@@ -1315,16 +1236,11 @@ void AUSACharacterBase::OnGameplayTagCallback_Action(const FGameplayTag Callback
 {
 	if (NewCount > 0)
 	{
-		//bIsAction = true;
 
-		//if (GetCharacterMovement() != nullptr)
-		//{
-		//	GetCharacterMovement()->StopMovementImmediately();
-		//}
 	}
 	else
 	{
-		//bIsAction = false;
+
 	}
 }
 
@@ -1339,43 +1255,6 @@ void AUSACharacterBase::CheckCharacterByGameplayTags()
 
 	OnGameplayTagCallback_Dead(USA_CHARACTER_STATE_DEAD, Count);
 }
-
-//void AUSACharacterBase::UpdateCurrentWeapons(/*AUSAWeaponBase* InWeapon*/)
-//{
-//	for (AUSAWeaponBase* StartWeapon : NextWaitingWeapons)
-//	{
-//		if (StartWeapon == nullptr)
-//		{
-//			continue;
-//		}
-//
-//		EUSAWeaponType WeaponType = StartWeapon->GetWeaponType();
-//
-//		if (CurrentEquipedWeapons.Contains(WeaponType)
-//			&& CurrentEquipedWeapons[WeaponType] != nullptr)
-//		{
-//			//CurrentEquipedWeapons[WeaponType]->ClearGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-//		}
-//		else
-//		{
-//			CurrentEquipedWeapons.Add({ WeaponType, nullptr });
-//		}
-//
-//		if (CurrentEquipedWeapons[WeaponType] != nullptr)
-//		{
-//			continue;
-//		}
-//
-//		StartWeapon->GiveGameplayWeaponAbilitesToASC(GetAbilitySystemComponent());
-//
-//		AttachWeaponToHolderSocket(StartWeapon);
-//
-//		CurrentEquipedWeapons[WeaponType] = StartWeapon;
-//	}
-//
-//	NextWaitingWeapons.Empty();
-//
-//}
 
 void AUSACharacterBase::AttachWeaponToHandSocket(AUSAWeaponBase* InWeapon)
 {
@@ -1434,16 +1313,7 @@ bool AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeapon
 		return false;
 	}
 
-	//TArray<AUSAWeaponBase*> PrevWeapons;
-	//PrevWeapons.Init(nullptr, CurrentEquipedWeapons.Num());
-	//for (int i = 0; i < PrevWeapons.Num(); i++)
-	//{
-	//	PrevWeapons[i] = CurrentEquipedWeapons[i];
-	//} 
-
 	CurrentEquipedWeapons[(uint8)InWeaponType] = InWeapon;
-
-	//OnRep_CurrentEquipedWeapons(PrevWeapons);
 
 	return true;
 }
@@ -1532,9 +1402,6 @@ void AUSACharacterBase::ServerRPC_DropWeapons_Implementation()
 
 void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 {
-	//TArray<EUSAWeaponType> CurrentEquipedWeaponKeys;
-	//CurrentEquipedWeapons.GenerateKeyArray(CurrentEquipedWeaponKeys);
-
 	for (AUSAWeaponBase* CurrentWeapon: CurrentEquipedWeapons)
 	{
 		if (IsValid(CurrentWeapon) == false)
@@ -1543,36 +1410,11 @@ void AUSACharacterBase::MulticastRPC_DropWeapons_Implementation()
 		}
 
 		CurrentWeapon->SetPickableActorOwner(nullptr);
-		
-		// 무기 소유자 설정
-		//if (UKismetSystemLibrary::IsServer(GetWorld()))
-		//{
-		//}
 	}
-	
-	// 무기 탐지 딜레이
-	//WeaponDetectBoxComponent->SetGenerateOverlapEvents(false);
-
-	//if (GetWorld()->GetTimerManager().IsTimerActive(WeaponDetectBoxComponentTimerHandle))
-	//{
-	//	GetWorld()->GetTimerManager().ClearTimer(WeaponDetectBoxComponentTimerHandle);
-	//	WeaponDetectBoxComponentTimerHandle.Invalidate();
-	//}
-
-	//GetWorld()->GetTimerManager().SetTimer(WeaponDetectBoxComponentTimerHandle, FTimerDelegate::CreateLambda([=]()
-	//	{
-	//		if (IsValid(WeaponDetectBoxComponent) == true)
-	//		{
-	//			WeaponDetectBoxComponent->SetGenerateOverlapEvents(true);
-	//		}
-	//	}
-	//), WeaponDetectBoxComponentActiveDelay, false);
 }
 
 bool AUSACharacterBase::GetIsTargetableCurrently()
 {
-	//return false;
-
 	if (ASC == nullptr)
 	{
 		return false;
@@ -1629,8 +1471,6 @@ bool AUSACharacterBase::PreUseItem()
 
 	Cast<AUSAItemBase>(CurrentItemClass->GetDefaultObject())->PlayUseAnimationMontageInUSACharacter(ASC, this);
 
-	bIsUsingItem = true;
-
 	return true;
 }
 
@@ -1655,8 +1495,6 @@ bool AUSACharacterBase::PostUseItem()
 
 	Cast<AUSAItemBase>(CurrentItemClass->GetDefaultObject())->ActiveUSAItem(ASC, this);
 
-	//bIsUsingItem = false;
-
 	TArray<TSubclassOf<AUSAItemBase>> PrevItems = CurrentOwnedItems;
 
 	if (UKismetSystemLibrary::IsServer(GetWorld()) == true
@@ -1667,7 +1505,6 @@ bool AUSACharacterBase::PostUseItem()
 		CurrentOwnedItems.RemoveAt(ItemIndex);
 
 		OnRep_CurrentOwnedItems(PrevItems);
-		//K2_OnCurrentItemCountChanged(GetCurrentItemCount());
 	}
 
 	return true;
@@ -1696,10 +1533,6 @@ bool AUSACharacterBase::PostUseItem()
 	//}
 //}
 
-//float AUSACharacterBase::USATakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-//{
-//	return TakeDamage (DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-//}
 
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -2179,18 +2012,6 @@ void AUSACharacterBase::PostSetupGAS()
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
-
-		// 첫 스폰 시, 딜레이를 고려한 무기 장착 과정
-		//if (bIsSetStartWeaponBeforeGASSetup)
-		//{
-		//	bIsSetStartWeaponBeforeGASSetup = false;
-
-		//	//EquipFinalNextWeapon();
-
-		//	UpdateCurrentWeapons();
-		//}
-		
-		//UpdateCurrentWeaponsFromStart();
 	}
 
 
@@ -2308,13 +2129,6 @@ void AUSACharacterBase::BeginStartAbilities()
 
 void AUSACharacterBase::SetupAttributeSet()
 {
-	//if (GetLocalRole() != nullptr)
-	//{
-	//	GetNetOwningPlayer()->GetLocalRole();
-	//}
-
-	//GetLocalRole();
-
 	// 어트리뷰트 설정
 	if (ASC != nullptr)
 	{
@@ -2325,10 +2139,6 @@ void AUSACharacterBase::SetupAttributeSet()
 
 			ASC->GetGameplayAttributeValueChangeDelegate(UUSAAttributeSet::GetMaxHealthAttribute()).AddUObject
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
-
-			//ASC->GetSet <UUSAAttributeSet>()->OnOutOfHealth.AddDynamic(this, &AUSACharacterBase::DieUSACharacter);
-
-			//ASC->GetSet <UUSAAttributeSet>()->OnRevive
 
 			ASC->GetSet <UUSAAttributeSet>()->OnCurrentHealthChanged.AddDynamic
 			(this, &AUSACharacterBase::OnCurrentHealthRatioChanged);
@@ -2428,7 +2238,7 @@ void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>
 	//}
 
 	//K2_OnCurrentItemOrderIndexChanged(GetCurrentItemClass());
-	bIsUsingItem = false;
+	//bIsUsingItem = false;
 
 	K2_OnCurrentItemCountChanged(GetCurrentItemCount());
 }

@@ -58,6 +58,20 @@ void AUSAHUD::ShowHideCharacterHUD(bool bIsShowing)
 
 //
 
+void AUSAHUD::ShowHideHowToPlay(bool bIsShowing)
+{
+    K2_ShowHideHowToPlay(bIsShowing);
+}
+
+//
+
+void AUSAHUD::ShowHideMenu(bool bIsShowing)
+{
+    K2_ShowHideMenu(bIsShowing);
+}
+
+//
+
 void AUSAHUD::ShowHideBossHPBar(bool bIsShowing)
 {
     K2_ShowHideUserWidget_BossHPBar(bIsShowing);
@@ -97,11 +111,11 @@ void AUSAHUD::ChangePlayerItemCount(int32 InItemCount)
     K2_ChangePlayerItemCount(InItemCount);
 }
 
-void AUSAHUD::InitLocalPlayerController(APlayerController* InPlayerController, AUSAPlayerController* InUSAPlayerController)
-{
-    LocalPlayerController = InPlayerController;
-    LocalUSAPlayerController = InUSAPlayerController;
-}
+//void AUSAHUD::InitLocalPlayerController(APlayerController* InPlayerController, AUSAPlayerController* InUSAPlayerController)
+//{
+//    LocalPlayerController = InPlayerController;
+//    LocalUSAPlayerController = InUSAPlayerController;
+//}
 
 //
 

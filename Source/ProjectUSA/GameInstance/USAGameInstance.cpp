@@ -5,6 +5,8 @@
 
 #include "AbilitySystemGlobals.h"
 
+#include "GameFramework/PlayerController.h"
+
 void UUSAGameInstance::OnStart()
 {
 	Super::OnStart();
@@ -16,3 +18,92 @@ void UUSAGameInstance::OnStart()
         AbilitySystem.InitGlobalData();
     }
 }
+
+//
+
+void UUSAGameInstance::SetUSAInputModeUI(APlayerController* InPlayerController)
+{
+    if (IsValid(InPlayerController) == false)
+    {
+        return;
+    }
+
+    if (InPlayerController->IsLocalPlayerController() == false)
+    {
+        return;
+
+    }
+    
+    InPlayerController->bShowMouseCursor = true;
+
+    InPlayerController->SetInputMode(FInputModeUIOnly());
+}
+
+void UUSAGameInstance::SetUSAInputModeGame(APlayerController* InPlayerController)
+{
+    if (IsValid(InPlayerController) == false)
+    {
+        return;
+    }
+
+    if (InPlayerController->IsLocalPlayerController() == false)
+    {
+        return;
+    }
+
+    InPlayerController->bShowMouseCursor = false;
+
+    InPlayerController->SetInputMode(FInputModeGameOnly());
+}
+
+//
+
+void UUSAGameInstance::HostSession(APlayerController* InPlayerController, FName InLevelName, bool InLAN)
+{
+    if (IsValid(InPlayerController) == false)
+    {
+        return;
+    }
+
+    if (InPlayerController->IsLocalPlayerController() == false)
+    {
+        return;
+    }
+    
+    K2_HostSession(InPlayerController, InLevelName, InLAN);
+}
+
+void UUSAGameInstance::JoinSessionByLAN(APlayerController* InPlayerController)
+{
+    if (IsValid(InPlayerController) == false)
+    {
+        return;
+    }
+
+    if (InPlayerController->IsLocalPlayerController() == false)
+    {
+        return;
+    }
+
+    K2_JoinSessionByLAN(InPlayerController);
+}
+
+void UUSAGameInstance::JoinSessionByIPAddress(APlayerController* InPlayerController, const FText& InIP)
+{
+    if (IsValid(InPlayerController) == false)
+    {
+        return;
+    }
+
+    if (InPlayerController->IsLocalPlayerController() == false)
+    {
+        return;
+    }
+
+    K2_JoinSessionByIPAddress(InPlayerController, InIP);
+}
+
+//bool UUSAGameInstance::FunctionTestReturnBoolean_Implementation(int32 InValue)
+//{
+//    return false;
+//}

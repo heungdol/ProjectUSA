@@ -11,6 +11,11 @@
 
 #include "HUD/USAHUD.h"
 
+#include "Windows/WindowsApplication.h"  // Windows API 사용을 위해 필요
+#include "Windows/AllowWindowsPlatformTypes.h"
+#include <Windows.h>
+#include "Windows/HideWindowsPlatformTypes.h"
+
 
 void AUSAPlayerController::BeginPlay()
 {
@@ -27,6 +32,9 @@ void AUSAPlayerController::BeginPlay()
             USAHUD->InitCharacterHUD(USACharacterOwner);
         }
     }
+
+    // HUD 가져오기
+    LocalUSAHUD = Cast<AUSAHUD>(GetHUD());
 }
 
 void AUSAPlayerController::BeginPlayingState()
@@ -52,80 +60,39 @@ void AUSAPlayerController::BeginPlayingState()
     }
 }
 
-//
+void AUSAPlayerController::SimulateClickMouseLeftButtonPressed()
+{
+    INPUT Input = { 0 };
+    Input.type = INPUT_MOUSE;
+    Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
 
-//void AUSAPlayerController::PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw)
-//{
-//    if (bIsShowing)
-//    {
-//        if (bIsRaw)
-//        {
-//            K2_PlayUserWidgetAnimation_PanelWhite();
-//        }
-//        else
-//        {
-//            K2_PlayUserWidgetAnimation_PanelShow();
-//        }
-//    }
-//    else
-//    {
-//        if (bIsRaw)
-//        {
-//            K2_PlayUserWidgetAnimation_PanelBlack();
-//        }
-//        else
-//        {
-//            K2_PlayUserWidgetAnimation_PanelHide();
-//        }
-//    }
-//}
-//
-////
-//
-//void AUSAPlayerController::ShowHideCharacterHUD(bool bIsShowing)
-//{
-//    K2_ShowHideUserWidget_PlayerHUD(bIsShowing);
-//}
-//
-////
-//
-//void AUSAPlayerController::ShowHideBossHPBar(bool bIsShowing)
-//{
-//    K2_ShowHideUserWidget_BossHPBar(bIsShowing);
-//}
-//
-//void AUSAPlayerController::UpdateBossName(FName InName)
-//{
-//    K2_UpdateBossName(InName);
-//}
-//
-//void AUSAPlayerController::UpdateBossHealthRatio(float InHealth)
-//{
-//    K2_UpdateBossHealthRatio(InHealth);
-//}
-//
-////
-//
-//void AUSAPlayerController::UpdatePlayerWeapon(EUSAWeaponType InType, AUSAWeaponBase* InWeapon)
-//{
-//    K2_UpdatePlayerWeapon(InType, InWeapon);
-//}
-//
-//void AUSAPlayerController::UpdatePlayerHPBar(float InRatio)
-//{
-//    K2_UpdatePlayerHPBar(InRatio);
-//}
-//
-////
-//
-//void AUSAPlayerController::ChangePlayerItem(TSubclassOf<AUSAItemBase> InItemClass)
-//{
-//    K2_ChangePlayerItem(InItemClass);
-//}
-//
-//void AUSAPlayerController::ChangePlayerItemCount(int32 InItemCount)
-//{
-//    K2_ChangePlayerItemCount(InItemCount);
-//}
-//
-////
+    SendInput(1, &Input, sizeof(INPUT));
+}
+
+void AUSAPlayerController::SimulateClickMouseLeftButtonReleased()
+{
+    INPUT Input = { 0 };
+    Input.type = INPUT_MOUSE;
+    Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+
+    SendInput(1, &Input, sizeof(INPUT));
+}
+
+void AUSAPlayerController::SimulateMoveMousePosition(FVector InDelta, float InSpeed, float InDeltaTime)
+{
+    if (FMath::Abs(InDelta.X) < 0.2f && FMath::Abs(InDelta.Y) < 0.2f)
+    {
+        return;
+    }
+
+    FVector FinalDelta = InDelta * InSpeed * InDeltaTime;
+    FinalDelta.Y *= -1.0f;
+
+    FVector Final;
+    GetMousePosition(Final.X, Final.Y);
+
+    Final.X += FinalDelta.X;
+    Final.Y += FinalDelta.Y;
+
+    SetMouseLocation(Final.X, Final.Y);
+}

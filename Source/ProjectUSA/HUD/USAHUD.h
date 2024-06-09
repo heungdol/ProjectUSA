@@ -31,6 +31,16 @@ public:
 	//
 
 	UFUNCTION(BlueprintCallable)
+	void ShowHideHowToPlay(bool bIsShowing);
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void ShowHideMenu(bool bIsShowing);
+
+	//
+
+	UFUNCTION(BlueprintCallable)
 	void ShowHideBossHPBar(bool bIsShowing);
 
 	UFUNCTION(BlueprintCallable)
@@ -58,8 +68,8 @@ public:
 
 	//
 
-	UFUNCTION()
-	void InitLocalPlayerController(class APlayerController* InPlayerController, class AUSAPlayerController* InUSAPlayerController);
+	//UFUNCTION()
+	//void InitLocalPlayerController(class APlayerController* InPlayerController, class AUSAPlayerController* InUSAPlayerController);
 
 
 protected:
@@ -117,6 +127,16 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_ShowHideUserWidget_PlayerHUD(bool bIsShowing);
+
+	//
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ShowHideHowToPlay(bool bIsShowing);
+	
+	//
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ShowHideMenu(bool bIsShowing);
 
 	//
 

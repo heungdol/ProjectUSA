@@ -374,9 +374,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool PostUseItem();
-
-	//virtual void PrevItem(const struct FInputActionValue& Value);
-	//virtual void NextItem(const struct FInputActionValue& Value);
 	
 	//UFUNCTION(BlueprintCallable)
 	virtual void ChangeItem(bool InIsChangeToNext);
@@ -446,8 +443,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnCurrentItemCountChanged(int32 InItemCount);
 
-	UPROPERTY()
-	bool bIsUsingItem = false;
+	//UPROPERTY()
+	//bool bIsUsingItem = false;
 
 
 // Gameplay Abiltiy System Section...
@@ -575,15 +572,6 @@ protected:
 
 	void InputPressGameplayAbilityByInputID(int32 InputID);
 	void InputReleaseGameplayAbilityByInputID(int32 InputID);
-
-	//void ActiveGameplayTagInput_Pressed(class UInputAction* InInput);
-	//void ActiveGameplayTagInput_Released(class UInputAction* InInput);
-
-	//UFUNCTION(Server, Reliable)
-	//void ServerRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
-
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MulticastRPC_AddRemovedGameplayTag(const FGameplayTag InTag, bool InAdded = true);
 
 
 	void OnGameplayTagCallback_IgnoreRotateToMove(const struct FGameplayTag CallbackTag, int32 NewCount);

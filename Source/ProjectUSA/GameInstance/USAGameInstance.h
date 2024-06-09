@@ -38,4 +38,41 @@ public:
 
 	FORCEINLINE TArray<TSubclassOf<class AUSAItemBase>> GetUSAItemOrder() { return USAItemOrder; }
 
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void SetUSAInputModeUI(class APlayerController* InPlayerController);
+
+	UFUNCTION(BlueprintCallable)
+	void SetUSAInputModeGame(class APlayerController* InPlayerController);
+
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void HostSession(class APlayerController* InPlayerController, FName InLevelName, bool InLAN);
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void JoinSessionByLAN(class APlayerController* InPlayerController);
+
+	UFUNCTION(BlueprintCallable)
+	void JoinSessionByIPAddress(class APlayerController* InPlayerController, const FText& InIP);
+
+	//
+
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_HostSession(class APlayerController* InPlayerController, FName InLevelName, bool InLAN);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_JoinSessionByLAN(class APlayerController* InPlayerController);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_JoinSessionByIPAddress(class APlayerController* InPlayerController, const FText& InIP);
+
+	//UFUNCTION(BlueprintImplementableEvent)
+	//bool K2_EventTestReturnBoolean(int32 InTestInput);
+
 };

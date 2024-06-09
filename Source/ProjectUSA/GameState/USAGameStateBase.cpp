@@ -40,10 +40,10 @@ void AUSAGameStateBase::BeginPlay()
 			LocalUSAHUD = Cast<AUSAHUD>(LocalUSAPlayerController->GetHUD());
 		}
 
-		if (LocalUSAHUD)
-		{
-			LocalUSAHUD->InitLocalPlayerController(PlayerController, LocalUSAPlayerController);
-		}
+		//if (LocalUSAHUD)
+		//{
+		//	LocalUSAHUD->InitLocalPlayerController(PlayerController, LocalUSAPlayerController);
+		//}
 	}
 }
 
