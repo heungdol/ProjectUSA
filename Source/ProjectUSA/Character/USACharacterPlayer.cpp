@@ -414,11 +414,26 @@ void AUSACharacterPlayer::StartTargeting()
 		return;
 	}
 
+	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_DEAD) > 0)
+	{
+		FinishTargeting();
+		return;
+	}
+
 	TargetingCameraActor->SetSourceActor(this);
 	TargetingCameraActor->SetTargetActor(CurrentTargetableActor);
 
 	//TargetingCameraActor->SetOnOff(true);
 	bIsTargetingCamera = true;
+
+	if (LocalPlayerController != nullptr
+		&& CameraSpringArmComponent != nullptr
+		&& PlacedCameraActor != nullptr)
+	{
+		LocalPlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
+		CameraSpringArmComponent->SetWorldRotation(TargetingCameraActor->GetActorRotation());
+		CameraSpringArmComponent->UpdateChildTransforms();
+	}
 
 	ManageAllCamera();
 
@@ -434,6 +449,12 @@ void AUSACharacterPlayer::KeepTargeting()
 	}
 
 	if (CurrentTargetableActor == nullptr)
+	{
+		FinishTargeting();
+		return;
+	}
+
+	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_DEAD) > 0)
 	{
 		FinishTargeting();
 		return;
@@ -478,6 +499,12 @@ void AUSACharacterPlayer::ChangeTargeting()
 {
 	if (TargetingCameraActor == nullptr)
 	{
+		return;
+	}
+
+	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_DEAD) > 0)
+	{
+		FinishTargeting();
 		return;
 	}
 
@@ -640,3 +667,74 @@ void AUSACharacterPlayer::StartCameraShake_HitSuccess(TSubclassOf<class UDamageT
 
 	LocalPlayerController->PlayerCameraManager->StartCameraShake(HitSuccessCameraShakes[DamageType]);
 }
+
+//
+
+void AUSACharacterPlayer::SetPlayerControllerInput(bool bIsEnable)
+{
+	ServerRPC_SetPlayerControllerInput(bIsEnable);
+}
+
+void AUSACharacterPlayer::ServerRPC_SetPlayerControllerInput_Implementation(bool bIsEnable)
+{
+	MulticastRPC_SetPlayerControllerInput(bIsEnable);
+}
+
+void AUSACharacterPlayer::MulticastRPC_SetPlayerControllerInput_Implementation(bool bIsEnable)
+{
+	SetLocalPlayerControllerInput(bIsEnable);
+}
+
+void AUSACharacterPlayer::SetLocalPlayerControllerInput(bool bIsEnable)
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+
+	if (IsValid(PlayerController) == false)
+	{
+		return;
+	}
+	switch (bIsEnable)
+	{
+	case false:
+		DisableInput(PlayerController);
+		break;
+
+	case true:
+		EnableInput(PlayerController);
+		break;
+	}
+}
+
+
+//
+
+void AUSACharacterPlayer::PlayUserWidgetAnimation_Panel(bool IsShowing, bool IsRaw)
+{
+	ServerRPC_PlayUserWidgetAnimation_Panel(IsShowing, IsRaw);
+}
+
+void AUSACharacterPlayer::ServerRPC_PlayUserWidgetAnimation_Panel_Implementation(bool IsShowing, bool IsRaw)
+{
+	MulticastRPC_PlayUserWidgetAnimation_Panel(IsShowing, IsRaw);
+}
+
+void AUSACharacterPlayer::MulticastRPC_PlayUserWidgetAnimation_Panel_Implementation(bool IsShowing, bool IsRaw)
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+
+	if (IsValid(PlayerController) == false)
+	{
+		return;
+	}
+
+	AUSAHUD* USAHUD = Cast<AUSAHUD>(PlayerController->GetHUD());
+
+	if (IsValid(USAHUD) == false)
+	{
+		return;
+	}
+
+	USAHUD->PlayUserWidgetAnimation_Panel(IsShowing, IsRaw);
+}
+
+

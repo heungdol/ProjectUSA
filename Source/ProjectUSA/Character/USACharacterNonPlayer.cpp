@@ -31,9 +31,9 @@ AUSACharacterNonPlayer::AUSACharacterNonPlayer()
 	}
 }
 
-void AUSACharacterNonPlayer::OnRep_bIsASCInitialized()
+void AUSACharacterNonPlayer::OnRep_bIsASCInitialized(bool Prev)
 {
-	Super::OnRep_bIsASCInitialized();
+	Super::OnRep_bIsASCInitialized(Prev);
 
 	PostSetupGAS();
 

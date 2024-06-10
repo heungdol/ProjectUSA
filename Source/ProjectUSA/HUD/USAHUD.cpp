@@ -6,6 +6,10 @@
 #include "GameFramework/PlayerController.h"
 #include "Player/USAPlayerController.h"
 
+#include "GameFramework/Character.h"
+#include "Character/USACharacterBase.h"
+#include "Character/USACharacterPlayer.h"
+
 
 void AUSAHUD::BeginPlay()
 {
@@ -18,7 +22,13 @@ void AUSAHUD::BeginPlay()
 
 void AUSAHUD::InitCharacterHUD(AUSACharacterPlayer* InPlayer)
 {
-    K2_InitPlayerHUD(InPlayer);
+    if (IsValid(InPlayer) == false)
+    {
+        return;
+    }
+
+    LocalPlayerController = InPlayer->GetController<APlayerController>();
+    LocalUSAPlayerController = InPlayer->GetController<AUSAPlayerController>();
 }
 
 //

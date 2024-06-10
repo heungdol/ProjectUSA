@@ -31,7 +31,6 @@ void UUSAGameInstance::SetUSAInputModeUI(APlayerController* InPlayerController)
     if (InPlayerController->IsLocalPlayerController() == false)
     {
         return;
-
     }
     
     InPlayerController->bShowMouseCursor = true;

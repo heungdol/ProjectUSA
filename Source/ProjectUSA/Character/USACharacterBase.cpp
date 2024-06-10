@@ -541,6 +541,13 @@ void AUSACharacterBase::Landed(const FHitResult& Hit)
 	ServerRPC_RenewCharacterCapsule(/*this, */KEYNAME_CAPSULEINFO_WALK);
 }
 
+void AUSACharacterBase::SetPlayerDefaults()
+{
+	ResetAttributeSet();
+
+	RespawnUSACharacter();
+}
+
 //
 
 void AUSACharacterBase::OnUSACrouch()
@@ -628,16 +635,19 @@ void AUSACharacterBase::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	// 서버에서 수행
-	SetupGAS();
 
-	PostSetupGAS();
+	if (bIsASCInitialized == false)
+	{
+		SetupGAS();
 
-	SetupAttributeSet();
+		PostSetupGAS();
 
-	ResetAttributeSet();
+		SetupAttributeSet();
 
-	BeginStartAbilities();
+		ResetAttributeSet();
 
+		BeginStartAbilities();
+	}
 
 	// 시작할 때 자동으로 콘솔 입력
 	//APlayerController* PlayerController = Cast <APlayerController>(NewController);
@@ -1371,6 +1381,65 @@ void AUSACharacterBase::DropWeapons(bool bIsAbsolute)
 	}
 }	
 
+void AUSACharacterBase::RespawnUSACharacter()
+{
+	ServerRPC_RespawnUSACharacter();
+}
+
+void AUSACharacterBase::ServerRPC_RespawnUSACharacter_Implementation()
+{
+	MulticastRPC_RespawnUSACharacter();
+}
+
+void AUSACharacterBase::MulticastRPC_RespawnUSACharacter_Implementation()
+{
+	ResetAttributeSet();
+
+	if (ASC != nullptr)
+	{
+		for (const auto& GameplayStartAbility : GameplayAbilities_Start)
+		{
+			if (GameplayStartAbility == nullptr)
+			{
+				continue;
+			}
+
+			FGameplayAbilitySpec* GameplayAbilitySpec = ASC->FindAbilitySpecFromClass(GameplayStartAbility);
+
+			if (GameplayAbilitySpec == nullptr)
+			{
+				continue;
+			}
+
+			if (GameplayAbilitySpec->IsActive())
+			{
+				ASC->AbilitySpecInputPressed(*GameplayAbilitySpec);
+			}
+			else
+			{
+				ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
+			}
+		}
+
+		// 리스폰
+		FGameplayAbilitySpec* GameplayAbilitySpec_Respawn = ASC->FindAbilitySpecFromClass(GameplayAbility_Respawn);
+
+		if (GameplayAbilitySpec_Respawn)
+		{
+			if (GameplayAbilitySpec_Respawn->IsActive())
+			{
+				ASC->AbilitySpecInputPressed(*GameplayAbilitySpec_Respawn);
+			}
+			else
+			{
+				ASC->TryActivateAbility(GameplayAbilitySpec_Respawn->Handle);
+			}
+		}
+	}
+
+	K2_OnUSARespawn();
+}
+
 void AUSACharacterBase::SetCurrentWeaponsUsingStartWeaponClassList()
 {
 	ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList();
@@ -1541,7 +1610,35 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	//USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
 
 	// 데미지
-	MulticastRPC_TakeDamage(ResultDamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	// 패리 중일 때는 데미지 무시
+	if (IsValid(ASC) == true
+		&& ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY) == false)
+	{
+		UUSAAttributeSet* USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+
+		if (USAAttributeSet != nullptr)
+		{
+			USAAttributeSet->SetDamage(DamageAmount);
+		}
+
+		MulticastRPC_TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+		//if (DamageCauser && EventInstigator)
+		//{
+		//	if (EventInstigator->IsLocalController())
+		//	{
+		//		if (AUSACharacterBase* CharacterCauser = Cast<AUSACharacterBase>(DamageCauser))
+		//		{
+		//			CharacterCauser->StartCameraShake_HitSuccess(DamageEvent.DamageTypeClass);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		MulticastRPC_TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		//	}
+		//}
+	}
 
 	// 넉백 어빌리티 수행
 	APawn* EventInstigatorPawn = nullptr;
@@ -1555,35 +1652,43 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	return ResultDamageAmount;
 }
 
+void AUSACharacterBase::ClientRPC_TakeDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	// 가해자의 카메라 쉐이크 수행 
+	if (AUSACharacterBase* CharacterCauser = Cast<AUSACharacterBase>(DamageCauser))
+	{
+		CharacterCauser->StartCameraShake_HitSuccess(DamageEvent.DamageTypeClass);
+	}
+}
+
 void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (ASC == nullptr)
-	{
-		return;
-	}
+	//if (ASC == nullptr)
+	//{
+	//	return;
+	//}
 
-	// 패리 중일 때는 데미지 무시
-	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY))
-	{
-		return;
-	}
+	//// 패리 중일 때는 데미지 무시
+	//if (ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY))
+	//{
+	//	return;
+	//}
 
 	// 데미지 적용
 
 	// 
-	UUSAAttributeSet* USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
+	//UUSAAttributeSet* USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
 
-	if (USAAttributeSet != nullptr)
-	{
-		USAAttributeSet->SetDamage(DamageAmount);
-	}
+	//if (USAAttributeSet != nullptr)
+	//{
+	//	USAAttributeSet->SetDamage(DamageAmount);
+	//}
 
 	// 가해자의 카메라 쉐이크 수행 
 	if (AUSACharacterBase* CharacterCauser = Cast<AUSACharacterBase>(DamageCauser))
 	{
 		CharacterCauser->StartCameraShake_HitSuccess(DamageEvent.DamageTypeClass);
 	}
-
 }
 
 
@@ -1914,7 +2019,7 @@ void AUSACharacterBase::OnRep_ASC()
 	//USA_LOG(LogTemp, Log, TEXT("Hey"));
 }
 
-void AUSACharacterBase::OnRep_bIsASCInitialized()
+void AUSACharacterBase::OnRep_bIsASCInitialized(bool Prev)
 {
 	// ...
 
@@ -1998,6 +2103,10 @@ void AUSACharacterBase::PostSetupGAS()
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayDamageAbility.Value);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
+
+		// 리스폰 어빌리티
+		FGameplayAbilitySpec GameplayAbilitySpec_Respawn(GameplayAbility_Respawn);
+		ASC->GiveAbility(GameplayAbilitySpec_Respawn);
 
 		// 죽음 어빌리티
 		for (const auto& GameplayTriggerAbility : GameplayAbilities_Death)
@@ -2124,6 +2233,21 @@ void AUSACharacterBase::BeginStartAbilities()
 				ASC->TryActivateAbility(GameplayAbilitySpec->Handle);
 			}
 		}
+
+		// 리스폰
+		FGameplayAbilitySpec* GameplayAbilitySpec_Respawn = ASC->FindAbilitySpecFromClass(GameplayAbility_Respawn);
+
+		if (GameplayAbilitySpec_Respawn)
+		{
+			if (GameplayAbilitySpec_Respawn->IsActive())
+			{
+				ASC->AbilitySpecInputPressed(*GameplayAbilitySpec_Respawn);
+			}
+			else
+			{
+				ASC->TryActivateAbility(GameplayAbilitySpec_Respawn->Handle);
+			}
+		}
 	}
 }
 
@@ -2157,25 +2281,25 @@ void AUSACharacterBase::ResetAttributeSet()
 
 
 
-void AUSACharacterBase::DieUSACharacter()
-{
-	ServerRPC_OnUSADeath();
-}
-
-//void AUSACharacterBase::OnUSADeath()
+//void AUSACharacterBase::DieUSACharacter()
+//{
+//	ServerRPC_OnUSADeath();
+//}
+//
+////void AUSACharacterBase::OnUSADeath()
+////{
+////	
+////}
+//
+//void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
+//{
+//	MulticastRPC_OnUSADeath();
+//}
+//
+//void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
 //{
 //	
 //}
-
-void AUSACharacterBase::ServerRPC_OnUSADeath_Implementation()
-{
-	MulticastRPC_OnUSADeath();
-}
-
-void AUSACharacterBase::MulticastRPC_OnUSADeath_Implementation()
-{
-	
-}
 
 void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> PrevWeapons)
 {

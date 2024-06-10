@@ -183,8 +183,6 @@ void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySy
 		return;
 	}
 
-	// 아래 구문은 잘 수행시킬 것
-
 	if (InASC->GetSet <UUSAAttributeSet>() != nullptr)
 	{
 		InASC->SetNumericAttributeBase(UUSAAttributeSet::GetMaxHealthAttribute(), StartMaxHealth);

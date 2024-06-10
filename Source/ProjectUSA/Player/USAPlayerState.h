@@ -16,7 +16,7 @@ UCLASS()
 class PROJECTUSA_API AUSAPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	AUSAPlayerState();
 
@@ -27,14 +27,14 @@ public:
 	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
 
-	UPROPERTY (EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
 	float LookSensitivityMouseRatio = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
 	float LookSensitivityGamepadRatio = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
-	bool bIsUsingGamepad = false ;
+	bool bIsUsingGamepad = false;
 
 
 public:
@@ -44,6 +44,6 @@ public:
 	float GetLookSensitivityRatio();
 
 	UFUNCTION(BlueprintCallable)
-	void SetIsUsingGamepad (bool InUsing);
-	
+	void SetIsUsingGamepad(bool InUsing);
+
 };

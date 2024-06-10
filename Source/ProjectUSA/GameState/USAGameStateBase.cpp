@@ -17,6 +17,7 @@
 
 #include "Player/USAPlayerController.h"
 #include "Character/USACharacterBase.h"
+#include "Character/USACharacterPlayer.h"
 #include "HUD/USAHUD.h"
 
 
@@ -32,18 +33,13 @@ void AUSAGameStateBase::BeginPlay()
 	{
 		ControlledPawn = PlayerController->GetPawn();
 		
-		LocalUSACharacter = Cast<AUSACharacterBase>(ControlledPawn);
+		LocalUSACharacter = Cast<AUSACharacterPlayer>(ControlledPawn);
 		LocalUSAPlayerController = Cast<AUSAPlayerController>(PlayerController);
 
 		if (LocalUSAPlayerController)
 		{
 			LocalUSAHUD = Cast<AUSAHUD>(LocalUSAPlayerController->GetHUD());
 		}
-
-		//if (LocalUSAHUD)
-		//{
-		//	LocalUSAHUD->InitLocalPlayerController(PlayerController, LocalUSAPlayerController);
-		//}
 	}
 }
 
@@ -108,36 +104,36 @@ void AUSAGameStateBase::PlayUserWidgetAnimationP_Panel(bool bIsShowing, bool bIs
 
 //
 
-void AUSAGameStateBase::SetPlayerControllerInput(bool InActive)
-{
-	ServerRPC_SetPlayerControllerInput(InActive);
-}
-
-void AUSAGameStateBase::ServerRPC_SetPlayerControllerInput_Implementation(bool InActive)
-{
-	MulticastRPC_SetPlayerControllerInput(InActive);
-}
-
-void AUSAGameStateBase::MulticastRPC_SetPlayerControllerInput_Implementation(bool InActive)
-{
-	SetPlayerControllerInputFinal(InActive);
-}
-
-void AUSAGameStateBase::SetPlayerControllerInputFinal(bool InActive)
-{
-	if (IsValid(LocalUSACharacter) == true
-		&& IsValid(LocalUSAPlayerController) == true)
-	{
-		if (InActive)
-		{
-			LocalUSACharacter->EnableInput(LocalUSAPlayerController);
-		}
-		else
-		{
-			LocalUSACharacter->DisableInput(LocalUSAPlayerController);
-		}
-	}
-}
+//void AUSAGameStateBase::SetPlayerControllerInput(bool InActive)
+//{
+//	ServerRPC_SetPlayerControllerInput(InActive);
+//}
+//
+//void AUSAGameStateBase::ServerRPC_SetPlayerControllerInput_Implementation(bool InActive)
+//{
+//	MulticastRPC_SetPlayerControllerInput(InActive);
+//}
+//
+//void AUSAGameStateBase::MulticastRPC_SetPlayerControllerInput_Implementation(bool InActive)
+//{
+//	SetPlayerControllerInputFinal(InActive);
+//}
+//
+//void AUSAGameStateBase::SetPlayerControllerInputFinal(bool InActive)
+//{
+//	if (IsValid(LocalUSACharacter) == true
+//		&& IsValid(LocalUSAPlayerController) == true)
+//	{
+//		if (InActive)
+//		{
+//			LocalUSACharacter->EnableInput(LocalUSAPlayerController);
+//		}
+//		else
+//		{
+//			LocalUSACharacter->DisableInput(LocalUSAPlayerController);
+//		}
+//	}
+//}
 
 //
 

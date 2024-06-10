@@ -88,8 +88,8 @@ protected:
 
 	//
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "InitPlayerHUD", ScriptName = "InitPlayerHUD"))
-	void K2_InitPlayerHUD(class AUSACharacterPlayer* InPlayer);
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "InitPlayerHUD", ScriptName = "InitPlayerHUD"))
+	//void K2_InitPlayerHUD(class AUSACharacterPlayer* InPlayer);
 
 	//
 

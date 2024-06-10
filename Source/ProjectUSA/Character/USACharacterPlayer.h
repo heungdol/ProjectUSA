@@ -104,6 +104,32 @@ public:
 
 	virtual void StartCameraShake_HitSuccess (TSubclassOf<class UDamageType> DamageType) override;
 
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void SetPlayerControllerInput(bool bIsEnable);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SetPlayerControllerInput(bool bIsEnable);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_SetPlayerControllerInput(bool bIsEnable);
+
+	UFUNCTION(BlueprintCallable)
+	void SetLocalPlayerControllerInput(bool bIsEnable);
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void PlayUserWidgetAnimation_Panel(bool IsShowing, bool IsRaw);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_PlayUserWidgetAnimation_Panel(bool IsShowing, bool IsRaw);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_PlayUserWidgetAnimation_Panel(bool IsShowing, bool IsRaw);
+
+
 
 protected:
 	virtual void Look(const struct FInputActionValue& Value) override;

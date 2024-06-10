@@ -11,11 +11,6 @@
 
 #include "HUD/USAHUD.h"
 
-#include "Windows/WindowsApplication.h"  // Windows API 사용을 위해 필요
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include <Windows.h>
-#include "Windows/HideWindowsPlatformTypes.h"
-
 
 void AUSAPlayerController::BeginPlay()
 {
@@ -26,6 +21,11 @@ void AUSAPlayerController::BeginPlay()
     {
         AUSACharacterPlayer* USACharacterOwner = Cast<AUSACharacterPlayer>(GetPawn());
         AUSAHUD* USAHUD = Cast<AUSAHUD>(GetHUD());
+
+        if (USACharacterOwner)
+        {
+            USACharacterOwner->InitPlayerController();
+        }
 
         if (USACharacterOwner && USAHUD)
         {
@@ -50,6 +50,11 @@ void AUSAPlayerController::BeginPlayingState()
 
         if (USACharacterOwner)
         {
+            USACharacterOwner->InitPlayerController();
+        }
+
+        if (USACharacterOwner)
+        {
             USACharacterOwner->SetCurrentWeaponsUsingStartWeaponClassList();
         }
 
@@ -58,41 +63,4 @@ void AUSAPlayerController::BeginPlayingState()
             USAHUD->InitCharacterHUD(USACharacterOwner);
         }
     }
-}
-
-void AUSAPlayerController::SimulateClickMouseLeftButtonPressed()
-{
-    INPUT Input = { 0 };
-    Input.type = INPUT_MOUSE;
-    Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-
-    SendInput(1, &Input, sizeof(INPUT));
-}
-
-void AUSAPlayerController::SimulateClickMouseLeftButtonReleased()
-{
-    INPUT Input = { 0 };
-    Input.type = INPUT_MOUSE;
-    Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-
-    SendInput(1, &Input, sizeof(INPUT));
-}
-
-void AUSAPlayerController::SimulateMoveMousePosition(FVector InDelta, float InSpeed, float InDeltaTime)
-{
-    if (FMath::Abs(InDelta.X) < 0.2f && FMath::Abs(InDelta.Y) < 0.2f)
-    {
-        return;
-    }
-
-    FVector FinalDelta = InDelta * InSpeed * InDeltaTime;
-    FinalDelta.Y *= -1.0f;
-
-    FVector Final;
-    GetMousePosition(Final.X, Final.Y);
-
-    Final.X += FinalDelta.X;
-    Final.Y += FinalDelta.Y;
-
-    SetMouseLocation(Final.X, Final.Y);
 }

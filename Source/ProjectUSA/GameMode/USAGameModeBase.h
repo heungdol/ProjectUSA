@@ -15,25 +15,55 @@ class PROJECTUSA_API AUSAGameModeBase : public AGameMode
 	GENERATED_BODY()
 	
 public:
+	virtual void RestartPlayer(AController* NewPlayer) override;
+
+	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
+
+	virtual void RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform) override;
+	
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	virtual AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT("")) override;
+
+	virtual void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
+
+protected:
+	virtual bool ShouldSpawnAtStartSpot(AController* Player) override;
+
+	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
+
+
+public:
 	UFUNCTION(BlueprintCallable)
 	void SetAllPlayerControllerInput (bool InActive);
 
 	UFUNCTION(BlueprintCallable)
 	void SetBossUSACharacter (class AUSACharacterBase* InCharacter);
 
-	UFUNCTION(BlueprintCallable)
-	void UpdateBossHealthRatio(float InRatio);
+	//
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateBossName(FName InName);
 
 	UFUNCTION(BlueprintCallable)
+	void UpdateBossHealthRatio(float InRatio);
+
+	//
+	
+	UFUNCTION(BlueprintCallable)
 	void PlayLevelSequenceToAllPlayer(class ALevelSequenceActor* InLevelSequnce);
 
+	//
 
+	UFUNCTION(BlueprintCallable)
+	virtual void RestartUSAPlayer(class AUSAPlayerController* NewPlayer);
 
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Character");
 	TObjectPtr<class AUSACharacterBase> BossUSACharacter;
 
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_RestartUSAPlayer(class AUSAPlayerController* NewPlayer, class AUSACharacterPlayer* PlayerCharacter);
 };

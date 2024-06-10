@@ -7,6 +7,14 @@
 
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
+#include "GameFramework/Character.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/HUD.h"
+
+#include "Player/USAPlayerController.h"
+#include "HUD/USAHUD.h"
+
 
 AUSAPlayerState::AUSAPlayerState()
 {

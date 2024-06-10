@@ -27,13 +27,14 @@ protected:
 
 	virtual void BeginPlayingState() override;
 
-	UFUNCTION(BlueprintCallable)
-	void SimulateClickMouseLeftButtonPressed();
-
-	UFUNCTION(BlueprintCallable)
-	void SimulateClickMouseLeftButtonReleased();
-
-	UFUNCTION(BlueprintCallable)
-	void SimulateMoveMousePosition(FVector InDelta, float InSpeed, float InDeltaTime);
+//public:
+//	UFUNCTION(BlueprintCallable)
+//	void PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw);
+//
+//	UFUNCTION(Server, Reliable)
+//	void ServerRPC_PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw);
+//
+//	UFUNCTION(NetMulticast, Reliable)
+//	void MulticastRPC_PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw);
 
 };

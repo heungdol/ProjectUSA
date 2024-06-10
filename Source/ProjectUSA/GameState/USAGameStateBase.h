@@ -34,7 +34,7 @@ public:
 	//
 
 	//UFUNCTION(BlueprintCallable)
-	void SetPlayerControllerInput (bool InActive);
+	//void SetPlayerControllerInput (bool InActive);
 
 	//
 
@@ -47,7 +47,7 @@ public:
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
-	TObjectPtr<class AUSACharacterBase> LocalUSACharacter;
+	TObjectPtr<class AUSACharacterPlayer> LocalUSACharacter;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAPlayerController> LocalUSAPlayerController;
@@ -65,14 +65,14 @@ protected:
 
 	//
 
-	UFUNCTION(Server, Reliable)
-	void ServerRPC_SetPlayerControllerInput(bool InActive);
+	//UFUNCTION(Server, Reliable)
+	//void ServerRPC_SetPlayerControllerInput(bool InActive);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_SetPlayerControllerInput(bool InActive);
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_SetPlayerControllerInput(bool InActive);
 
-	UFUNCTION(BlueprintCallable)
-	void SetPlayerControllerInputFinal(bool InActive);
+	//UFUNCTION(BlueprintCallable)
+	//void SetPlayerControllerInputFinal(bool InActive);
 
 	//
 

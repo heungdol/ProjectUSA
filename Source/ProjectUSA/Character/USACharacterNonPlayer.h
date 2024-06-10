@@ -21,7 +21,7 @@ public:
 	UPROPERTY()
 	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
-	virtual void OnRep_bIsASCInitialized() override;
+	virtual void OnRep_bIsASCInitialized(bool Prev) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Non Player Info")
 	float LifeSpanAfterDead = 5.0f;

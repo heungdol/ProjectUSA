@@ -217,6 +217,8 @@ public:
 
 	virtual void Landed(const FHitResult& Hit) override;
 
+	virtual void SetPlayerDefaults() override;
+
 public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPC_RenewCharacterCapsule(/*class ACharacter* InCharacter, */const FName& InKeyName);
@@ -272,20 +274,31 @@ public:
 
 	//
 
-	UFUNCTION()
-	void DieUSACharacter();
-
-	//UFUNCTION()
-	//void OnUSADeath();
-
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSADeath", ScriptName = "OnUSADeath"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSADeath", ScriptName = "OnUSA"))
 	void K2_OnUSADeath();
 
+	//UFUNCTION()
+	////void DieUSACharacter();
+	//
+	//UFUNCTION(Server, Reliable)
+	//void ServerRPC_OnUSADeath();
+
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_OnUSADeath();
+
+	//
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSARespawn", ScriptName = "OnUSA"))
+	void K2_OnUSARespawn();
+
+	UFUNCTION()
+	void RespawnUSACharacter();
+
 	UFUNCTION(Server, Reliable)
-	void ServerRPC_OnUSADeath();
+	void ServerRPC_RespawnUSACharacter();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_OnUSADeath();
+	void MulticastRPC_RespawnUSACharacter();
 
 	//
 
@@ -384,7 +397,6 @@ public:
 	UFUNCTION(BlueprintPure)
 	int32 GetCurrentItemCount();
 
-
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
 	virtual void MoveEnd(const struct FInputActionValue& Value);
@@ -395,6 +407,9 @@ protected:
 	//
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPC_TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
@@ -447,8 +462,8 @@ protected:
 	//bool bIsUsingItem = false;
 
 
-// Gameplay Abiltiy System Section...
 
+// Gameplay Abiltiy System Section
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
@@ -461,7 +476,7 @@ public:
 
 	// For AI
 	UFUNCTION()
-	virtual void OnRep_bIsASCInitialized();
+	virtual void OnRep_bIsASCInitialized(bool Prev);
 
 	UPROPERTY(ReplicatedUsing = OnRep_bIsASCInitialized, VisibleAnywhere, Category = "Character GAS")
 	bool bIsASCInitialized = false;
@@ -510,7 +525,12 @@ public:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TSubclassOf<class UGameplayAbility> GameplayAbility_Respawn;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
+
+	//
 
 	UPROPERTY()
 	TSubclassOf<class UDamageType> USADamageType_Explosion;
