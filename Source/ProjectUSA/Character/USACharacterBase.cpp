@@ -96,6 +96,11 @@
 //	//bIsStartWeaponsInitted = true;
 //}
 
+void AUSACharacterBase::OnRep_CharacterName()
+{
+	K2_OnCharacterNameChanged();
+}
+
 // Sets default values
 AUSACharacterBase::AUSACharacterBase()
 {
@@ -114,7 +119,7 @@ AUSACharacterBase::AUSACharacterBase()
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 4000.f;
-	GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
+	GetCharacterMovement()->bUseFlatBaseForFloorChecks = false;
 
 	CameraSpringArmComponent = CreateDefaultSubobject <UUSASpringArmComponent>(TEXT("Camera Spring Arm Component"));
 	CameraSpringArmComponent->SetupAttachment(RootComponent);
@@ -255,6 +260,10 @@ void AUSACharacterBase::BeginPlay()
 	//
 
 	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+
+	// 
+
+	K2_OnCharacterNameChanged();
 
 	//USA_LOG(LogTemp, Log, TEXT("Hey"));
 }
@@ -762,6 +771,38 @@ int32 AUSACharacterBase::GetCurrentItemCount()
 	return ItemCount;
 }
 
+void AUSACharacterBase::UpdateMaterialParameter(int InIndex, FName InName, float InValue)
+{
+	if (IsValid(GetMesh()) == false)
+	{
+		return;
+	}
+
+	if (MaterialInstanceDynamicList.Num() == 0)
+	{
+		MaterialInstanceDynamicList.Init(nullptr, GetMesh()->GetMaterials().Num());
+	}
+
+	if (MaterialInstanceDynamicList.IsValidIndex(InIndex) == false)
+	{
+		return;
+	}
+
+	if (MaterialInstanceDynamicList[InIndex] == nullptr)
+	{
+		MaterialInstanceDynamicList[InIndex] = GetMesh()->CreateDynamicMaterialInstance(InIndex);
+	}
+
+	if (IsValid(MaterialInstanceDynamicList[InIndex]) == false)
+	{
+		return;
+	}
+
+	MaterialInstanceDynamicList[InIndex]->SetScalarParameterValue(InName, InValue);
+}
+
+//
+
 void AUSACharacterBase::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -1179,14 +1220,14 @@ void AUSACharacterBase::OnGameplayTagCallback_Fall(const FGameplayTag CallbackTa
 	{
 		if (IsValid(GetCharacterMovement()))
 		{
-			GetCharacterMovement()->bUseFlatBaseForFloorChecks = false;
+			//GetCharacterMovement()->bUseFlatBaseForFloorChecks = false;
 		}
 	}
 	else
 	{
 		if (IsValid(GetCharacterMovement()))
 		{
-			GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
+			//GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
 		}
 	}
 }
@@ -1610,6 +1651,10 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	//USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
 
 	// 데미지
+	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_INVINCIBLE) > 0)
+	{
+		return 0;
+	}
 	
 	// 패리 중일 때는 데미지 무시
 	if (IsValid(ASC) == true
@@ -2002,6 +2047,18 @@ void AUSACharacterBase::MulticastRPC_ApplyDamageMomentum_Implementation
 	}
 }
 
+void AUSACharacterBase::ChangeCharacterName(const FString& InCharacterName)
+{
+	ServerRPC_ChangeCharacterName(InCharacterName);
+}
+
+void AUSACharacterBase::ServerRPC_ChangeCharacterName_Implementation(const FString& InCharacterName)
+{
+	CharacterName = InCharacterName;
+
+	OnRep_CharacterName();
+}
+
 UAbilitySystemComponent* AUSACharacterBase::GetAbilitySystemComponent() const
 {
 	return ASC;
@@ -2376,6 +2433,7 @@ void AUSACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AUSACharacterBase, bIsASCInitialized);
 	DOREPLIFETIME(AUSACharacterBase, CurrentEquipedWeapons);
 	DOREPLIFETIME(AUSACharacterBase, CurrentOwnedItems);
+	DOREPLIFETIME(AUSACharacterBase, CharacterName);
 
 	//DOREPLIFETIME(AUSACharacterBase, StartWeapons);
 

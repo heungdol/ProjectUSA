@@ -15,6 +15,10 @@ class PROJECTUSA_API AUSAGameModeBase : public AGameMode
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Game Mode Info")
+	int32 CurrentPlayerStackCount = 0;
+	
+public:
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
 	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
@@ -26,6 +30,8 @@ public:
 	virtual AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT("")) override;
 
 	virtual void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 
 protected:
 	virtual bool ShouldSpawnAtStartSpot(AController* Player) override;

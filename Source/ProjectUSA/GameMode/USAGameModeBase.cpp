@@ -162,6 +162,21 @@ void AUSAGameModeBase::InitStartSpot_Implementation(AActor* StartSpot, AControll
 	}
 }
 
+void AUSAGameModeBase::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	AUSAPlayerState* PlayerState = Cast <AUSAPlayerState>(NewPlayer->PlayerState);
+
+	if (PlayerState)
+	{
+		PlayerState->SetPlayerIndex(CurrentPlayerStackCount);
+
+		CurrentPlayerStackCount += 1;
+	}
+
+}
+
 bool AUSAGameModeBase::ShouldSpawnAtStartSpot(AController* Player)
 {
 	return Super::ShouldSpawnAtStartSpot(Player);

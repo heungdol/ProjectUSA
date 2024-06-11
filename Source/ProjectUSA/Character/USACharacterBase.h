@@ -191,6 +191,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Info")
 	TObjectPtr<class USkeletalMesh> CharacterDisplaySkeletalMeshMeshRef;
 
+	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Info")
+	FString CharacterName = TEXT("Character");
+
+	FORCEINLINE FString GetCharacterName() {return CharacterName;}
+
+	UFUNCTION()
+	void OnRep_CharacterName() ;
 
 
 public:
@@ -397,6 +404,24 @@ public:
 	UFUNCTION(BlueprintPure)
 	int32 GetCurrentItemCount();
 
+	//
+
+	UPROPERTY()
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> MaterialInstanceDynamicList;
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateMaterialParameter (int InIndex, FName InName, float InValue);
+
+	//
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeCharacterName(const FString& InCharacterName);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_ChangeCharacterName(const FString& InCharacterName);
+
+	//
+
 protected:
 	virtual void Move(const struct FInputActionValue& Value);
 	virtual void MoveEnd(const struct FInputActionValue& Value);
@@ -461,6 +486,10 @@ protected:
 	//UPROPERTY()
 	//bool bIsUsingItem = false;
 
+	//
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnCharacterNameChanged();
 
 
 // Gameplay Abiltiy System Section

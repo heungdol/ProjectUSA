@@ -15,6 +15,12 @@
 #include "Player/USAPlayerController.h"
 #include "HUD/USAHUD.h"
 
+#include "Character/USACharacterBase.h"
+
+#include "GameInstance/USAGameInstance.h"
+
+#include "Net/UnrealNetwork.h"
+
 
 AUSAPlayerState::AUSAPlayerState()
 {
@@ -29,6 +35,45 @@ AUSAPlayerState::AUSAPlayerState()
     }
 
     NetUpdateFrequency = 100.0f;
+}
+
+void AUSAPlayerState::SetPlayerIndex(int32 InIndex)
+{
+    PlayerIndex = InIndex;
+
+    if (GetWorld()->GetAuthGameMode())
+    {
+        OnRep_PlayerIndex();
+    }
+}
+
+void AUSAPlayerState::OnRep_PlayerIndex()
+{
+    //if (IsValid(ASC) == false)
+    //{
+    //    return;
+    //}
+
+    //if (IsValid(ASC->GetAvatarActor()) == false)
+    //{
+    //    return;
+    //}
+
+    //AUSACharacterBase* USACharacter = Cast <AUSACharacterBase>(ASC->GetAvatarActor());
+
+    //if (IsValid(USACharacter) == false)
+    //{
+    //    return;
+    //}
+
+    //UUSAGameInstance* GameInstance = Cast <UUSAGameInstance>(GetGameInstance());
+
+    //if (IsValid(GameInstance) == false)
+    //{
+    //    return;
+    //}
+
+    //USACharacter->ChangeCharacterName(GameInstance->GetPlayerNickByIndex (PlayerIndex));
 }
 
 UAbilitySystemComponent* AUSAPlayerState::GetAbilitySystemComponent() const
@@ -49,4 +94,10 @@ float AUSAPlayerState::GetLookSensitivityRatio()
 void AUSAPlayerState::SetIsUsingGamepad(bool InUsing)
 {
     bIsUsingGamepad = InUsing;
+}
+
+void AUSAPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AUSAPlayerState, PlayerIndex);
 }

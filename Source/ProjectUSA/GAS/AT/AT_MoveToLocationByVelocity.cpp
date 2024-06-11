@@ -164,7 +164,20 @@ void UAT_MoveToLocationByVelocity::TickTask(float DeltaTime)
 					+ GroundNormal * OffsetLocation.Z;
 			}
 
-			MyCharacter->AddActorWorldOffset(OffsetLocation, true, nullptr, ETeleportType::ResetPhysics);
+			FVector WorldStartLocation = MyCharacter->GetActorLocation();
+
+			FHitResult Hit;
+			MyCharacter->AddActorWorldOffset(OffsetLocation, true, &Hit, ETeleportType::ResetPhysics);
+
+			if (Hit.IsValidBlockingHit() && MyCharacter->GetCharacterMovement()->CurrentFloor.bBlockingHit)
+			{
+				FVector DeltaLocation = WorldStartLocation + OffsetLocation - MyCharacter->GetActorLocation();
+
+				MyCharacter->AddActorWorldOffset(FVector(0.0f, 0.0f, 10.0f), true, nullptr, ETeleportType::ResetPhysics);
+
+				MyCharacter->AddActorWorldOffset(DeltaLocation, true, &Hit, ETeleportType::ResetPhysics);
+			}
+
 
 			CharMoveComp->Velocity = FVector::ZeroVector;
 			CharMoveComp->UpdateComponentVelocity();

@@ -231,7 +231,7 @@ void AUSAAttackActor::Tick(float DeltaTime)
 			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
 			false,
 			OutActors,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			HitResults,
 			true,
 			FLinearColor::Red,

@@ -192,7 +192,6 @@ void FUSACharacterAttributeSetInfo::RenewUSACharacterAttributeSetData(UAbilitySy
 	}
 }
 
-
 // ====================================================================================
 
 FAttackTraceSceneInfo::FAttackTraceSceneInfo()
@@ -312,7 +311,7 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
 			false,
 			CheckedActorList,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			HitResult,
 			true,
 			FLinearColor::Red,
@@ -349,7 +348,7 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
 			false,
 			CheckedActorList,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			HitResults,
 			true,
 			FLinearColor::Red,

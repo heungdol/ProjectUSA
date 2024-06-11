@@ -19,6 +19,8 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#include "GameInstance/USAGameInstance.h"
+
 #include "Player/USAPlayerState.h"
 #include "Player/USAPlayerController.h"
 
@@ -28,6 +30,7 @@
 #include "Components/BoxComponent.h"
 
 #include "Item/USAItemBase.h"
+
 
 #include "HUD/USAHUD.h"
 
@@ -51,15 +54,25 @@ void AUSACharacterPlayer::BeginPlay()
 	AGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode();
 	AGameStateBase* GameStateBase = GetWorld()->GetGameState();
 
-	if (GameModeBase)
-	{
-		USA_LOG(LogTemp, Log, TEXT("GameMode is Valid"));
-	}
+	//if (GameModeBase)
+	//{
+	//	USA_LOG(LogTemp, Log, TEXT("GameMode is Valid"));
+	//}
 
-	if (GameStateBase)
-	{
-		USA_LOG(LogTemp, Log, TEXT("GameState is Valid"));
-	}
+	//if (GameStateBase)
+	//{
+	//	USA_LOG(LogTemp, Log, TEXT("GameState is Valid"));
+	//}
+
+	//
+
+	//UUSAGameInstance* USAGameInstance = Cast <UUSAGameInstance>(GetGameInstance());
+	//AUSAPlayerState* USAPlayerState = Cast <AUSAPlayerState>(GetPlayerState());
+
+ //  if (USAPlayerState && USAGameInstance)
+ //  {
+	//	ChangeCharacterName(USAGameInstance->GetPlayerNickByIndex(USAPlayerState->GetPlayerIndex()));
+ //  }
 
 }
 

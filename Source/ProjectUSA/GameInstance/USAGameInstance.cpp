@@ -102,6 +102,16 @@ void UUSAGameInstance::JoinSessionByIPAddress(APlayerController* InPlayerControl
     K2_JoinSessionByIPAddress(InPlayerController, InIP);
 }
 
+FString UUSAGameInstance::GetPlayerNickByIndex(int32 InIndex)
+{
+    if (USANicknames.IsValidIndex(InIndex) == false)
+    {
+        return FString("Unknown");
+    }
+
+    return USANicknames[InIndex];
+}
+
 //bool UUSAGameInstance::FunctionTestReturnBoolean_Implementation(int32 InValue)
 //{
 //    return false;

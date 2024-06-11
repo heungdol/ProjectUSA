@@ -22,14 +22,18 @@ class PROJECTUSA_API UUSAGameInstance : public UGameInstance
 protected:
 	virtual void OnStart() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA DamageType")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA DamageType Info")
 	TSubclassOf<class UDamageType> USADamageType_Explosion;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA DamageType")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA DamageType Info")
 	TSubclassOf<class UDamageType> USADamageType_Grab;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
 	TArray<TSubclassOf<class AUSAItemBase>> USAItemOrder;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Nickname Info")
+	TArray<FString> USANicknames;
+
 
 public:
 	FORCEINLINE TSubclassOf<class UDamageType> GetUSADamageType_Explosion() {return USADamageType_Explosion;}
@@ -61,6 +65,9 @@ public:
 	void JoinSessionByIPAddress(class APlayerController* InPlayerController, const FText& InIP);
 
 	//
+
+	UFUNCTION(BlueprintCallable)
+	FString GetPlayerNickByIndex (int32 InIndex);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
