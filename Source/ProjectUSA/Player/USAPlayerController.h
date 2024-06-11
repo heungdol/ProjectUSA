@@ -23,6 +23,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAHUD> LocalUSAHUD;
 
+	bool bIsInitialized = false;
+
 	virtual void BeginPlay() override;
 
 	virtual void BeginPlayingState() override;

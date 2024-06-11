@@ -64,7 +64,8 @@ public:
 	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
-	EUSAWeaponType WeaponType = EUSAWeaponType::First;
+	//EUSAWeaponType WeaponType = EUSAWeaponType::First;
+	int32 WeaponEquipIndex = 0;
 
 	//
 
@@ -171,7 +172,8 @@ public:
 	//
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE EUSAWeaponType GetWeaponType() const { return WeaponType; }
+	//FORCEINLINE EUSAWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetWeaponEquipIndex() const { return WeaponEquipIndex;}
 
 	//
 

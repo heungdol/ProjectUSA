@@ -104,8 +104,8 @@ protected:
 
 	//
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Widget")
-	TObjectPtr <class UWidgetComponent> NicknameWidgetComponent;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Widget")
+	//TObjectPtr <class UWidgetComponent> NicknameWidgetComponent;
 
 	UPROPERTY(/*ReplicatedUsing = OnRep_HealthBarWidgetComponent, */EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Widget")
 	TObjectPtr <class UWidgetComponent> HealthBarWidgetComponent;
@@ -357,7 +357,7 @@ public:
 	//
 
 	// Weapon의 OnRep을 통해 호출
-	bool SetCurrentWeapon(EUSAWeaponType InWeaponType, class AUSAWeaponBase* InWeapon);
+	bool SetCurrentWeapon(int32 InEquipIndex, class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToHandSocket(class AUSAWeaponBase* InWeapon);
@@ -375,7 +375,7 @@ public:
 	void DropWeapons(bool bIsAbsolute = false);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentWeaponChanged", ScriptName = "OnUSACurrentWeaponChanged"))
-	void K2_OnUSACurrentWeaponChanged(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
+	void K2_OnUSACurrentWeaponChanged(int32 InEquipIndex, class AUSAWeaponBase* InWeapon);
 
 	//
 

@@ -19,30 +19,6 @@ void AUSAPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-    AUSACharacterPlayer* USACharacterOwner = Cast<AUSACharacterPlayer>(GetPawn());
-    AUSAHUD* USAHUD = Cast<AUSAHUD>(GetHUD());
-    UUSAGameInstance* USAGameInstance = Cast <UUSAGameInstance>(GetGameInstance());
-    AUSAPlayerState* USAPlayerState = GetPlayerState<AUSAPlayerState>();
-
-    // 시작시 호출
-    if (IsLocalController() == true)
-    {
-        if (USACharacterOwner)
-        {
-            USACharacterOwner->InitPlayerController();
-        }
-
-        if (USACharacterOwner && USAHUD)
-        {
-            USAHUD->InitCharacterHUD(USACharacterOwner);
-        }
-
-        if (USACharacterOwner && USAPlayerState && USAGameInstance)
-        {
-            USACharacterOwner->ChangeCharacterName(USAGameInstance->GetPlayerNickByIndex(USAPlayerState->GetPlayerIndex()));
-        }
-    }
-
     // HUD 가져오기
     LocalUSAHUD = Cast<AUSAHUD>(GetHUD());
 }
@@ -56,9 +32,9 @@ void AUSAPlayerController::BeginPlayingState()
     UUSAGameInstance* USAGameInstance = Cast <UUSAGameInstance>(GetGameInstance());
     AUSAPlayerState* USAPlayerState = GetPlayerState<AUSAPlayerState>();
 
+    // 시작시 호출
     if (IsLocalController() == true)
     {
-        // 클라이언트가 완전히 접속되었음을 알리는 코드
         if (USACharacterOwner)
         {
             USACharacterOwner->InitPlayerController();
@@ -71,7 +47,7 @@ void AUSAPlayerController::BeginPlayingState()
 
         if (USACharacterOwner && USAHUD)
         {
-            USAHUD->InitCharacterHUD(USACharacterOwner);
+            USAHUD->InitPlayerHUD(USACharacterOwner);
         }
 
         if (USACharacterOwner && USAPlayerState && USAGameInstance)

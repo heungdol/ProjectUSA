@@ -148,8 +148,8 @@ AUSACharacterBase::AUSACharacterBase()
 	//JellyEffectComponent->SetMeshComponent(GetMesh());
 	//JellyEffectComponent->SetAutoActivate(true);
 
-	NicknameWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Nickname Widget Component"));
-	NicknameWidgetComponent->SetupAttachment(RootComponent);
+	//NicknameWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Nickname Widget Component"));
+	//NicknameWidgetComponent->SetupAttachment(RootComponent);
 
 	HealthBarWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Health Bar Widget Component"));
 	HealthBarWidgetComponent->SetupAttachment(RootComponent);
@@ -683,31 +683,31 @@ void AUSACharacterBase::USACharacterAnimInstanceMontageNotify(FName NotifyName, 
 {
 	if (NotifyName == TEXT("AllWeapon_Holder"))
 	{
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[0]);
 
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[1]);
 	}
 
 	//
 
 	if (NotifyName == TEXT("FirstWeapon_Holder"))
 	{
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[0]);
 	}
 
 	if (NotifyName == TEXT("FirstWeapon_Hand"))
 	{
-		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::First]);
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[0]);
 	}
 
 	if (NotifyName == TEXT("SecondWeapon_Holder"))
 	{
-		AttachWeaponToHolderSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+		AttachWeaponToHolderSocket(CurrentEquipedWeapons[1]);
 	}
 
 	if (NotifyName == TEXT("SecondWeapon_Hand"))
 	{
-		AttachWeaponToHandSocket(CurrentEquipedWeapons[(uint8)EUSAWeaponType::Second]);
+		AttachWeaponToHandSocket(CurrentEquipedWeapons[1]);
 	}
 }
 
@@ -1351,7 +1351,7 @@ void AUSACharacterBase::AttachAllWeaponToHolderSocket()
 	}
 }
 
-bool AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeaponBase* InWeapon)
+bool AUSACharacterBase::SetCurrentWeapon(int32 InEquipIndex, AUSAWeaponBase* InWeapon)
 {
 	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
 		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
@@ -1359,12 +1359,12 @@ bool AUSACharacterBase::SetCurrentWeapon(EUSAWeaponType InWeaponType, AUSAWeapon
 		return false;
 	}
 
-	if ((uint8)InWeaponType < 0 || CurrentEquipedWeapons.Num() <= (uint8)InWeaponType)
+	if (CurrentEquipedWeapons.IsValidIndex (InEquipIndex) == false)
 	{
 		return false;
 	}
 
-	CurrentEquipedWeapons[(uint8)InWeaponType] = InWeapon;
+	CurrentEquipedWeapons[InEquipIndex] = InWeapon;
 
 	return true;
 }
@@ -2371,7 +2371,7 @@ void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> Prev
 
 				PrevWeapons[i]->SetWeaponPhysics(true);
 
-				K2_OnUSACurrentWeaponChanged(PrevWeapons[i]->GetWeaponType(), nullptr);
+				K2_OnUSACurrentWeaponChanged(PrevWeapons[i]->GetWeaponEquipIndex(), nullptr);
 			}
 
 			if (IsValid(PrevWeapons[i]) == false && IsValid(CurrentEquipedWeapons[i]) == true)
@@ -2380,7 +2380,7 @@ void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> Prev
 
 				CurrentEquipedWeapons[i]->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
 
-				K2_OnUSACurrentWeaponChanged(CurrentEquipedWeapons[i]->GetWeaponType(), CurrentEquipedWeapons[i]);
+				K2_OnUSACurrentWeaponChanged(CurrentEquipedWeapons[i]->GetWeaponEquipIndex(), CurrentEquipedWeapons[i]);
 			}
 		}
 	}

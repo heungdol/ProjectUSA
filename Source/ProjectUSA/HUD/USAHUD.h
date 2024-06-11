@@ -16,7 +16,7 @@ class PROJECTUSA_API AUSAHUD : public AHUD
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void InitCharacterHUD(class AUSACharacterPlayer* InPlayer);
+	void InitPlayerHUD(class AUSACharacterPlayer* InPlayer);
 
 	//
 
@@ -53,7 +53,7 @@ public:
 	//
 
 	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerWeapon(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
+	void UpdatePlayerWeapon(int32 InEquipIndex, class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerHPBar(float InRatio);
@@ -75,6 +75,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	//bool bIsInitialized = false;
+
 	//
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Player Controller Info");
@@ -88,13 +90,13 @@ protected:
 
 	//
 
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "InitPlayerHUD", ScriptName = "InitPlayerHUD"))
-	//void K2_InitPlayerHUD(class AUSACharacterPlayer* InPlayer);
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "InitPlayerHUD", ScriptName = "InitPlayerHUD"))
+	void K2_InitPlayerHUD(class AUSACharacterPlayer* InPlayer);
 
 	//
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "UpdatePlayerWeapon", ScriptName = "UpdatePlayerWeapon"))
-	void K2_UpdatePlayerWeapon(EUSAWeaponType InType, class AUSAWeaponBase* InWeapon);
+	void K2_UpdatePlayerWeapon(int32 InEquipIndex, class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "UpdatePlayerHealth", ScriptName = "UpdatePlayerHealth"))
 	void K2_UpdatePlayerHPBar(float InRatio);

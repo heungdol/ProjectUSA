@@ -149,12 +149,12 @@ void AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACh
 		return;
 	}
 
-	if ((uint8)WeaponType < 0 || InCharacter->CurrentEquipedWeapons.Num() <= (uint8)WeaponType)
+	if (InCharacter->CurrentEquipedWeapons.IsValidIndex(WeaponEquipIndex) == false)
 	{
 		return;
 	}
 
-	if (InCharacter->CurrentEquipedWeapons[(uint8)WeaponType] != nullptr)
+	if (InCharacter->CurrentEquipedWeapons[WeaponEquipIndex] != nullptr)
 	{
 		return;
 	}
@@ -230,7 +230,7 @@ bool AUSAWeaponBase::GiveGameplayWeaponAbilitesToASC(AUSACharacterBase* InCharac
 		return false;
 	}
 
-	if (InCharacter->SetCurrentWeapon(WeaponType, this) == false)
+	if (InCharacter->SetCurrentWeapon(WeaponEquipIndex, this) == false)
 	{
 		return false;
 	}
@@ -278,7 +278,7 @@ bool AUSAWeaponBase::ClearGameplayWeaponAbilitesToASC(AUSACharacterBase* InChara
 		return false;
 	}
 
-	if (InCharacter->SetCurrentWeapon(WeaponType, nullptr) == false)
+	if (InCharacter->SetCurrentWeapon(WeaponEquipIndex, nullptr) == false)
 	{
 		return false;
 	}
@@ -348,7 +348,7 @@ void AUSAWeaponBase::OnRep_PickableActorOwner(AUSACharacterBase* PrevCharacter)
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 		DetachFromActor(DetachmentTransformRules);
 		
-		PrevCharacter->K2_OnUSACurrentWeaponChanged(WeaponType, nullptr);
+		PrevCharacter->K2_OnUSACurrentWeaponChanged(WeaponEquipIndex, nullptr);
 
 		SetWeaponPhysics(true);
 	}
@@ -357,7 +357,7 @@ void AUSAWeaponBase::OnRep_PickableActorOwner(AUSACharacterBase* PrevCharacter)
 	{
 		GiveGameplayWeaponAbilitesToASC(PickableActorOwner);
 		
-		PickableActorOwner->K2_OnUSACurrentWeaponChanged(WeaponType, this);
+		PickableActorOwner->K2_OnUSACurrentWeaponChanged(WeaponEquipIndex, this);
 
 		SetWeaponPhysics(false);
 	}

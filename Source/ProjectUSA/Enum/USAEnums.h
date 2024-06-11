@@ -52,10 +52,10 @@ enum class ECharacterActionDirectionType : uint8
 
 // ========================================================================
 
-UENUM(BlueprintType)
-enum class EUSAWeaponType : uint8
-{
-	None = 0 UMETA(DisplayName = "None"),
-	First = 1 UMETA(DisplayName = "First"),
-	Second = 2 UMETA(DisplayName = "Second"),
-};
+//UENUM(BlueprintType)
+//enum class EUSAWeaponType : uint8
+//{
+//	None = 0 UMETA(DisplayName = "None"),
+//	First = 1 UMETA(DisplayName = "First"),
+//	Second = 2 UMETA(DisplayName = "Second"),
+//};

@@ -20,15 +20,24 @@ void AUSAHUD::BeginPlay()
 
 //
 
-void AUSAHUD::InitCharacterHUD(AUSACharacterPlayer* InPlayer)
+void AUSAHUD::InitPlayerHUD(AUSACharacterPlayer* InPlayer)
 {
     if (IsValid(InPlayer) == false)
     {
         return;
     }
 
+    //if (bIsInitialized == true)
+    //{
+    //    return;
+    //}
+
     LocalPlayerController = InPlayer->GetController<APlayerController>();
     LocalUSAPlayerController = InPlayer->GetController<AUSAPlayerController>();
+
+    K2_InitPlayerHUD(InPlayer);
+
+    //bIsInitialized = true;
 }
 
 //
@@ -99,9 +108,9 @@ void AUSAHUD::UpdateBossHealthRatio(float InHealth)
 
 //
 
-void AUSAHUD::UpdatePlayerWeapon(EUSAWeaponType InType, AUSAWeaponBase* InWeapon)
+void AUSAHUD::UpdatePlayerWeapon(int32 InEquipIndex, AUSAWeaponBase* InWeapon)
 {
-    K2_UpdatePlayerWeapon(InType, InWeapon);
+    K2_UpdatePlayerWeapon(InEquipIndex, InWeapon);
 }
 
 void AUSAHUD::UpdatePlayerHPBar(float InRatio)
