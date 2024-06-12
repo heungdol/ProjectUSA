@@ -14,6 +14,7 @@
 
 #include "Tag/USAGameplayTags.h"
 
+#include "AbilitySystemComponent.h"
 
 // Sets default values
 AUSAItemBase::AUSAItemBase()
@@ -23,13 +24,21 @@ AUSAItemBase::AUSAItemBase()
 
 	bReplicates = true;
 
-	ItemSphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Item Sphere Component"));
-	RootComponent = ItemSphereComponent;
-	ItemSphereComponent->SetGenerateOverlapEvents(true);
-
 	ItemStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Item Static Mesh Component"));
-	ItemStaticMeshComponent->SetupAttachment(ItemSphereComponent);
+	RootComponent = ItemStaticMeshComponent;
 
+	ItemStaticMeshComponent->SetCollisionProfileName(TEXT("Item"), false);
+	ItemStaticMeshComponent->SetGenerateOverlapEvents(/*true*/false);
+	ItemStaticMeshComponent->SetSimulatePhysics(true);
+
+	ItemStaticMeshComponent->BodyInstance.bOverrideMass = true;
+	ItemStaticMeshComponent->BodyInstance.SetMassOverride(200.0f);
+	ItemStaticMeshComponent->SetAngularDamping(1.0f);
+	ItemStaticMeshComponent->SetNotifyRigidBodyCollision(false);
+
+	ItemSphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Item Sphere Component"));
+	ItemSphereComponent->SetupAttachment(RootComponent);
+	ItemSphereComponent->SetGenerateOverlapEvents(true);
 }
 
 // Called when the game starts or when spawned
@@ -90,7 +99,6 @@ void AUSAItemBase::PlayPickUpAnimationMontageInUSACharacter(UAbilitySystemCompon
 void AUSAItemBase::ActiveUSAItem(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
 {
 	K2_ActiveUSAItem(InASC, InCharacter);
-
 }
 
 void AUSAItemBase::PlayUseAnimationMontageInUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
@@ -111,4 +119,3 @@ void AUSAItemBase::PlayUseAnimationMontageInUSACharacter(UAbilitySystemComponent
 		AnimInstance->Montage_Play(ItemUseAnimMontage, ItemUseAnimMontageRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
 	}
 }
-

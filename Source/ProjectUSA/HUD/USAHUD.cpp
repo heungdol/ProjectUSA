@@ -101,9 +101,9 @@ void AUSAHUD::UpdateBossName(FName InName)
     K2_UpdateBossName(InName);
 }
 
-void AUSAHUD::UpdateBossHealthRatio(float InHealth)
+void AUSAHUD::UpdateBossHealthRatio(float InHealth, float InMax, float InCurrent)
 {
-    K2_UpdateBossHealthRatio(InHealth);
+    K2_UpdateBossHealthRatio(InHealth, InMax, InCurrent);
 }
 
 //

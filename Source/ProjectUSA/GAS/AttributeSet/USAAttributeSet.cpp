@@ -63,6 +63,11 @@ void UUSAAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, 
 			OnOutOfHealth.Broadcast();
 		}
 	}
+
+	if (Attribute == GetCurrentHealthAttribute())
+	{
+		SetCurrentHealth(FMath::Clamp(NewValue, MinHealth, GetMaxHealth()));
+	}
 }
 
 bool UUSAAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)

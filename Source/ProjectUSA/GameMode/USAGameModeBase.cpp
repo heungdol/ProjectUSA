@@ -14,142 +14,119 @@
 
 #include "LevelSequenceActor.h"
 
-#include "Kismet/GameplayStatics.h"
-
 #include "GameFramework/PlayerState.h"
 
+#include "GameFramework/PlayerStart.h"
+#include "Engine/PlayerStartPIE.h"
 
-void AUSAGameModeBase::RestartPlayer(AController* NewPlayer)
-{
-	//Super::RestartPlayer(NewPlayer);
+#include "Player/USAPlayerStart.h"
 
-	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
-	{
-		return;
-	}
+#include "GameInstance/USAGameInstance.h"
 
-	AActor* StartSpot = FindPlayerStart(NewPlayer);
+#include "Kismet/GameplayStatics.h"
 
-	// If a start spot wasn't found,
-	if (StartSpot == nullptr)
-	{
-		// Check for a previously assigned spot
-		if (NewPlayer->StartSpot != nullptr)
-		{
-			StartSpot = NewPlayer->StartSpot.Get();
-			UE_LOG(LogGameMode, Warning, TEXT("RestartPlayer: Player start not found, using last start spot"));
-		}
-	}
+#include "Blueprint/BlueprintSupport.h"
+#include "Engine/GameInstance.h"
+#include "Engine/ServerStatReplicator.h"
+#include "GameFramework/GameNetworkManager.h"
+#include "Engine/GameViewportClient.h"
+#include "Engine/LevelScriptActor.h"
+#include "Misc/CommandLine.h"
+#include "Misc/PackageName.h"
+#include "Net/OnlineEngineInterface.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/SpectatorPawn.h"
+#include "GameFramework/HUD.h"
+#include "GameFramework/PlayerState.h"
+#include "GameFramework/GameSession.h"
+#include "Engine/NetConnection.h"
+#include "Engine/ChildConnection.h"
+#include "Engine/PlayerStartPIE.h"
+#include "Engine/LocalPlayer.h"
+#include "Engine/Engine.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreaming.h"
 
-	RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
-
-}
-
-void AUSAGameModeBase::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
-{
-	//Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
-
-	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
-	{
-		return;
-	}
-
-	if (!StartSpot)
-	{
-		UE_LOG(LogGameMode, Warning, TEXT("RestartPlayerAtPlayerStart: Player start not found"));
-		return;
-	}
-
-	FRotator SpawnRotation = StartSpot->GetActorRotation();
-
-	UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtPlayerStart %s"), (NewPlayer && NewPlayer->PlayerState) ? *NewPlayer->PlayerState->GetPlayerName() : TEXT("Unknown"));
-
-	if (MustSpectate(Cast<APlayerController>(NewPlayer)))
-	{
-		UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtPlayerStart: Tried to restart a spectator-only player!"));
-		return;
-	}
-
-	if (NewPlayer->GetPawn() != nullptr)
-	{
-		// If we have an existing pawn, just use it's rotation
-		SpawnRotation = NewPlayer->GetPawn()->GetActorRotation();
-	}
-	else if (GetDefaultPawnClassForController(NewPlayer) != nullptr)
-	{
-		// Try to create a pawn to use of the default class for this player
-		APawn* NewPawn = SpawnDefaultPawnFor(NewPlayer, StartSpot);
-		if (IsValid(NewPawn))
-		{
-			NewPlayer->SetPawn(NewPawn);
-		}
-	}
-
-	if (!IsValid(NewPlayer->GetPawn()))
-	{
-		FailedToRestartPlayer(NewPlayer);
-	}
-	else
-	{
-		// Tell the start spot it was used
-		InitStartSpot(StartSpot, NewPlayer);
-
-		FinishRestartPlayer(NewPlayer, SpawnRotation);
-	}
-}
-
-void AUSAGameModeBase::RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform)
-{
-	//Super::RestartPlayerAtTransform(NewPlayer, SpawnTransform);
-
-	if (NewPlayer == nullptr || NewPlayer->IsPendingKillPending())
-	{
-		return;
-	}
-
-	UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtTransform %s"), (NewPlayer && NewPlayer->PlayerState) ? *NewPlayer->PlayerState->GetPlayerName() : TEXT("Unknown"));
-
-	if (MustSpectate(Cast<APlayerController>(NewPlayer)))
-	{
-		UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtTransform: Tried to restart a spectator-only player!"));
-		return;
-	}
-
-	FRotator SpawnRotation = SpawnTransform.GetRotation().Rotator();
-
-	if (NewPlayer->GetPawn() != nullptr)
-	{
-		// If we have an existing pawn, just use it's rotation
-		SpawnRotation = NewPlayer->GetPawn()->GetActorRotation();
-	}
-	else if (GetDefaultPawnClassForController(NewPlayer) != nullptr)
-	{
-		// Try to create a pawn to use of the default class for this player
-		APawn* NewPawn = SpawnDefaultPawnAtTransform(NewPlayer, SpawnTransform);
-		if (IsValid(NewPawn))
-		{
-			NewPlayer->SetPawn(NewPawn);
-		}
-	}
-
-	if (!IsValid(NewPlayer->GetPawn()))
-	{
-		FailedToRestartPlayer(NewPlayer);
-	}
-	else
-	{
-		FinishRestartPlayer(NewPlayer, SpawnRotation);
-	}
-}
 
 AActor* AUSAGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {
-	return Super::ChoosePlayerStart_Implementation(Player);
+	// Choose a player start
+	APlayerStart* FoundPlayerStart = nullptr;
+	UClass* PawnClass = GetDefaultPawnClassForController(Player);
+	APawn* PawnToFit = PawnClass ? PawnClass->GetDefaultObject<APawn>() : nullptr;
+	TArray<APlayerStart*> UnOccupiedStartPoints;
+	TArray<APlayerStart*> OccupiedStartPoints;
+	UWorld* World = GetWorld();
+
+	// 체크포인트
+	AUSAPlayerController* USAPlayerController = Cast<AUSAPlayerController>(Player);
+
+	// USA를 안가지면 기존 함수를 수행
+	if (IsValid(USAPlayerController) == false)
+	{
+		return Super::ChoosePlayerStart_Implementation(Player);
+	}
+
+	int32 DesiredCheckpointIndex = -1;
+	if (USAPlayerController && PlayerControllerCheckpointMapList.Contains(USAPlayerController))
+	{
+		DesiredCheckpointIndex = PlayerControllerCheckpointMapList[USAPlayerController];
+	}
+
+	for (TActorIterator<APlayerStart> It(World); It; ++It)
+	{
+		APlayerStart* PlayerStart = *It;
+		AUSAPlayerStart* USAPlayerStart = Cast <AUSAPlayerStart>(PlayerStart);
+
+		if (PlayerStart->IsA<APlayerStartPIE>())
+		{
+			// Always prefer the first "Play from Here" PlayerStart, if we find one while in PIE mode
+			FoundPlayerStart = PlayerStart;
+			break;
+		}
+		else
+		{
+			if (IsValid(USAPlayerStart) == false)
+			{
+				continue;
+			}
+
+			// 인덱스가 맞는 플레이어 스타트들만 고르기
+			if (USAPlayerStart->GetPlayerStartIndex() != DesiredCheckpointIndex)
+			{
+				continue;
+			}
+
+			FVector ActorLocation = PlayerStart->GetActorLocation();
+			const FRotator ActorRotation = PlayerStart->GetActorRotation();
+			if (!World->EncroachingBlockingGeometry(PawnToFit, ActorLocation, ActorRotation))
+			{
+				UnOccupiedStartPoints.Add(PlayerStart);
+			}
+			else if (World->FindTeleportSpot(PawnToFit, ActorLocation, ActorRotation))
+			{
+				OccupiedStartPoints.Add(PlayerStart);
+			}
+		}
+	}
+	if (FoundPlayerStart == nullptr)
+	{
+		if (UnOccupiedStartPoints.Num() > 0)
+		{
+			FoundPlayerStart = UnOccupiedStartPoints[FMath::RandRange(0, UnOccupiedStartPoints.Num() - 1)];
+		}
+		else if (OccupiedStartPoints.Num() > 0)
+		{
+			FoundPlayerStart = OccupiedStartPoints[FMath::RandRange(0, OccupiedStartPoints.Num() - 1)];
+		}
+	}
+	return FoundPlayerStart;
 }
 
-AActor* AUSAGameModeBase::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
+bool AUSAGameModeBase::ShouldSpawnAtStartSpot(AController* Player)
 {
-	return Super::FindPlayerStart_Implementation(Player, IncomingName);
+	return false;
 }
 
 void AUSAGameModeBase::InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer)
@@ -167,47 +144,17 @@ void AUSAGameModeBase::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 
 	AUSAPlayerState* PlayerState = Cast <AUSAPlayerState>(NewPlayer->PlayerState);
+	UUSAGameInstance* USAGameInstance = Cast<UUSAGameInstance>(GetGameInstance());
 
-	if (PlayerState)
+	if (PlayerState && USAGameInstance)
 	{
-		PlayerState->SetPlayerIndex(CurrentPlayerStackCount);
-
+		PlayerState->SetPlayerName(USAGameInstance->GetPlayerNickByIndex(CurrentPlayerStackCount));
+		
 		CurrentPlayerStackCount += 1;
 	}
-
 }
 
-bool AUSAGameModeBase::ShouldSpawnAtStartSpot(AController* Player)
-{
-	return Super::ShouldSpawnAtStartSpot(Player);
-}
-
-void AUSAGameModeBase::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
-{
-	//Super::FinishRestartPlayer(NewPlayer, StartRotation);
-
-	NewPlayer->Possess(NewPlayer->GetPawn());
-	
-	// If the Pawn is destroyed as part of possession we have to abort
-	if (!IsValid(NewPlayer->GetPawn()))
-	{
-		FailedToRestartPlayer(NewPlayer);
-	}
-	else
-	{
-		// Set initial control rotation to starting rotation rotation
-		NewPlayer->ClientSetRotation(NewPlayer->GetPawn()->GetActorRotation(), true);
-
-		FRotator NewControllerRot = StartRotation;
-		NewControllerRot.Roll = 0.f;
-		NewPlayer->SetControlRotation(NewControllerRot);
-
-		SetPlayerDefaults(NewPlayer->GetPawn());
-
-		K2_OnRestartPlayer(NewPlayer);
-	}
-}
-
+//
 
 void AUSAGameModeBase::SetAllPlayerControllerInput(bool InActive)
 {
@@ -244,13 +191,13 @@ void AUSAGameModeBase::SetBossUSACharacter(AUSACharacterBase* InCharacter)
 	}
 }
 
-void AUSAGameModeBase::UpdateBossHealthRatio(float InRatio)
+void AUSAGameModeBase::UpdateBossHealthRatio(float InRatio, float InMax, float InCurrent)
 {
 	AUSAGameStateBase* USAGameState = GetGameState<AUSAGameStateBase>();
 
 	if (IsValid(USAGameState) == true)
 	{
-		USAGameState->UpdateBossHealthRatio(InRatio);
+		USAGameState->UpdateBossHealthRatio(InRatio, InMax, InCurrent);
 	}
 }
 
@@ -274,21 +221,24 @@ void AUSAGameModeBase::PlayLevelSequenceToAllPlayer(ALevelSequenceActor* InLevel
 	}
 }
 
-void AUSAGameModeBase::RestartUSAPlayer(AUSAPlayerController* NewPlayer)
+void AUSAGameModeBase::UpdatePlayerControllerCheckpoint(AUSAPlayerController* InPlayer, int32 InCheckpointIndex)
 {
-	AUSAPlayerController* USAPlayerController = Cast <AUSAPlayerController>(NewPlayer);
-
-	if (IsValid(USAPlayerController) == false)
+	if (PlayerControllerCheckpointMapList.Contains(InPlayer) == false)
 	{
-		return;
+		PlayerControllerCheckpointMapList.Add({ InPlayer, -1 });
 	}
 
-	AUSACharacterPlayer* USACharacterPlayer = Cast <AUSACharacterPlayer >(NewPlayer->GetPawn());
-
-	if (IsValid(USACharacterPlayer) == false)
-	{
-		return;
-	}
-
-	K2_RestartUSAPlayer(USAPlayerController, USACharacterPlayer);
+	PlayerControllerCheckpointMapList[InPlayer] = InCheckpointIndex;
 }
+
+//void AUSAGameModeBase::RestartUSAPlayer(AUSAPlayerController* NewPlayer)
+//{
+//	AUSAPlayerController* USAPlayerController = Cast <AUSAPlayerController>(NewPlayer);
+//
+//	if (IsValid(USAPlayerController) == false)
+//	{
+//		return;
+//	}
+//
+//	RestartPlayer(USAPlayerController);
+//}

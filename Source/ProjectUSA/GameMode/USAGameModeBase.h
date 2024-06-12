@@ -19,24 +19,27 @@ public:
 	int32 CurrentPlayerStackCount = 0;
 	
 public:
-	virtual void RestartPlayer(AController* NewPlayer) override;
+	//virtual void RestartPlayer(AController* NewPlayer) override;
 
-	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
+	//virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
 
-	virtual void RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform) override;
-	
+	//virtual void RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform) override;
+
+	//virtual AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT("")) override;
+
+	// Restart->FindPlayerStart->ChoosePlayerStart->RestartPlayerAtPlayerStart
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
-	virtual AActor* FindPlayerStart_Implementation(AController* Player, const FString& IncomingName = TEXT("")) override;
+	virtual bool ShouldSpawnAtStartSpot(AController* Player) override;
 
 	virtual void InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer) override;
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
 protected:
-	virtual bool ShouldSpawnAtStartSpot(AController* Player) override;
+	//virtual bool ShouldSpawnAtStartSpot(AController* Player) override;
 
-	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
+	//virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 
 
 public:
@@ -52,7 +55,7 @@ public:
 	void UpdateBossName(FName InName);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateBossHealthRatio(float InRatio);
+	void UpdateBossHealthRatio(float InRatio, float InMax, float InCurrent);
 
 	//
 	
@@ -61,15 +64,18 @@ public:
 
 	//
 
-	UFUNCTION(BlueprintCallable)
-	virtual void RestartUSAPlayer(class AUSAPlayerController* NewPlayer);
+	//UFUNCTION(BlueprintCallable)
+	//virtual void RestartUSAPlayer(class AUSAPlayerController* NewPlayer);
 
-	
+	void UpdatePlayerControllerCheckpoint(class AUSAPlayerController* InPlayer, int32 InCheckpointIndex);
+
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Character");
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Character Info");
 	TObjectPtr<class AUSACharacterBase> BossUSACharacter;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Checkpoint Info");
+	TMap<TObjectPtr<class AUSAPlayerController>, int32> PlayerControllerCheckpointMapList;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_RestartUSAPlayer(class AUSAPlayerController* NewPlayer, class AUSACharacterPlayer* PlayerCharacter);
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void K2_RestartUSAPlayer(class AUSAPlayerController* NewPlayer, class AUSACharacterPlayer* PlayerCharacter);
 };

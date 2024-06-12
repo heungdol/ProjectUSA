@@ -138,6 +138,24 @@ void AUSACharacterPlayer::InitTargetingCameraActor()
 
 //
 
+void AUSACharacterPlayer::DownUSACharacter()
+{
+	Super::DownUSACharacter();
+
+	if (GetWorld()->GetTimerManager().IsTimerActive(RestartTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RestartTimerHandle);
+		RestartTimerHandle.Invalidate();
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(RestartTimerHandle, this, &AUSACharacterPlayer::RestartUSAPlayer, RestartDelay, false);
+}
+
+void AUSACharacterPlayer::RestartUSAPlayer()
+{
+	K2_OnUSARestart();
+}
+
 void AUSACharacterPlayer::Look(const FInputActionValue& Value)
 {
 	AUSAPlayerState* USAPlayerState = GetPlayerState <AUSAPlayerState>();
@@ -185,6 +203,16 @@ void AUSACharacterPlayer::Move(const FInputActionValue& Value)
 	USACharacterInputMovementDirection += RightDirection * MovementVector.X;
 }
 
+void AUSACharacterPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (NewController && NewController->GetPlayerState<APlayerState>())
+	{
+		CharacterName = NewController->GetPlayerState<APlayerState>()->GetPlayerName();
+	}
+}
+
 //
 
 void AUSACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -217,6 +245,11 @@ void AUSACharacterPlayer::OnRep_PlayerState()
 
 	// 일반 클라에서 수행
 	SetupGAS();
+
+	if (GetPlayerState<APlayerState>() && GetPlayerState<APlayerState>()->GetPlayerName() != "")
+	{
+		//ChangeCharacterName(GetPlayerState<APlayerState>()->GetPlayerName());
+	}
 }
 
 void AUSACharacterPlayer::OnRep_ASC()

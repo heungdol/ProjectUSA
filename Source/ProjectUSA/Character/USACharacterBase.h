@@ -279,10 +279,6 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_OnUSAUnCrouch();
 
-	//
-
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSADeath", ScriptName = "OnUSA"))
-	void K2_OnUSADeath();
 
 	//UFUNCTION()
 	////void DieUSACharacter();
@@ -446,6 +442,14 @@ protected:
 	void MulticastRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
 
 	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
+
+	//
+
+	UFUNCTION()
+	virtual void DownUSACharacter();
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSADeath", ScriptName = "OnUSA"))
+	void K2_OnUSADeath();
 
 	//
 

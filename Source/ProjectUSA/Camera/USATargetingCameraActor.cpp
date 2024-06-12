@@ -5,6 +5,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
+#include "Data/USAJellyEffectData.h"
+#include "Component/USAJellyEffectComponent.h"
+
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
 
@@ -21,10 +24,14 @@ AUSATargetingCameraActor::AUSATargetingCameraActor()
 	CameraComponent = CreateDefaultSubobject <UCameraComponent>(TEXT("Camera Component"));
 	CameraComponent->SetupAttachment(CameraSpringArmComponent);
 
+	CameraFocusStaticMeshHolder = CreateDefaultSubobject <USceneComponent>(TEXT("Camera Target Static Mesh Parent"));
+
 	CameraFocusStaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Camera Target Static Mesh Component"));
-	CameraFocusStaticMeshComponent->SetupAttachment(RootComponent);
+	CameraFocusStaticMeshComponent->SetupAttachment(CameraFocusStaticMeshHolder);
 	CameraFocusStaticMeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
 	CameraFocusStaticMeshComponent->SetGenerateOverlapEvents(false);
+
+	CameraFocusJelleyEffectComponent = CreateDefaultSubobject <UUSAJellyEffectComponent>(TEXT("Jelly Effect Component"));
 }
 
 // Called when the game starts or when spawned
@@ -34,7 +41,12 @@ void AUSATargetingCameraActor::BeginPlay()
 	
 	if (CameraFocusStaticMeshComponent)
 	{
-		CameraFocusStaticMeshComponent->bHiddenInGame = true;
+		CameraFocusStaticMeshComponent->SetVisibility(false);
+	}
+
+	if (CameraFocusJelleyEffectComponent && CameraFocusStaticMeshComponent)
+	{
+		CameraFocusJelleyEffectComponent->SetJellySceneComponent(nullptr, CameraFocusStaticMeshComponent);
 	}
 }
 
@@ -62,9 +74,17 @@ void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 {
 	TargetActor = InActor;
 
-	if (CameraFocusStaticMeshComponent && InActor == nullptr)
+	if (CameraFocusStaticMeshComponent && CameraFocusJelleyEffectComponent)
 	{
-		CameraFocusStaticMeshComponent->bHiddenInGame = true;
+		if (InActor)
+		{
+			CameraFocusStaticMeshComponent->SetVisibility(true);
+			CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusShowJellyEffectData);
+		}
+		else
+		{
+			CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusHideJellyEffectData);
+		}
 	}
 }
 
@@ -134,12 +154,10 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 
 	//
 
-	if (CameraFocusStaticMeshComponent && TargetActor)
+	if (CameraFocusStaticMeshHolder && TargetActor)
 	{
-		CameraFocusStaticMeshComponent->bHiddenInGame = false;
-		CameraFocusStaticMeshComponent->SetWorldLocation(Cast<IUSATargetableInterface>(TargetActor)->GetTargetableToplocation());
+		CameraFocusStaticMeshHolder->SetWorldLocation(Cast<IUSATargetableInterface>(TargetActor)->GetTargetableToplocation());
 	}
-	
 
 	float DesiredFOV = UKismetMathLibrary::MapRangeClamped
 	(BetweenDistance, MinDistanceForFOV, MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);

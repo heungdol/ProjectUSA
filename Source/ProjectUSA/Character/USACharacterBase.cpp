@@ -254,7 +254,7 @@ void AUSACharacterBase::BeginPlay()
 
 	if (JellyEffectComponent != nullptr)
 	{
-		JellyEffectComponent->SetMeshComponent(this, GetMesh());
+		JellyEffectComponent->SetJellySceneComponent(this, GetMesh());
 	}
 
 	//
@@ -584,6 +584,11 @@ void AUSACharacterBase::MulticastRPC_OnUSACrouch_Implementation()
 void AUSACharacterBase::OnUSAUnCrouch()
 {
 	ServerRPC_OnUSAUnCrouch();
+}
+
+void AUSACharacterBase::DownUSACharacter()
+{
+	K2_OnUSADeath();
 }
 
 void AUSACharacterBase::ServerRPC_OnUSAUnCrouch_Implementation()
@@ -1280,7 +1285,7 @@ void AUSACharacterBase::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTa
 
 		DropWeapons(true);
 
-		K2_OnUSADeath();
+		DownUSACharacter();
 	}
 	else
 	{
@@ -1427,6 +1432,8 @@ void AUSACharacterBase::DropWeapons(bool bIsAbsolute)
 	}
 }	
 
+//
+
 void AUSACharacterBase::RespawnUSACharacter()
 {
 	ServerRPC_RespawnUSACharacter();
@@ -1566,7 +1573,7 @@ FVector AUSACharacterBase::GetTargetableToplocation()
 
 	if (GetCapsuleComponent())
 	{
-		return GetActorLocation() + FVector::UpVector * GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.0f;
+		return GetActorLocation() + FVector::UpVector * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	}
 
 	return GetActorLocation();
@@ -2446,11 +2453,12 @@ void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>
 	// 항상 뒤로 Add 되니...
 	//TSubclassOf<AUSAItemBase> TargetItem = CurrentOwnedItems[CurrentOwnedItems.Num() - 1];
 
-	//if (IsValid(TargetItem) == true
-	//	&& IsValid(TargetItem->GetDefaultObject()) == true)
-	//{
-	//	Cast<AUSAItemBase>(TargetItem->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
-	//}
+	if (CurrentOwnedItems.Num() > PrevItems.Num()
+		&& IsValid(GetCurrentItemClass()) == true
+		&& IsValid(GetCurrentItemClass()->GetDefaultObject()) == true)
+	{
+		Cast<AUSAItemBase>(GetCurrentItemClass()->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
+	}
 
 	//K2_OnCurrentItemOrderIndexChanged(GetCurrentItemClass());
 	//bIsUsingItem = false;

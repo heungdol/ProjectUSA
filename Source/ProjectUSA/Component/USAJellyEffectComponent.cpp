@@ -54,22 +54,9 @@ void UUSAJellyEffectComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	TickJellyEffectFinal();
 }
 
-void UUSAJellyEffectComponent::SetMeshComponent(ACharacter* InCharacter, UMeshComponent* InMeshComponent)
+void UUSAJellyEffectComponent::SetJellySceneComponent(ACharacter* InCharacter, USceneComponent* InComponent)
 {
-	MeshComponent = InMeshComponent;
-
-	//if (MeshComponent != nullptr)
-	//{
-	//	StartMeshLocation = MeshComponent->GetRelativeLocation();
-	//	StartMeshRotation = MeshComponent->GetRelativeRotation();
-	//	StartMeshScale = MeshComponent->GetRelativeScale3D();
-	//}
-	//else
-	//{
-	//	StartMeshLocation = FVector::ZeroVector;
-	//	StartMeshRotation = FRotator::ZeroRotator;
-	//	StartMeshScale = FVector::OneVector;
-	//}
+	JellySceneComponent = InComponent;
 
 	if (InCharacter != nullptr
 		&& InCharacter->GetClass() != nullptr
@@ -100,22 +87,17 @@ void UUSAJellyEffectComponent::PlayJellyEffect(UUSAJellyEffectData* InJellyEffec
 		return;
 	}
 
-	if (GetMeshComponent() == nullptr)
+	if (GetJellySceneComponent() == nullptr)
 	{
 		return;
 	}
-
-	//UE_LOG(LogTemp, Log, TEXT("Jelly Effect Start"));
 
 	CurrentJellyEffectData = InJellyEffectData;
 
 	PlayJellyEffectTime = GetWorld()->GetTimeSeconds();
 	EndJellyEffectTime = PlayJellyEffectTime + CurrentJellyEffectData->GetJellyEffectTime();
 
-	//UE_LOG(LogTemp, Log, TEXT("Start Time: %f, End Time: %f"), PlayJellyEffectTime, EndJellyEffectTime);
-
 	bIsPlayingJellyEffect = true;
-	//PrimaryComponentTick.bCanEverTick = true;
 
 	// 젤리 이펙트 수행 (첫 틱)
 	CurrentJellyEffectLocation = CurrentJellyEffectData->GetLocationVectorByRatio(0.0f);
@@ -129,9 +111,14 @@ void UUSAJellyEffectComponent::StopJellyEffect()
 {
 	bIsPlayingJellyEffect = false;
 
-	GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-	GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-	GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
+	if (GetJellySceneComponent() == false)
+	{
+		return;
+	}
+
+	GetJellySceneComponent()->SetRelativeLocation(StartMeshLocation);
+	GetJellySceneComponent()->SetRelativeRotation(StartMeshRotation);
+	GetJellySceneComponent()->SetRelativeScale3D(StartMeshScale);
 }
 
 void UUSAJellyEffectComponent::TickJellyEffect()
@@ -145,12 +132,7 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 		if (CurrentJellyEffectData == nullptr)
 		{
 			bIsPlayingJellyEffect = false;
-			//GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-			//GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-			//GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
-			//PrimaryComponentTick.bCanEverTick = false;
 
-			//UE_LOG(LogTemp, Log, TEXT("Jelly Effect End... -> No Data"));
 			return;
 		}
 
@@ -158,13 +140,18 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 		float CurrentJellyEffectTime = GetWorld()->GetTimeSeconds();
 		if (CurrentJellyEffectTime > EndJellyEffectTime)
 		{
-			bIsPlayingJellyEffect = false;
-			//GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-			//GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-			//GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
-			//PrimaryComponentTick.bCanEverTick = false;
+			// 마지막 이펙트를 유지하면 bIsPlayingJellyEffect 유지
+			if (CurrentJellyEffectData->GetJellyKeepLastEffect() == true)
+			{
+				CurrentJellyEffectLocation = CurrentJellyEffectData->GetLocationVectorByRatio(1.0f);
+				CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(1.0f));
+				CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(1.0f);
+			}
+			else
+			{
+				bIsPlayingJellyEffect = false;
+			}
 
-			//UE_LOG(LogTemp, Log, TEXT("Jelly Effect End... -> Time"));
 			return;
 		}
 
@@ -174,17 +161,10 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 		CurrentJellyEffectLocation = CurrentJellyEffectData->GetLocationVectorByRatio(CurrentJellyEffectRatio);
 		CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(CurrentJellyEffectRatio));
 		CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(CurrentJellyEffectRatio);
-
-		//GetMeshComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation);
-		//GetMeshComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
-		//GetMeshComponent()->SetRelativeScale3D(StartMeshScale * CurrentJellyEffectScale);
-
-		//UE_LOG(LogTemp, Log, TEXT("Jelly Effect ... Vector -> %s"), *CurrentJellyEffectScale.ToCompactString());
 	}
 	else
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Jelly Effect End..."));
-		//PrimaryComponentTick.bCanEverTick = false;
+
 	}
 }
 
@@ -197,7 +177,7 @@ void UUSAJellyEffectComponent::TickJellyEffectByGravity()
 		return;
 	}
 
-	if (GetMeshComponent() == nullptr)
+	if (GetJellySceneComponent() == nullptr)
 	{
 		return;
 	}
@@ -219,30 +199,18 @@ void UUSAJellyEffectComponent::TickJellyEffectByGravity()
 	CurrentRatio = FMath::Clamp(CurrentRatio, 0.0f, 1.0f);
 	
 	CurrentJellyEffectGravityScale = ScaleByGravityRatio->GetVectorValue(CurrentRatio);
-
-	//FVector NewScaleByGravity = GetMeshComponent()->GetRelativeScale3D();
-	//NewScaleByGravity *= ScaleByGravityRatio->GetVectorValue(CurrentRatio);
-	//GetMeshComponent()->SetRelativeScale3D(NewScaleByGravity);
 }
-
-//void UUSAJellyEffectComponent::TickJellyEffectByCapsuleOffset()
-//{
-//	ACharacter* Character = Cast <ACharacter>(GetOwner());
-//	if (Character == nullptr)
-//	{
-//		CurrentJellyEffectCapsuleOffsetLocation = FVector::ZeroVector;
-//		return;
-//	}
-//
-//	CurrentJellyEffectCapsuleOffsetLocation.Z = -1.0f * Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-//	CurrentJellyEffectCapsuleOffsetLocation -= StartMeshLocation;
-//}
 
 void UUSAJellyEffectComponent::TickJellyEffectFinal()
 {
-	GetMeshComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation + CurrentJellyEffectCapsuleOffsetLocation);
-	GetMeshComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
-	GetMeshComponent()->SetRelativeScale3D((StartMeshScale * CurrentJellyEffectScale) * CurrentJellyEffectGravityScale);
+	if (GetJellySceneComponent() == false)
+	{
+		return;
+	}
+
+	GetJellySceneComponent()->SetRelativeLocation(StartMeshLocation + CurrentJellyEffectLocation + CurrentJellyEffectCapsuleOffsetLocation);
+	GetJellySceneComponent()->SetRelativeRotation(StartMeshRotation + CurrentJellyEffectRotation);
+	GetJellySceneComponent()->SetRelativeScale3D((StartMeshScale * CurrentJellyEffectScale) * CurrentJellyEffectGravityScale);
 
 	CurrentJellyEffectLocation = FVector::ZeroVector;
 	CurrentJellyEffectRotation = FRotator::ZeroRotator;

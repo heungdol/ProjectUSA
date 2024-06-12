@@ -47,7 +47,7 @@ public:
 	void UpdateBossName(FName InName);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateBossHealthRatio(float InHealth);
+	void UpdateBossHealthRatio(float InHealth, float InMax, float InCurrent);
 
 
 	//
@@ -154,5 +154,5 @@ protected:
 	void K2_UpdateBossName(FName InName);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_UpdateBossHealthRatio(float InRatio);
+	void K2_UpdateBossHealthRatio(float InRatio, float InMax, float InCurrent);
 };

@@ -26,29 +26,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	float LocationWeightRatio = 0.2f;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	//float RotationDistanceOffset = 300.0f;
-
-	//
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	//float SourceHeightOffset = 30.0f;
-
-	//
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	//float TargetMaxHeightOffset = 100.0f;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	//float TargetMinHeightOffset = 0.0f;
-
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	//float TargetMaxVelocityZ = 500.0f;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
-	//float TargetMinVelocityZ = 0.0f;
-
 	//
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
@@ -79,13 +56,16 @@ public:
 
 	//
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
-	//float MinUpdateRange = 200;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	float OffsetResultLocationHeight = 50.0f;
 
 	//
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
-	float OffsetResultLocationHeight = 50.0f;
+	TObjectPtr <class UUSAJellyEffectData> FocusShowJellyEffectData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	TObjectPtr <class UUSAJellyEffectData> FocusHideJellyEffectData;
 
 
 	//bool bIsOn = false;
@@ -98,7 +78,13 @@ protected:
 	TObjectPtr <class USpringArmComponent> CameraSpringArmComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	TObjectPtr <class USceneComponent> CameraFocusStaticMeshHolder;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	TObjectPtr <class UStaticMeshComponent> CameraFocusStaticMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	TObjectPtr <class UUSAJellyEffectComponent> CameraFocusJelleyEffectComponent;
 
 
 public:	

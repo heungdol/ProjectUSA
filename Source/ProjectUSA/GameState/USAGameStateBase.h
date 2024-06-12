@@ -29,7 +29,7 @@ public:
 	void UpdateBossName(FName InName);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateBossHealthRatio(float InRatio);
+	void UpdateBossHealthRatio(float InRatio, float InMax, float InCurrent);
 
 	//
 
@@ -103,8 +103,17 @@ protected:
 	UFUNCTION()
 	void OnRep_CurrentBossHealthRatio();
 
+	UFUNCTION()
+	void OnRep_CurrentBossHealth();
+
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentBossHealthRatio, VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Info")
 	float CurrentBossHealthRatio = 0.0f;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Info")
+	float MaxBossHealth = 0.0f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentBossHealth, VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Info")
+	float CurrentBossHealth = 0.0f;
 
 	//
 
@@ -115,7 +124,7 @@ protected:
 	void K2_UpdateBossName(FName InName);
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_UpdateBossHealthRatio(float InRatio);
+	void K2_UpdateBossHealthRatio(float InRatio, float InMax, float InCurrent);
 
 	//
 

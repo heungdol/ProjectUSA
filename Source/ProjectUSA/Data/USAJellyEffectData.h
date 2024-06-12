@@ -24,6 +24,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
 	float JellyEffectTime;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
+	bool bIsKeepLastEffect = false;
+
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jelly Effect")
@@ -39,6 +42,8 @@ protected:
 public:
 	//FORCEINLINE float GetJellyEffectActiveTime() { return JellyEffectActiveTime; }
 	FORCEINLINE float GetJellyEffectTime() { return JellyEffectTime; }
+
+	FORCEINLINE bool GetJellyKeepLastEffect() { return bIsKeepLastEffect; }
 
 	UFUNCTION()
 	FVector GetLocationVectorByRatio(float InRatio);

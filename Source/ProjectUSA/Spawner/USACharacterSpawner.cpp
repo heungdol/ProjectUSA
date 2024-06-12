@@ -71,12 +71,15 @@ void AUSACharacterSpawner::OnConstruction(const FTransform& Transform)
 			|| IsValid(Cast<AUSACharacterNonPlayer>(CharacterSpawnClasses[Index]->GetDefaultObject())) == false)
 		{
 			CharacterSpawnSkeletalMeshComponents[Index]->SetSkeletalMesh(nullptr);
+			CharacterSpawnSkeletalMeshComponents[Index]->SetVisibility(false);
+			CharacterSpawnSkeletalMeshComponents[Index]->SetRelativeLocation(FVector::ZeroVector);
+			CharacterSpawnSkeletalMeshComponents[Index]->SetRelativeRotation(FRotator::ZeroRotator);
+			
 			continue;
 		}
 
+		CharacterSpawnSkeletalMeshComponents[Index]->SetVisibility(true);
 		CharacterSpawnSkeletalMeshComponents[Index]->SetSkeletalMesh(Cast<AUSACharacterNonPlayer>(CharacterSpawnClasses[Index]->GetDefaultObject())->CharacterDisplaySkeletalMeshMeshRef);
-		//CharacterSpawnSkeletalMeshComponents[Index]->SetRelativeLocation(CharacterSpawnArrowComponents[Index]->GetRelativeLocation());
-		//CharacterSpawnSkeletalMeshComponents[Index]->SetRelativeRotation(CharacterSpawnArrowComponents[Index]->GetRelativeRotation());
 	}
 
 }

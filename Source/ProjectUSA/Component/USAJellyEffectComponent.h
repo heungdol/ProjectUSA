@@ -18,7 +18,7 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jelly Effect")
-	TObjectPtr <class UMeshComponent> MeshComponent;
+	TObjectPtr <class USceneComponent> JellySceneComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Jelly Effect")
 	TObjectPtr <class UUSAJellyEffectData> CurrentJellyEffectData;
@@ -47,9 +47,9 @@ public:
 
 	//
 
-	virtual void SetMeshComponent(class ACharacter* InCharacter, class UMeshComponent* InMeshComponent);
+	virtual void SetJellySceneComponent(class ACharacter* InCharacter, class USceneComponent* InComponent);
 
-	FORCEINLINE class UMeshComponent* GetMeshComponent() const { return MeshComponent; }
+	FORCEINLINE class USceneComponent* GetJellySceneComponent() const { return JellySceneComponent; }
 
 	//
 

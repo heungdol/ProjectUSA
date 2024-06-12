@@ -26,15 +26,15 @@ public:
 	UPROPERTY()
 	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
-	UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
-	int32 PlayerIndex;
+	//UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
+	//int32 PlayerIndex;
 
-	void SetPlayerIndex(int32 InIndex);
+	//void SetPlayerIndex(int32 InIndex);
 
-	FORCEINLINE int32 GetPlayerIndex() { return PlayerIndex; }
+	//FORCEINLINE int32 GetPlayerIndex() { return PlayerIndex; }
 	
-	UFUNCTION()
-	void OnRep_PlayerIndex();
+	//UFUNCTION()
+	//void OnRep_PlayerIndex();
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
@@ -49,11 +49,13 @@ public:
 
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
+		
 	UFUNCTION(BlueprintCallable)
 	float GetLookSensitivityRatio();
 
 	UFUNCTION(BlueprintCallable)
 	void SetIsUsingGamepad(bool InUsing);
+
+	virtual void OnRep_PlayerName() override;
 
 };

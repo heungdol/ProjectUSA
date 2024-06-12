@@ -26,7 +26,6 @@ AUSAWeaponStaticMesh::AUSAWeaponStaticMesh()
 
 	WeaponMeshComponent->BodyInstance.bOverrideMass = true;
 	WeaponMeshComponent->BodyInstance.SetMassOverride (200.0f);
-	//WeaponMeshComponent->SetMassOverrideInKg(NAME_None, 200.0f, true);
 	WeaponMeshComponent->SetAngularDamping(1.0f);
 	WeaponMeshComponent->SetNotifyRigidBodyCollision(false);
 

@@ -43,6 +43,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
 	float ItemUseAnimMontageRate = 1.0f;
 
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
+	//TSubclassOf<class UGameplayEffect> ItemGameplayEffect;
 
 
 protected:
@@ -77,5 +79,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UTexture2D* GetItemTexture() const { return ItemTexture; }
+
+	//TSubclassOf<UGameplayEffect> GetItemGameplayEffect();
 
 };

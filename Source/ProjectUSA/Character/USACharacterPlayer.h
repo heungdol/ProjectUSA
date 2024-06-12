@@ -51,6 +51,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void Move(const struct FInputActionValue& Value) override;
+
+	virtual void PossessedBy(AController* NewController) override;
 	
 	virtual void OnRep_PlayerState() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -129,9 +131,27 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_PlayUserWidgetAnimation_Panel(bool IsShowing, bool IsRaw);
 
-
+	//
 
 protected:
+	virtual void DownUSACharacter() override;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Player Restart Info")
+	float RestartDelay = 3.0f;
+
+	UPROPERTY()
+	FTimerHandle RestartTimerHandle;
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnUSARestart();
+
+	UFUNCTION(BlueprintCallable)
+	void RestartUSAPlayer();
+
+	//
+
 	virtual void Look(const struct FInputActionValue& Value) override;
 	
 	virtual void SetupGAS() override;
