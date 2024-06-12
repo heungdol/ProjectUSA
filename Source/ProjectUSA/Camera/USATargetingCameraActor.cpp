@@ -16,10 +16,15 @@ AUSATargetingCameraActor::AUSATargetingCameraActor()
 	CameraSpringArmComponent = CreateDefaultSubobject <USpringArmComponent>(TEXT("Camera Spring Arm Component"));
 	CameraSpringArmComponent->TargetArmLength = 500.0f;
 	
-	RootComponent = CameraSpringArmComponent;
+	//RootComponent = CameraSpringArmComponent;
 
 	CameraComponent = CreateDefaultSubobject <UCameraComponent>(TEXT("Camera Component"));
 	CameraComponent->SetupAttachment(CameraSpringArmComponent);
+
+	CameraFocusStaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Camera Target Static Mesh Component"));
+	CameraFocusStaticMeshComponent->SetupAttachment(RootComponent);
+	CameraFocusStaticMeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
+	CameraFocusStaticMeshComponent->SetGenerateOverlapEvents(false);
 }
 
 // Called when the game starts or when spawned
@@ -27,6 +32,10 @@ void AUSATargetingCameraActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (CameraFocusStaticMeshComponent)
+	{
+		CameraFocusStaticMeshComponent->bHiddenInGame = true;
+	}
 }
 
 // Called every frame
@@ -52,6 +61,11 @@ void AUSATargetingCameraActor::SetSourceActor(AActor* InActor)
 void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 {
 	TargetActor = InActor;
+
+	if (CameraFocusStaticMeshComponent && InActor == nullptr)
+	{
+		CameraFocusStaticMeshComponent->bHiddenInGame = true;
+	}
 }
 
 void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
@@ -119,6 +133,12 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	}
 
 	//
+
+	if (CameraFocusStaticMeshComponent && TargetActor)
+	{
+		CameraFocusStaticMeshComponent->bHiddenInGame = false;
+		CameraFocusStaticMeshComponent->SetWorldLocation(Cast<IUSATargetableInterface>(TargetActor)->GetTargetableToplocation());
+	}
 	
 
 	float DesiredFOV = UKismetMathLibrary::MapRangeClamped

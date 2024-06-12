@@ -259,7 +259,12 @@ void AUSACharacterBase::BeginPlay()
 
 	//
 
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+	K2_OnCurrentHealthRatioChanged
+	(
+		GetCharacterCurrentHealthRatio_Implementation(), 
+		GetCharacterMaxHealth_Implementation(), 
+		GetCharacterCurrentHealth_Implementation()
+	);
 
 	// 
 
@@ -1540,11 +1545,28 @@ bool AUSACharacterBase::GetIsTargetableCurrently()
 
 FVector AUSACharacterBase::GetTargetablePivotlocation()
 {
-	if (GetMesh() != nullptr 
-		&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
+	//if (GetMesh() != nullptr 
+	//	&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
+	//{
+	//	FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
+	//	DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+	//}
+
+	return GetActorLocation();
+}
+
+FVector AUSACharacterBase::GetTargetableToplocation()
+{
+	//if (GetMesh() != nullptr
+	//	&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
+	//{
+	//	FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
+	//	DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+	//}
+
+	if (GetCapsuleComponent())
 	{
-		FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
-		DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+		return GetActorLocation() + FVector::UpVector * GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.0f;
 	}
 
 	return GetActorLocation();
@@ -2085,12 +2107,24 @@ void AUSACharacterBase::OnRep_bIsASCInitialized(bool Prev)
 
 void AUSACharacterBase::OnCurrentHealthRatioChanged(float InValue)
 {
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+	K2_OnCurrentHealthRatioChanged
+	(
+		GetCharacterCurrentHealthRatio_Implementation(),
+		GetCharacterMaxHealth_Implementation(),
+		GetCharacterCurrentHealth_Implementation()
+	);
+
 }
 
 void AUSACharacterBase::OnCurrentHealthRatioChanged(const FOnAttributeChangeData& ChangeData)
 {
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+	K2_OnCurrentHealthRatioChanged
+	(
+		GetCharacterCurrentHealthRatio_Implementation(),
+		GetCharacterMaxHealth_Implementation(),
+		GetCharacterCurrentHealth_Implementation()
+	);
+
 }
 
 void AUSACharacterBase::SetupGAS()

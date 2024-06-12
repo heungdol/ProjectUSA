@@ -97,6 +97,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	TObjectPtr <class USpringArmComponent> CameraSpringArmComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	TObjectPtr <class UStaticMeshComponent> CameraFocusStaticMeshComponent;
+
 
 public:	
 	// Sets default values for this actor's properties

@@ -49,7 +49,13 @@ void AUSACharacterPlayer::BeginPlay()
 	InitPlayerController();
 	InitTargetingCameraActor();
 
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+	K2_OnCurrentHealthRatioChanged
+	(
+		GetCharacterCurrentHealthRatio_Implementation(),
+		GetCharacterMaxHealth_Implementation(),
+		GetCharacterCurrentHealth_Implementation()
+	);
+
 
 	AGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode();
 	AGameStateBase* GameStateBase = GetWorld()->GetGameState();
@@ -223,7 +229,13 @@ void AUSACharacterPlayer::OnRep_ASC()
 
 	BeginStartAbilities();
 
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+	K2_OnCurrentHealthRatioChanged
+	(
+		GetCharacterCurrentHealthRatio_Implementation(),
+		GetCharacterMaxHealth_Implementation(),
+		GetCharacterCurrentHealth_Implementation()
+	);
+
 
 	CheckCharacterByGameplayTags();
 }

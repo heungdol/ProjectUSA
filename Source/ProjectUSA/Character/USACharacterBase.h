@@ -191,7 +191,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Info")
 	TObjectPtr<class USkeletalMesh> CharacterDisplaySkeletalMeshMeshRef;
 
-	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Info")
+	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, EditAnywhere, BlueprintReadOnly, Category = "USA Character Info")
 	FString CharacterName = TEXT("Character");
 
 	FORCEINLINE FString GetCharacterName() {return CharacterName;}
@@ -473,6 +473,8 @@ protected:
 
 	virtual FVector GetTargetablePivotlocation() override;
 
+	virtual FVector GetTargetableToplocation() override;
+
 	virtual float GetTargetableCapsuleRadius() override;
 
 	//
@@ -607,7 +609,7 @@ public:
 	void OnCurrentHealthRatioChanged(const FOnAttributeChangeData& ChangeData);
 	
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACurrentHealthRatioChanged", ScriptName = "OnUSACurrentHealthRatioChanged"))
-	void K2_OnCurrentHealthRatioChanged(float InValue);
+	void K2_OnCurrentHealthRatioChanged(float InValue, float InMax, float InCurrent);
 
 
 protected:

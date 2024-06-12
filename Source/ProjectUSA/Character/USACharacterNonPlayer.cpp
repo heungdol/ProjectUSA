@@ -41,7 +41,13 @@ void AUSACharacterNonPlayer::OnRep_bIsASCInitialized(bool Prev)
 
 	BeginStartAbilities();
 
-	K2_OnCurrentHealthRatioChanged(GetCharacterCurrentHealthRatio_Implementation());
+	K2_OnCurrentHealthRatioChanged
+	(
+		GetCharacterCurrentHealthRatio_Implementation(),
+		GetCharacterMaxHealth_Implementation(),
+		GetCharacterCurrentHealth_Implementation()
+	);
+
 
 	CheckCharacterByGameplayTags();
 }

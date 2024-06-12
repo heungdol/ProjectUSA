@@ -56,7 +56,10 @@ public:
 	void UpdatePlayerWeapon(int32 InEquipIndex, class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintCallable)
-	void UpdatePlayerHPBar(float InRatio);
+	void UpdatePlayerHPBar(float InRatio, float InMax, float InCurrent);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerNickname(const FString& InName);
 
 	//
 
@@ -99,8 +102,10 @@ protected:
 	void K2_UpdatePlayerWeapon(int32 InEquipIndex, class AUSAWeaponBase* InWeapon);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "UpdatePlayerHealth", ScriptName = "UpdatePlayerHealth"))
-	void K2_UpdatePlayerHPBar(float InRatio);
+	void K2_UpdatePlayerHPBar(float InRatio, float InMax, float InCurrent);
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "UpdatePlayerNickname", ScriptName = "UpdatePlayerHealth"))
+	void K2_UpdatePlayerNickname(const FString& InName);
 
 	//
 

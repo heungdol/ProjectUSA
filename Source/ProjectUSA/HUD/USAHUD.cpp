@@ -113,9 +113,14 @@ void AUSAHUD::UpdatePlayerWeapon(int32 InEquipIndex, AUSAWeaponBase* InWeapon)
     K2_UpdatePlayerWeapon(InEquipIndex, InWeapon);
 }
 
-void AUSAHUD::UpdatePlayerHPBar(float InRatio)
+void AUSAHUD::UpdatePlayerHPBar(float InRatio, float InMax, float InCurrent)
 {
-    K2_UpdatePlayerHPBar(InRatio);
+    K2_UpdatePlayerHPBar(InRatio, InMax, InCurrent);
+}
+
+void AUSAHUD::UpdatePlayerNickname(const FString& InName)
+{
+    K2_UpdatePlayerNickname(InName);
 }
 
 //

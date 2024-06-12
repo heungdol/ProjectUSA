@@ -26,6 +26,8 @@ public:
 	
 	virtual FVector GetTargetablePivotlocation() = 0;
 
+	virtual FVector GetTargetableToplocation() = 0;
+
 	virtual float GetTargetableCapsuleRadius() = 0;
 
 
