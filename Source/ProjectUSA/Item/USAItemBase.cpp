@@ -55,16 +55,18 @@ void AUSAItemBase::Tick(float DeltaTime)
 
 }
 
-void AUSAItemBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
+bool AUSAItemBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
 {
 	if (IsValid(InCharacter) == false)
 	{
-		return;
+		return false;
 	}
 
 	InCharacter->CurrentOwnedItems.Add(ItemSubclass);
 
 	Destroy();
+
+	return true;
 }
 
 void AUSAItemBase::PlayPickUpAnimationMontageInUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
@@ -108,14 +110,16 @@ void AUSAItemBase::PlayUseAnimationMontageInUSACharacter(UAbilitySystemComponent
 		return;
 	}
 
-	UAnimInstance* AnimInstance = (InCharacter->GetMesh()) ? InCharacter->GetMesh()->GetAnimInstance() : nullptr;
+	InCharacter->StopAndPlayAnimMontageByGroup(ItemUseAnimMontage, ItemUseAnimMontageRate);
 
-	if (IsValid(ItemUseAnimMontage) == true
-		&& IsValid(AnimInstance) == true
-		/*&& IsValid(InASC) == true
-		&& InASC->GetGameplayTagCount(USA_CHARACTER_ACTION) <= 0*/)
-	{
-		AnimInstance->Montage_StopGroupByName(0.0f, ItemUseAnimMontage->GetGroupName());
-		AnimInstance->Montage_Play(ItemUseAnimMontage, ItemUseAnimMontageRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
-	}
+	//UAnimInstance* AnimInstance = (InCharacter->GetMesh()) ? InCharacter->GetMesh()->GetAnimInstance() : nullptr;
+
+	//if (IsValid(ItemUseAnimMontage) == true
+	//	&& IsValid(AnimInstance) == true
+	//	/*&& IsValid(InASC) == true
+	//	&& InASC->GetGameplayTagCount(USA_CHARACTER_ACTION) <= 0*/)
+	//{
+	//	AnimInstance->Montage_StopGroupByName(0.0f, ItemUseAnimMontage->GetGroupName());
+	//	AnimInstance->Montage_Play(ItemUseAnimMontage, ItemUseAnimMontageRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
+	//}
 }

@@ -69,6 +69,8 @@ public:
 
 	//
 
+protected:
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Weapon Info")
 	TArray <TSubclassOf<class UGameplayAbility>> GameplayWeaponAbilities;
 
@@ -139,7 +141,7 @@ public:
 
 	//
 
-	virtual void PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
+	virtual bool PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 
 	virtual void PlayPickUpAnimationMontageInUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 

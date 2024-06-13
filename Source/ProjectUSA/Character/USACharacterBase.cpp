@@ -388,6 +388,30 @@ void AUSACharacterBase::StopAnimMontage(UAnimMontage* AnimMontage)
 	ServerRPC_StopAnimMontage();
 }
 
+void AUSACharacterBase::StopAndPlayAnimMontageByGroup(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
+{
+	ServerRPC_StopAndPlayAnimMontageByGroup(AnimMontage, InPlayRate, StartSectionName);
+}
+
+void AUSACharacterBase::ServerRPC_StopAndPlayAnimMontageByGroup_Implementation(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
+{
+	MulticastRPC_StopAndPlayAnimMontageByGroup(AnimMontage, InPlayRate, StartSectionName);
+}
+
+void AUSACharacterBase::MulticastRPC_StopAndPlayAnimMontageByGroup_Implementation(UAnimMontage* AnimMontage, float InPlayRate, FName StartSectionName)
+{
+	UAnimInstance* AnimInstance = (GetMesh()) ? GetMesh()->GetAnimInstance() : nullptr;
+
+	if (IsValid(AnimMontage) == true
+		&& IsValid(AnimInstance) == true
+		/*&& IsValid(InASC) == true
+		&& InASC->GetGameplayTagCount(USA_CHARACTER_ACTION) <= 0*/)
+	{
+		AnimInstance->Montage_StopGroupByName(0.0f, AnimMontage->GetGroupName());
+		AnimInstance->Montage_Play(AnimMontage, InPlayRate, EMontagePlayReturnType::MontageLength, 0.0f, false);
+	}
+}
+
 void AUSACharacterBase::ServerRPC_StopAnimMontage_Implementation(UAnimMontage* AnimMontage)
 {
 	MulticastRPC_StopAnimMontage(AnimMontage);
@@ -1396,10 +1420,24 @@ void AUSACharacterBase::PickUpSomething(IUSAPickableInterface* InPick)
 	TArray<AUSAWeaponBase*> PrevWeapons = CurrentEquipedWeapons;
 	TArray<TSubclassOf<class AUSAItemBase>> PrevItems = CurrentOwnedItems;
 
-	InPick->PickUpByUSACharacter(ASC, this);
+	AUSAWeaponBase* WeaponBase = Cast<AUSAWeaponBase>(InPick);
+	AUSAItemBase* ItemBase = Cast<AUSAItemBase>(InPick);
 
-	OnRep_CurrentEquipedWeapons(PrevWeapons);
-	OnRep_CurrentOwnedItems(PrevItems);
+	if (WeaponBase)
+	{
+		if (InPick->PickUpByUSACharacter(ASC, this))
+		{
+			OnRep_CurrentEquipedWeapons(PrevWeapons);
+		}
+	}
+
+	if (ItemBase)
+	{
+		if (InPick->PickUpByUSACharacter(ASC, this))
+		{
+			OnRep_CurrentOwnedItems(PrevItems);
+		}
+	}
 }
 
 
@@ -1591,7 +1629,7 @@ float AUSACharacterBase::GetTargetableCapsuleRadius()
 
 bool AUSACharacterBase::PreUseItem()
 {
-	if (CurrentUSAItemOrderIndex < 0 || USAItemOrder.Num() <= CurrentUSAItemOrderIndex)
+	if (USAItemOrder.IsValidIndex(CurrentUSAItemOrderIndex) == false)
 	{
 		return false;
 	}
@@ -2429,39 +2467,27 @@ void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> Prev
 
 void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>> PrevItems)
 {
-	//if (CurrentOwnedItems.Num() <= PrevItems.Num())
+	// 획득
+	if (CurrentOwnedItems.Num() > PrevItems.Num())
+	{
+		// 항상 뒤로 Add 되니...
+		TSubclassOf<AUSAItemBase> TargetItem = CurrentOwnedItems[CurrentOwnedItems.Num() - 1];
+		
+		if (IsValid(TargetItem) == true
+			&& IsValid(TargetItem->GetDefaultObject()) == true)
+		{
+			Cast<AUSAItemBase>(TargetItem->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
+		}
+	}
+	// 소모
+	//else if (CurrentOwnedItems.Num() < PrevItems.Num())
 	//{
-	//	return;
-	//}
-
-	//if (CurrentOwnedItems.Num() <= 0)
-	//{
-	//	return;
-	//}
-
-	//TSubclassOf<AUSAItemBase> TargetItem = nullptr;
-
-	//int Index = 0;
-	//for (; Index < CurrentOwnedItems.Num() && Index < PrevItems.Num(); Index++)
-	//{
-	//	if (CurrentOwnedItems[Index] != PrevItems[Index])
+	//	if (IsValid(GetCurrentItemClass()) == true
+	//		&& IsValid(GetCurrentItemClass()->GetDefaultObject()) == true)
 	//	{
-	//		TargetItem
+	//		Cast<AUSAItemBase>(GetCurrentItemClass()->GetDefaultObject())->PlayUseAnimationMontageInUSACharacter(ASC, this);
 	//	}
 	//}
-
-	// 항상 뒤로 Add 되니...
-	//TSubclassOf<AUSAItemBase> TargetItem = CurrentOwnedItems[CurrentOwnedItems.Num() - 1];
-
-	if (CurrentOwnedItems.Num() > PrevItems.Num()
-		&& IsValid(GetCurrentItemClass()) == true
-		&& IsValid(GetCurrentItemClass()->GetDefaultObject()) == true)
-	{
-		Cast<AUSAItemBase>(GetCurrentItemClass()->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
-	}
-
-	//K2_OnCurrentItemOrderIndexChanged(GetCurrentItemClass());
-	//bIsUsingItem = false;
 
 	K2_OnCurrentItemCountChanged(GetCurrentItemCount());
 }

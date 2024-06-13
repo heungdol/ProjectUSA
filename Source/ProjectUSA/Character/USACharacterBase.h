@@ -255,6 +255,16 @@ public:
 
 	//
 
+	void StopAndPlayAnimMontageByGroup(class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_StopAndPlayAnimMontageByGroup(class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_StopAndPlayAnimMontageByGroup(class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None);
+
+	//
+
 	void OnUSACrouch();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSACrouch", ScriptName = "OnUSACrouch"))

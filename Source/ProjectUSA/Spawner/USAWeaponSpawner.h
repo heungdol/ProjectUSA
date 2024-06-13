@@ -17,7 +17,7 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
-public:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Weapon Spawn Info")
 	TSubclassOf <class AUSAWeaponBase> WeaponSpawnClass;
 

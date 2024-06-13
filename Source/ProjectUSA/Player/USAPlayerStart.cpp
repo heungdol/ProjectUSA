@@ -12,6 +12,7 @@ AUSAPlayerStart::AUSAPlayerStart(const FObjectInitializer& ObjectInitializer)
 	PlayerStartTextComponent->SetupAttachment(RootComponent);
 
 	PlayerStartTextComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+	PlayerStartTextComponent->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
 	PlayerStartTextComponent->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 	PlayerStartTextComponent->SetHiddenInGame(true);
 }

@@ -14,6 +14,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/TextRenderComponent.h"
 
 // Sets default values
 AUSACheckpoint::AUSACheckpoint()
@@ -32,6 +33,22 @@ AUSACheckpoint::AUSACheckpoint()
 
 	CheckpointStaticMeshComponent = CreateDefaultSubobject <UStaticMeshComponent>(TEXT("Checkpoint Static Mesh Component"));
 	CheckpointStaticMeshComponent->SetupAttachment(RootComponent);
+
+	CheckpointTextComponent = CreateDefaultSubobject <UTextRenderComponent>(TEXT("Checkpoint Text Render"));
+	CheckpointTextComponent->SetupAttachment(RootComponent);
+
+	CheckpointTextComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 200.0f));
+	CheckpointTextComponent->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
+	CheckpointTextComponent->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
+	CheckpointTextComponent->SetHiddenInGame(true);
+}
+
+void AUSACheckpoint::OnConstruction(const FTransform& Transform)
+{
+	if (CheckpointTextComponent)
+	{
+		CheckpointTextComponent->SetText(FText::Format(FText::FromString(TEXT("Checkpoint Index: {0}")), FText::AsNumber(CheckpointIndex)));
+	}
 }
 
 // Called when the game starts or when spawned

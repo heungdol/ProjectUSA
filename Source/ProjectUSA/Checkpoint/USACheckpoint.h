@@ -31,10 +31,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USA Weapon Spawn Info")
 	TObjectPtr <class UStaticMeshComponent> CheckpointStaticMeshComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Start Info")
+	TObjectPtr <class UTextRenderComponent> CheckpointTextComponent;
+
 	UFUNCTION()
 	void OnDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:	
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

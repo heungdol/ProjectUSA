@@ -32,7 +32,7 @@ AUSAWeaponSpawner::AUSAWeaponSpawner()
 
 	WeaponSpawnTextComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Weapon Text Component"));
 	WeaponSpawnTextComponent->SetupAttachment(RootComponent);
-	WeaponSpawnTextComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 200.0f));
+	WeaponSpawnTextComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
 	WeaponSpawnTextComponent->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 	WeaponSpawnTextComponent->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 	WeaponSpawnTextComponent->SetHiddenInGame(true);
@@ -44,11 +44,20 @@ void AUSAWeaponSpawner::OnConstruction(const FTransform& Transform)
 
 	if (WeaponSpawnClass && Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject()))
 	{
-		WeaponSpawnStaticMeshComponent->SetStaticMesh(Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject())->WeaponDisplayStaticMeshRef);
-		WeaponSpawnSkeletalMeshComponent->SetSkeletalMesh(Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject())->WeaponDisplaySkeletalMeshMeshRef);
+		if (WeaponSpawnStaticMeshComponent)
+		{
+			WeaponSpawnStaticMeshComponent->SetStaticMesh(Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject())->WeaponDisplayStaticMeshRef);
+		}
 
-		//FText SpawnWeaponText = FText::Format(NSLOCTEXT("", "", "Spawn Weapon: {0}"), WeaponSpawnClass->GetDisplayNameText());
-		//WeaponSpawnTextComponent->SetText(SpawnWeaponText);
+		if (WeaponSpawnSkeletalMeshComponent)
+		{
+			WeaponSpawnSkeletalMeshComponent->SetSkeletalMesh(Cast<AUSAWeaponBase>(WeaponSpawnClass->GetDefaultObject())->WeaponDisplaySkeletalMeshMeshRef);
+		}
+		
+		if (WeaponSpawnTextComponent)
+		{
+			WeaponSpawnTextComponent->SetText(FText::FromString(TEXT("Weapon Spawn")));
+		}
 	}
 }
 

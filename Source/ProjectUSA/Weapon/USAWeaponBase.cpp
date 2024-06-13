@@ -125,42 +125,44 @@ void AUSAWeaponBase::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 	// ...
 }
 
-void AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
+bool AUSAWeaponBase::PickUpByUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)
 {
 	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
 		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
 	{
-		return;
+		return false;
 	}
 
 
 	if (IsValid(InASC) == false)
 	{
-		return;
+		return false;
 	}
 
 	if (IsValid(InCharacter) == false)
 	{
-		return;
+		return false;
 	}
 
 	if (PickableActorOwner != nullptr)
 	{
-		return;
+		return false;
 	}
 
 	if (InCharacter->CurrentEquipedWeapons.IsValidIndex(WeaponEquipIndex) == false)
 	{
-		return;
+		return false;
 	}
 
 	if (InCharacter->CurrentEquipedWeapons[WeaponEquipIndex] != nullptr)
 	{
-		return;
+		return false;
 	}
 
 	// ASC 새 갱신
 	SetPickableActorOwner(InCharacter);
+
+	return true;
 }
 
 void AUSAWeaponBase::PlayPickUpAnimationMontageInUSACharacter(UAbilitySystemComponent* InASC, AUSACharacterBase* InCharacter)

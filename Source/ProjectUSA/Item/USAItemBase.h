@@ -18,7 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	AUSAItemBase();
 
-protected:
+public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
 	TSubclassOf<AUSAItemBase> ItemSubclass;
 
@@ -29,7 +29,12 @@ protected:
 	TObjectPtr<class UStaticMeshComponent> ItemStaticMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Item Info")
+	TObjectPtr<class UStaticMesh> ItemDisplayStaticMeshRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Item Info")
 	TObjectPtr <class UTexture2D> ItemTexture;
+
+protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Item Info")
 	TObjectPtr <UAnimMontage> ItemPickUpAnimMontage;
@@ -57,7 +62,7 @@ public:
 	
 	//
 
-	virtual void PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
+	virtual bool PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 
 	virtual void PlayPickUpAnimationMontageInUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter);
 	
