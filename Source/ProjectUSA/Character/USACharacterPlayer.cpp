@@ -390,6 +390,20 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 
 	for (AActor* TempActor : TempTargetableActors_Overlap)
 	{
+		//APlayerController* EventPlayerController = Cast<APlayerController>(EventInstigator);
+		//if (MyPlayerController && EventPlayerController && (MyPlayerController != EventPlayerController))
+		//{
+		//	return 0;
+		//}
+
+		// 같은 플레이어 팀 동작 방지
+		AUSACharacterPlayer* TempCharacterPlayer = Cast<AUSACharacterPlayer>(TempActor);
+	
+		if (TempCharacterPlayer)
+		{
+			continue;
+		}
+
 		if (IsValid(TempActor) == false)
 		{
 			continue;

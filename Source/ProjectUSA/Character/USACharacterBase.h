@@ -186,19 +186,27 @@ protected:
 
 	//
 
+	UPROPERTY(ReplicatedUsing = OnRep_CharacterName, EditAnywhere, BlueprintReadOnly, Category = "USA Character Info")
+	FString CharacterName = TEXT("Character");
+
+	UFUNCTION()
+	void OnRep_CharacterName();
+
+	//
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Info")
+	//ECharacterTeam CharacterTeam;
+
 public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Info")
 	TObjectPtr<class USkeletalMesh> CharacterDisplaySkeletalMeshMeshRef;
 
-	UPROPERTY(ReplicatedUsing=OnRep_CharacterName, EditAnywhere, BlueprintReadOnly, Category = "USA Character Info")
-	FString CharacterName = TEXT("Character");
+	//
 
 	FORCEINLINE FString GetCharacterName() {return CharacterName;}
 
-	UFUNCTION()
-	void OnRep_CharacterName() ;
-
+	//FORCEINLINE ECharacterTeam GetCharacterTeam() { return CharacterTeam; }
 
 public:
 	// Sets default values for this character's properties

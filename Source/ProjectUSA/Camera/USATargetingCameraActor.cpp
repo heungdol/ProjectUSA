@@ -78,12 +78,22 @@ void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 	{
 		if (InActor)
 		{
-			CameraFocusStaticMeshComponent->SetVisibility(true);
-			CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusShowJellyEffectData);
+			if (!bIsOn)
+			{
+				CameraFocusStaticMeshComponent->SetVisibility(true);
+				CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusShowJellyEffectData);
+			}
+
+			bIsOn = true;
 		}
 		else
 		{
-			CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusHideJellyEffectData);
+			if (bIsOn)
+			{
+				CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusHideJellyEffectData);
+			}
+		
+			bIsOn = false;
 		}
 	}
 }

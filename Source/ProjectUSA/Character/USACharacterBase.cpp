@@ -50,6 +50,8 @@
 #include "GameInstance/USAGameInstance.h"
 #include "ProjectUSA.h"
 
+#include "AIController.h"
+#include "GameFramework/PlayerController.h"
 
 //void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
 //{
@@ -1713,12 +1715,37 @@ bool AUSACharacterBase::PostUseItem()
 
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	// 서버에서만 수행
+	if (GetWorld()->GetAuthGameMode() == nullptr)
+	{
+		return 0;
+	}
+
 	float ResultDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	//USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
 
 	// 데미지
 	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_INVINCIBLE) > 0)
+	{
+		return 0;
+	}
+
+	// 팀킬 방지
+	// 서버에서만 수행하기 때문에 컨트롤러를 활용할 수 있음
+	AAIController* EventAIController = Cast<AAIController>(EventInstigator);
+	APlayerController* EventPlayerController = Cast<APlayerController>(EventInstigator);
+
+	AAIController* MyAIController = Cast<AAIController>(GetController());
+	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+
+	// 같은 팀 (서로 같은 컨트롤러를 검사하는 이유는 스스로 맞는 공격을 구현하기 위함)
+	if (MyAIController && EventAIController && (MyAIController != EventAIController))
+	{
+		return 0;
+	}
+
+	if (MyPlayerController && EventPlayerController && (MyPlayerController != EventPlayerController))
 	{
 		return 0;
 	}

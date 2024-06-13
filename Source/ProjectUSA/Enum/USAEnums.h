@@ -59,3 +59,11 @@ enum class ECharacterActionDirectionType : uint8
 //	First = 1 UMETA(DisplayName = "First"),
 //	Second = 2 UMETA(DisplayName = "Second"),
 //};
+
+UENUM(BlueprintType)
+enum class ECharacterTeam : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Player UMETA(DisplayName = "Player"),
+	Enemy UMETA(DisplayName = "Enemy"),
+};

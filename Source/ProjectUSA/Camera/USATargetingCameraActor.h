@@ -68,7 +68,7 @@ public:
 	TObjectPtr <class UUSAJellyEffectData> FocusHideJellyEffectData;
 
 
-	//bool bIsOn = false;
+	bool bIsOn = false;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
