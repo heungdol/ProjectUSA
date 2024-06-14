@@ -435,7 +435,7 @@ void AUSACharacterPlayer::SetCurrentTargetableActorUsingForwardVector(const FVec
 			DirectionFromSourceToTarget.Normalize();
 
 			// 만약 PlaceCamera가 작동 중이라면 캐릭터의 방향으로 판단
-			if (IsValid(PlacedCameraActor) == true)
+			if (IsValid(CurrentPlacedCameraActor) == true)
 			{
 				CurrentTempActorScore_Direction = FVector::DotProduct(DirectionFromSourceToTarget, GetActorForwardVector());
 			}
@@ -500,7 +500,7 @@ void AUSACharacterPlayer::StartTargeting()
 
 	if (LocalPlayerController != nullptr
 		&& CameraSpringArmComponent != nullptr
-		&& PlacedCameraActor != nullptr)
+		&& CurrentPlacedCameraActor != nullptr)
 	{
 		LocalPlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
 		CameraSpringArmComponent->SetWorldRotation(TargetingCameraActor->GetActorRotation());
@@ -508,8 +508,6 @@ void AUSACharacterPlayer::StartTargeting()
 	}
 
 	ManageAllCamera();
-
-	//K2_OnStartTargeting();
 }
 
 void AUSACharacterPlayer::KeepTargeting()
@@ -626,8 +624,6 @@ void AUSACharacterPlayer::FinishTargeting()
 
 
 	ManageAllCamera();
-
-	//K2_OnFinishTargeting();
 }
 
 //
@@ -639,11 +635,11 @@ void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 		return;
 	}
 
-	PlacedCameraActor = InActor;
+	CurrentPlacedCameraActor = InActor;
 
 	USA_LOG(LogTemp, Log, TEXT("Rotation IN: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
 
-	if (IsValid(PlacedCameraActor) == true)
+	if (IsValid(CurrentPlacedCameraActor) == true)
 	{
 		FVector ActorForward = GetActorForwardVector();
 		FVector CameraForward = GetActorForwardVector();
@@ -654,12 +650,10 @@ void AUSACharacterPlayer::StartPlacedCamera(AUSAPlacedCameraActor* InActor)
 			CameraForward = LocalPlayerController->PlayerCameraManager->GetCameraRotation().Vector();
 		}
 
-		PlacedCameraActor->InitPlacedCameraActor(ActorForward, CameraForward);
+		CurrentPlacedCameraActor->InitPlacedCameraActor(ActorForward, CameraForward);
 	}
 
 	ManageAllCamera();
-
-	//K2_OnStartPlacedCamera();
 }
 
 void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
@@ -669,7 +663,7 @@ void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 		return;
 	}
 
-	if (PlacedCameraActor != InActor)
+	if (CurrentPlacedCameraActor != InActor)
 	{
 		return;
 	}
@@ -678,16 +672,17 @@ void AUSACharacterPlayer::FinishPlacedCamera(AUSAPlacedCameraActor* InActor)
 
 	if (LocalPlayerController != nullptr
 		&& CameraSpringArmComponent != nullptr
-		&& PlacedCameraActor != nullptr)
+		&& CurrentPlacedCameraActor != nullptr)
 	{
-		LocalPlayerController->SetControlRotation(PlacedCameraActor->GetActiveCameraRotation());
-		CameraSpringArmComponent->SetWorldRotation(PlacedCameraActor->GetActiveCameraRotation());
+		LocalPlayerController->SetControlRotation(CurrentPlacedCameraActor->GetActiveCameraRotation());
+		CameraSpringArmComponent->SetWorldRotation(CurrentPlacedCameraActor->GetActiveCameraRotation());
 		CameraSpringArmComponent->UpdateChildTransforms();
 	}
 
 	USA_LOG(LogTemp, Log, TEXT("Rotation To: %s"), *CameraSpringArmComponent->GetComponentRotation().ToString());
 
-	PlacedCameraActor = nullptr;
+	PrevPlacedCameraActor = CurrentPlacedCameraActor;
+	CurrentPlacedCameraActor = nullptr;
 
 	//ManageAllCame(ra();
 
@@ -703,20 +698,47 @@ void AUSACharacterPlayer::ManageAllCamera()
 		return;
 	}
 
-	if (IsValid(PlacedCameraActor) == false)
+	if (IsValid(LocalPlayerController->PlayerCameraManager) == false)
 	{
-		if (CurrentTargetableActor)
-		{
-			K2_OnStartTargeting();
-		}
-		else
-		{
-			K2_OnFinishTargeting();
-		}
+		return;
+	}
+
+	if (IsValid(TargetingCameraActor) == false)
+	{
+		return;
+	}
+
+	if (IsValid(CurrentPlacedCameraActor))
+	{
+		LocalPlayerController->PlayerCameraManager->SetViewTarget(CurrentPlacedCameraActor, CurrentPlacedCameraActor->GetBeginViewTargetTransitionParams());
 	}
 	else
 	{
-		K2_OnStartPlacedCamera();
+		if (IsValid(CurrentTargetableActor))
+		{
+			if (IsValid(PrevPlacedCameraActor))
+			{
+				LocalPlayerController->PlayerCameraManager->SetViewTarget(TargetingCameraActor, PrevPlacedCameraActor->GetEndViewTargetTransitionParams());
+			}
+			else
+			{
+				LocalPlayerController->PlayerCameraManager->SetViewTarget(TargetingCameraActor, TargetingCameraActor->GetBeginViewTargetTransitionParams());
+			}
+
+		}
+		else
+		{
+			if (IsValid(PrevPlacedCameraActor))
+			{
+				LocalPlayerController->PlayerCameraManager->SetViewTarget(this, PrevPlacedCameraActor->GetEndViewTargetTransitionParams());
+			}
+			else
+			{
+				LocalPlayerController->PlayerCameraManager->SetViewTarget(this, TargetingCameraActor->GetEndViewTargetTransitionParams());
+			}
+		}
+
+		PrevPlacedCameraActor = nullptr;
 	}
 }
 

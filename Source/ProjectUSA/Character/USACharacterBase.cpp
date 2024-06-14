@@ -155,6 +155,7 @@ AUSACharacterBase::AUSACharacterBase()
 
 	HealthBarWidgetComponent = CreateDefaultSubobject <UWidgetComponent>(TEXT("Health Bar Widget Component"));
 	HealthBarWidgetComponent->SetupAttachment(RootComponent);
+	HealthBarWidgetComponent->SetComponentTickInterval(1.0f);
 
 	
 	AttackComponent = CreateDefaultSubobject <UUSACharacterAttackComponent>(TEXT("Attack Component"));

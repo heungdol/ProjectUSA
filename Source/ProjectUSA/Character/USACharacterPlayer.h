@@ -27,7 +27,10 @@ protected:
 	TObjectPtr <class AUSATargetingCameraActor> TargetingCameraActor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Camera Info: Player Only")
-	TObjectPtr <class AUSAPlacedCameraActor> PlacedCameraActor;
+	TObjectPtr <class AUSAPlacedCameraActor> CurrentPlacedCameraActor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Camera Info: Player Only")
+	TObjectPtr <class AUSAPlacedCameraActor> PrevPlacedCameraActor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr <class APlayerController> LocalPlayerController;
@@ -72,14 +75,14 @@ public:
 
 	//
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartTargetingCamera", ScriptName = "OnStartTargetingCamera"))
-	void K2_OnStartTargeting();
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartTargetingCamera", ScriptName = "OnStartTargetingCamera"))
+	//void K2_OnStartTargeting();
 
 	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnKeepTargetingCamera", ScriptName = "OnStartTargetingCamera"))
 	//void K2_OnKeepTargeting();
 	
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishTargetingCamera", ScriptName = "OnFinishTargetingCamera"))
-	void K2_OnFinishTargeting();
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishTargetingCamera", ScriptName = "OnFinishTargetingCamera"))
+	//void K2_OnFinishTargeting();
 
 	//
 
@@ -89,8 +92,9 @@ public:
 	
 	//
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartPlacedCamera", ScriptName = "OnStartPlacedCamera"))
-	void K2_OnStartPlacedCamera();
+	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartPlacedCamera", ScriptName = "OnStartPlacedCamera"))
+	//void K2_OnStartPlacedCamera();
+
 
 	//
 

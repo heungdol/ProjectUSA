@@ -7,6 +7,8 @@
 
 #include "Interface/USATargetableInterface.h"
 
+#include "Camera/PlayerCameraManager.h"
+
 #include "USATargetingCameraActor.generated.h"
 
 UCLASS()
@@ -15,6 +17,13 @@ class PROJECTUSA_API AUSATargetingCameraActor : public AActor
 	GENERATED_BODY()
 	
 public:
+
+	FORCEINLINE FViewTargetTransitionParams GetBeginViewTargetTransitionParams() { return BeginViewTargetTransitionParams; }
+
+	FORCEINLINE FViewTargetTransitionParams GetEndViewTargetTransitionParams() { return EndViewTargetTransitionParams; }
+
+protected:
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	TObjectPtr<AActor> SourceActor;
 	
@@ -23,40 +32,48 @@ public:
 
 	//
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	FViewTargetTransitionParams BeginViewTargetTransitionParams;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	FViewTargetTransitionParams EndViewTargetTransitionParams;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
 	float LocationWeightRatio = 0.2f;
 
 	//
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float MaxFOVOffset = 100;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float MinFOVOffset = 60;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float MaxDistanceForFOV = 2000;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float MinDistanceForFOV = 300;
 
 	//
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float OffsetRotationYaw = 30;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float PivotRotationPitch = -10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float MaxRotationPitch = 45;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float MinRotationPitch = -45;
 
 	//
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Targeting Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting Camera")
 	float OffsetResultLocationHeight = 50.0f;
 
 	//
@@ -70,7 +87,6 @@ public:
 
 	bool bIsOn = false;
 
-protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	TObjectPtr <class UCameraComponent> CameraComponent;
 

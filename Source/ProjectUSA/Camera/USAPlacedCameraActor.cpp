@@ -12,6 +12,9 @@
 #include "Character/USACharacterBase.h"
 #include "Character/USACharacterPlayer.h"
 
+#include "Player/USAPlayerController.h"
+
+
 // Sets default values
 AUSAPlacedCameraActor::AUSAPlacedCameraActor()
 {
@@ -24,8 +27,8 @@ AUSAPlacedCameraActor::AUSAPlacedCameraActor()
 	InBoxHolderComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Placed Camera In Box Holder Component"));
 	InBoxHolderComponent->SetupAttachment(RootComponent);
 
-	OutBoxHolderComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Placed Camera Out Box Holder Component"));
-	OutBoxHolderComponent->SetupAttachment(RootComponent);
+	//OutBoxHolderComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Placed Camera Out Box Holder Component"));
+	//OutBoxHolderComponent->SetupAttachment(RootComponent);
 
 	DirectionArrowComponent = CreateDefaultSubobject <UArrowComponent>(TEXT("Placed Camera Arrow Component"));
 	DirectionArrowComponent->SetupAttachment(RootComponent);
@@ -69,31 +72,32 @@ void AUSAPlacedCameraActor::BeginPlay()
 				continue;
 			}
 
+			BoxComponent->SetGenerateOverlapEvents(true);
 			BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUSAPlacedCameraActor::OnBoxOverlapBegin);
-			BoxComponent->SetGenerateOverlapEvents(true);
-		}
-	}
-
-	if (IsValid(OutBoxHolderComponent) == true)
-	{
-		for (USceneComponent* OutBox : OutBoxHolderComponent->GetAttachChildren())
-		{
-			if (IsValid(OutBox) == false)
-			{
-				continue;
-			}
-
-			UBoxComponent* BoxComponent = Cast <UBoxComponent>(OutBox);
-
-			if (IsValid(BoxComponent) == false)
-			{
-				continue;
-			}
-
 			BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AUSAPlacedCameraActor::OnBoxOverlapEnd);
-			BoxComponent->SetGenerateOverlapEvents(true);
 		}
 	}
+
+	//if (IsValid(OutBoxHolderComponent) == true)
+	//{
+	//	for (USceneComponent* OutBox : OutBoxHolderComponent->GetAttachChildren())
+	//	{
+	//		if (IsValid(OutBox) == false)
+	//		{
+	//			continue;
+	//		}
+
+	//		UBoxComponent* BoxComponent = Cast <UBoxComponent>(OutBox);
+
+	//		if (IsValid(BoxComponent) == false)
+	//		{
+	//			continue;
+	//		}
+
+	//		BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AUSAPlacedCameraActor::OnBoxOverlapEnd);
+	//		BoxComponent->SetGenerateOverlapEvents(true);
+	//	}
+	//}
 }
 
 // Called every frame
@@ -171,23 +175,58 @@ FRotator AUSAPlacedCameraActor::GetActiveCameraRotation()
 
 void AUSAPlacedCameraActor::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (AUSACharacterPlayer* PlayerActor = Cast <AUSACharacterPlayer>(OtherActor))
+	AUSACharacterPlayer* PlayerActor = Cast <AUSACharacterPlayer>(OtherActor);
+
+	if (IsValid(PlayerActor) == false)
+	{
+		return;
+	}
+
+	AUSAPlayerController* USAPlayerController = PlayerActor->GetController<AUSAPlayerController>();
+
+	if (IsValid(USAPlayerController) == false)
+	{
+		return;
+	}
+
+	if (USAPlayerController->IsLocalPlayerController() == false)
+	{
+		return;
+	}
+
+	PlayerOverlapCount += 1;
+
+	if (PlayerOverlapCount == 1)
 	{
 		PlayerActor->StartPlacedCamera(this);
-
-		TargetActor = OtherActor;
 	}
 }
 
 void AUSAPlacedCameraActor::OnBoxOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (AUSACharacterPlayer* PlayerActor = Cast <AUSACharacterPlayer>(OtherActor))
-	{
-		if (TargetActor == OtherActor)
-		{
-			PlayerActor->FinishPlacedCamera(this);
+	AUSACharacterPlayer* PlayerActor = Cast <AUSACharacterPlayer>(OtherActor);
 
-			TargetActor = nullptr;
-		}
+	if (IsValid(PlayerActor) == false)
+	{
+		return;
+	}
+
+	AUSAPlayerController* USAPlayerController = PlayerActor->GetController<AUSAPlayerController>();
+
+	if (IsValid(USAPlayerController) == false)
+	{
+		return;
+	}
+
+	if (USAPlayerController->IsLocalPlayerController() == false)
+	{
+		return;
+	}
+
+	PlayerOverlapCount -= 1;
+
+	if (PlayerOverlapCount == 0)
+	{
+		PlayerActor->FinishPlacedCamera(this);
 	}
 }

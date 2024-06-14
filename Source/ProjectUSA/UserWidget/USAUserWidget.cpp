@@ -17,8 +17,8 @@
 #include "GameFramework/PlayerController.h"
 #include "Player/USAPlayerController.h"
 
-#include "Character/USACharacterBase.h"
 #include "Character/USACharacterPlayer.h"
+#include "Character/USACharacterBase.h"
 
 #include "HUD/USAHUD.h"
 
@@ -28,11 +28,11 @@ void UUSAUserWidget::NativeOnInitialized()
     Super::NativeOnInitialized();
 
     APlayerController* PlayerController = GetOwningPlayer();
-    APawn* ControlledPawn = nullptr;
 
     if (IsValid(PlayerController) == true
         && PlayerController->IsLocalPlayerController() == true)
     {
+        APawn* ControlledPawn = nullptr;
         ControlledPawn = PlayerController->GetPawn();
 
         LocalUSACharacter = Cast<AUSACharacterBase>(ControlledPawn);
@@ -69,7 +69,6 @@ void UUSAUserWidget::SimulateClickMouseLeftButtonReleased()
     {
         return;
     }
-
 
     INPUT Input = { 0 };
     Input.type = INPUT_MOUSE;

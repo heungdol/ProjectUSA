@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "Camera/PlayerCameraManager.h"
+
 #include "USAPlacedCameraActor.generated.h"
 
 UCLASS()
@@ -22,6 +25,10 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Placed Camera")
 	//TArray<class UBoxComponent*> OutOverlapBoxComponents;
 
+	FORCEINLINE FViewTargetTransitionParams GetBeginViewTargetTransitionParams() { return BeginViewTargetTransitionParams;}
+
+	FORCEINLINE FViewTargetTransitionParams GetEndViewTargetTransitionParams() { return EndViewTargetTransitionParams; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placed Camera")
 	TObjectPtr <class USceneComponent> TotalHolderComponent;
@@ -35,8 +42,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placed Camera")
 	TObjectPtr <class USceneComponent> InBoxHolderComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placed Camera")
-	TObjectPtr <class USceneComponent> OutBoxHolderComponent;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placed Camera")
+	//TObjectPtr <class USceneComponent> OutBoxHolderComponent;
+
+	int32 PlayerOverlapCount = 0;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placed Camera")
@@ -51,7 +60,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Placed Camera")
 	bool bIsBasedCameraRotation = true;
 
-	TObjectPtr <AActor> TargetActor;
+	//TObjectPtr <AActor> TargetActor;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	FViewTargetTransitionParams BeginViewTargetTransitionParams;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	FViewTargetTransitionParams EndViewTargetTransitionParams;
+
+	//
 
 protected:
 	// Called when the game starts or when spawned

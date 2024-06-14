@@ -36,5 +36,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SimulateMoveMousePosition(FVector InDelta, float InSpeed, float InDeltaTime);
+
+	//UFUNCTION(BlueprintCallable)
+	//void UpdateTransformScaleByPlayerCamera(const FVector& InLocation);
+
+protected:
+
+	//virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 };
