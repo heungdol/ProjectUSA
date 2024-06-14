@@ -20,6 +20,8 @@
 #include "Character/USACharacterPlayer.h"
 #include "HUD/USAHUD.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "Trigger/USALevelSequenceBegin.h"
 
 void AUSAGameStateBase::BeginPlay()
 {
@@ -145,7 +147,7 @@ void AUSAGameStateBase::PlayUserWidgetAnimationP_Panel(bool bIsShowing, bool bIs
 
 //
 
-void AUSAGameStateBase::PlayLevelSequenceMulti(ALevelSequenceActor* InLevelSequence)
+void AUSAGameStateBase::PlayLevelSequence(ALevelSequenceActor* InLevelSequence)
 {
 	ServerRPC_PlayLevelSequence(InLevelSequence);
 }
@@ -160,32 +162,35 @@ void AUSAGameStateBase::MulticastRPC_PlayLevelSequence_Implementation(ALevelSequ
 	if (InLevelSequence == nullptr
 		|| InLevelSequence->SequencePlayer == nullptr)
 	{
+		K2_ResetLevelSequence(true, true);
+
 		return;
 	}
 
-	//MultiLevelSeqeunceActor = InLevelSequence;
+	//LevelSeqeunceActor = InLevelSequence;
 
-	K2_PlayLevelSequenceMulti(InLevelSequence);
+	K2_PlayLevelSequence(InLevelSequence);
 }
 
-void AUSAGameStateBase::PlayLevelSequenceSingle(ALevelSequenceActor* InLevelSequence)
+void AUSAGameStateBase::PlayLevelSequenceLocal(ALevelSequenceActor* InLevelSequence)
 {
 	if (InLevelSequence == nullptr
 		|| InLevelSequence->SequencePlayer == nullptr)
 	{
+		K2_ResetLevelSequenceLocal(true, true);
 		return;
 	}
 
-	if (IsValid(MultiLevelSeqeunceActor) == true
-		&& IsValid(MultiLevelSeqeunceActor->SequencePlayer) == true
-		&& MultiLevelSeqeunceActor->SequencePlayer->IsPlaying() == true)
+	if (IsValid(LevelSeqeunceActor) == true
+		&& IsValid(LevelSeqeunceActor->SequencePlayer) == true
+		&& LevelSeqeunceActor->SequencePlayer->IsPlaying() == true)
 	{
 		return;
 	}
 
-	//SingleLevelSeqeunceActor = InLevelSequence;
+	//LocalLevelSeqeunceActor = InLevelSequence;
 
-	K2_PlayLevelSequenceSingle(InLevelSequence);
+	K2_PlayLevelSequenceLocal(InLevelSequence);
 }
 
 //

@@ -39,10 +39,10 @@ public:
 	//
 
 	//UFUNCTION(BlueprintCallable)
-	void PlayLevelSequenceMulti (class ALevelSequenceActor* InLevelSequence);
+	void PlayLevelSequence (class ALevelSequenceActor* InLevelSequence);
 
 	UFUNCTION(BlueprintCallable)
-	void PlayLevelSequenceSingle(class ALevelSequenceActor* InLevelSequence);
+	void PlayLevelSequenceLocal(class ALevelSequenceActor* InLevelSequence);
 
 protected:
 
@@ -58,10 +58,10 @@ protected:
 	//
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Level Sequence Info")
-	TObjectPtr<class ALevelSequenceActor> MultiLevelSeqeunceActor;
+	TObjectPtr<class ALevelSequenceActor> LevelSeqeunceActor;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Level Sequence Info")
-	TObjectPtr<class ALevelSequenceActor> SingleLevelSeqeunceActor;
+	TObjectPtr<class ALevelSequenceActor> LocalLevelSeqeunceActor;
 
 	//
 
@@ -129,10 +129,21 @@ protected:
 	//
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_PlayLevelSequenceMulti(ALevelSequenceActor* InLevelSequence);
+	void K2_PlayLevelSequence(ALevelSequenceActor* InLevelSequence);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void K2_PlayLevelSequenceSingle(ALevelSequenceActor* InLevelSequence);
+	void K2_PlayLevelSequenceLocal(ALevelSequenceActor* InLevelSequence);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ResetLevelSequence(bool InIsShow, bool InIsRaw);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_ResetLevelSequenceLocal(bool InIsShow, bool InIsRaw);
+
+	//
+
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void K2_BeginPlay();
 
 	//
 

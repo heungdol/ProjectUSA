@@ -217,7 +217,7 @@ void AUSAGameModeBase::PlayLevelSequenceToAllPlayer(ALevelSequenceActor* InLevel
 
 	if (IsValid(USAGameState) == true)
 	{
-		USAGameState->PlayLevelSequenceMulti(InLevelSequnce);
+		USAGameState->PlayLevelSequence(InLevelSequnce);
 	}
 }
 
