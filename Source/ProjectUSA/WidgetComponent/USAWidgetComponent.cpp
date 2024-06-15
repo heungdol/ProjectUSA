@@ -4,6 +4,7 @@
 #include "WidgetComponent/USAWidgetComponent.h"
 
 #include "Player/USAPlayerCameraManager.h"
+#include "Player/USAPlayerController.h"
 
 void UUSAWidgetComponent::BeginPlay()
 {
@@ -13,6 +14,7 @@ void UUSAWidgetComponent::BeginPlay()
 
     if (IsValid(FirstPlayerController) == true)
     {
+        LocalUSAPlayerController = Cast <AUSAPlayerController>(FirstPlayerController);
         LocalUSAPlayerCameraManager = Cast <AUSAPlayerCameraManager>(FirstPlayerController->PlayerCameraManager);
     }
 }
@@ -21,7 +23,12 @@ void UUSAWidgetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (IsValid(LocalUSAPlayerCameraManager) == false)
+    if (IsValid(LocalUSAPlayerController) == false)
+    {
+        return;
+    }
+
+    if (IsValid(LocalUSAPlayerController->GetPawn()) == false)
     {
         return;
     }
@@ -31,7 +38,7 @@ void UUSAWidgetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
         return;
     }
 
-    if (FVector::Distance(LocalUSAPlayerCameraManager->GetCameraLocation(), GetComponentLocation()) > CullDistanceFromUSAPlayerCamera)
+    if (FVector::Distance(LocalUSAPlayerController->GetPawn()->GetActorLocation(), GetComponentLocation()) > CullDistanceFromUSAPlayerCamera)
     {
         GetWidget()->SetRenderScale(FVector2D(0.0f, 0.0f));
     }

@@ -17,6 +17,8 @@ class PROJECTUSA_API UUSAWidgetComponent : public UWidgetComponent
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAPlayerCameraManager> LocalUSAPlayerCameraManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
+	TObjectPtr<class AUSAPlayerController> LocalUSAPlayerController;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Player Controller")
 	float CullDistanceFromUSAPlayerCamera = 500.0f;

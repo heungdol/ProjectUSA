@@ -358,9 +358,10 @@ void UUSAGameplayAbility::ApplyEffectsViaArray(const TArray<TSubclassOf<class UG
 
 void UUSAGameplayAbility::ServerRPC_ApplyEffectsViaArray_Implementation(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects)
 {
-	MulticastRPC_ApplyEffectsViaArray(GameplayEffects);
-}
-void UUSAGameplayAbility::MulticastRPC_ApplyEffectsViaArray_Implementation(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects)
-{
 	ApplyEffectsViaArray(GameplayEffects, CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo);
+	//MulticastRPC_ApplyEffectsViaArray(GameplayEffects);
 }
+
+//void UUSAGameplayAbility::MulticastRPC_ApplyEffectsViaArray_Implementation(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects)
+//{
+//}

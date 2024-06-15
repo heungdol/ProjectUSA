@@ -453,13 +453,31 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
+	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
+	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPC_ApplyDamageMomentum(const FVector& InNewDirection, TSubclassOf<UGameplayAbility> InAbility);
 
-	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
+
+	//virtual USceneComponent* GetDamageMesh() override;
+
+	//
+
+	virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate,  float OffsetRandomRatioX = 0.0f, float OffsetRandomRatioY = 0.0f, float OffsetRandomRatioZ = 0.0f) override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX = 0.0f, float OffsetRandomRatioY = 0.0f, float OffsetRandomRatioZ = 0.0f);
+
+	//
+
+	void ApplyDamageUSAJellyEffect(TSubclassOf<UDamageType> DamageType);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_ApplyDamageUSAJellyEffect(TSubclassOf<UDamageType> DamageType);
+
 
 	//
 
@@ -582,6 +600,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TMap <TSubclassOf<class UDamageType>, TObjectPtr <class UUSAJellyEffectData>> USAJellyEffectByDamageType;
+
 
 	//
 

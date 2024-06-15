@@ -53,6 +53,10 @@
 #include "AIController.h"
 #include "GameFramework/PlayerController.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+
 //void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
 //{
 //	ServerRPC_SetWeaponDetectBoxComponentActive(InActive);
@@ -1789,6 +1793,8 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 	ApplyDamageMomentum(ResultDamageAmount, DamageEvent, EventInstigatorPawn, DamageCauser);
 
+	ApplyDamageUSAJellyEffect(DamageEvent.DamageTypeClass);
+
 	return ResultDamageAmount;
 }
 
@@ -1983,6 +1989,85 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		ServerRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
 	}
 }
+
+//USceneComponent* AUSACharacterBase::GetDamageMesh()
+//{
+//	return GetMesh();
+//}
+
+void AUSACharacterBase::ApplyDamageHitNiagaraEffect(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX, float OffsetRandomRatioY, float OffsetRandomRatioZ)
+{
+	// 팀킬 방지
+	// 서버에서만 수행하기 때문에 컨트롤러를 활용할 수 있음
+	AAIController* EventAIController = Cast<AAIController>(EventInstigator);
+	APlayerController* EventPlayerController = Cast<APlayerController>(EventInstigator);
+
+	AAIController* MyAIController = Cast<AAIController>(GetController());
+	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+
+	// 같은 팀 (서로 같은 컨트롤러를 검사하는 이유는 스스로 맞는 공격을 구현하기 위함)
+	if (MyAIController && EventAIController && (MyAIController != EventAIController))
+	{
+		return;
+	}
+
+	if (MyPlayerController && EventPlayerController && (MyPlayerController != EventPlayerController))
+	{
+		return;
+	}
+
+	MulticastRPC_ApplyDamageHitNiagaraEffect(EventInstigator, DamageCauser, SystemTemplate, OffsetRandomRatioX, OffsetRandomRatioY, OffsetRandomRatioZ);
+}
+
+void AUSACharacterBase::MulticastRPC_ApplyDamageHitNiagaraEffect_Implementation(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX, float OffsetRandomRatioY, float OffsetRandomRatioZ)
+{
+	if (IsValid(GetCapsuleComponent()) == false)
+	{
+		return;
+	}
+
+	FVector AttachLocalLocation = FVector::ZeroVector;
+
+	if (OffsetRandomRatioX > 0 || OffsetRandomRatioY > 0 || OffsetRandomRatioZ > 0)
+	{
+		AttachLocalLocation.X = FMath::RandRange(-GetCapsuleComponent()->GetScaledCapsuleRadius(), GetCapsuleComponent()->GetScaledCapsuleRadius());
+		AttachLocalLocation.X *= OffsetRandomRatioX;
+
+		AttachLocalLocation.Y = FMath::RandRange(-GetCapsuleComponent()->GetScaledCapsuleRadius(), GetCapsuleComponent()->GetScaledCapsuleRadius());
+		AttachLocalLocation.Y *= OffsetRandomRatioY;
+		
+		AttachLocalLocation.Z = FMath::RandRange(-GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		AttachLocalLocation.Z *= OffsetRandomRatioZ;
+	}
+
+	AttachLocalLocation.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
+	UNiagaraFunctionLibrary::SpawnSystemAttached(SystemTemplate, GetMesh(), NAME_None, AttachLocalLocation, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+}
+
+//
+
+void AUSACharacterBase::ApplyDamageUSAJellyEffect(TSubclassOf<UDamageType> DamageType)
+{
+	MulticastRPC_ApplyDamageUSAJellyEffect(DamageType);
+}
+
+void AUSACharacterBase::MulticastRPC_ApplyDamageUSAJellyEffect_Implementation(TSubclassOf<UDamageType> DamageType)
+{
+	if (USAJellyEffectByDamageType.Contains(DamageType) == false)
+	{
+		return;
+	}
+
+	if (IsValid(JellyEffectComponent) == false)
+	{
+		return;
+	}
+
+	JellyEffectComponent->PlayJellyEffect(USAJellyEffectByDamageType[DamageType]);
+}
+
+//
 
 void AUSACharacterBase::UpdateCurrentTargetableActor()
 {

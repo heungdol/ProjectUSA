@@ -30,6 +30,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Attack Actor Info")
 	float AttackDurtaion = 5;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Attack Actor Info")
+	float AttackTraceDurtaion = 5;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
+	float AttackStartTime = 0.0f;
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Attack Actor Info")
 	//float AttackMoveSpeed = 100;
 
@@ -71,6 +76,18 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Attack Actor Info")
 	float TraceRadius = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	TObjectPtr <class UNiagaraSystem> AttackHitNiagaraSystemObject;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	float AttackHitNiagaraSystemObjectRandomRatioX = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	float AttackHitNiagaraSystemObjectRandomRatioY = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	float AttackHitNiagaraSystemObjectRandomRatioZ = 0.0f;
 
 public:	
 	// Sets default values for this actor's properties

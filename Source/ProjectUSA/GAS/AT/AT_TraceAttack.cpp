@@ -18,8 +18,11 @@
 #include "Interface/USAAttackableInterface.h"
 #include "Interface/USADamageableInterface.h"
 
-
 #include "Component/USACharacterAttackComponent.h"
+
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
 UAT_TraceAttack::UAT_TraceAttack()
 {
@@ -175,6 +178,12 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
 
+				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObject,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioX,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioY,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioZ);
+
 				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
 		}
@@ -215,6 +224,12 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 
 				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResultOne, AttackDirection, AttackDamageType);
+
+				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObject,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioX,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioY,
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioZ);
 
 				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}

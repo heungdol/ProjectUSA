@@ -105,6 +105,7 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 
-	UFUNCTION(Server, Reliable)
-	void MulticastRPC_ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
+	// TODO 수정
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_ApplyEffectsViaArray(const TArray<TSubclassOf<class UGameplayEffect>>& GameplayEffects);
 };

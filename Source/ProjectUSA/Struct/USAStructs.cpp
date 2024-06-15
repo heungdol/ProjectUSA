@@ -21,6 +21,13 @@
 
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
+
+#include "Interface/USADamageableInterface.h"
+
+
 // ====================================================================================
 
 
@@ -207,9 +214,16 @@ FAttackTraceSceneInfo::FAttackTraceSceneInfo
 	DefaultAttackTraceInfo.AttackDamage = InDefault.AttackDamage;
 	DefaultAttackTraceInfo.AttackDamageType = InDefault.AttackDamageType;
 	DefaultAttackTraceInfo.AttackDuration = InDefault.AttackDuration;
+	//DefaultAttackTraceInfo.AttackTraceDuration = InDefault.AttackTraceDuration;
+
 	DefaultAttackTraceInfo.AttackTime = InDefault.AttackTime;
 	DefaultAttackTraceInfo.AttackTraceRadius = InDefault.AttackTraceRadius;
-
+	DefaultAttackTraceInfo.AttackHitNiagaraSystemObject = InDefault.AttackHitNiagaraSystemObject;
+	
+	DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX = InDefault.AttackHitNiagaraSystemObjectRandomRatioX;
+	DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY = InDefault.AttackHitNiagaraSystemObjectRandomRatioY;
+	DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ = InDefault.AttackHitNiagaraSystemObjectRandomRatioZ;
+	
 	DefaultAttackTraceInfo.bIsDirectToTarget = InDefault.bIsDirectToTarget;
 	DefaultAttackTraceInfo.bIsPinnedLocation = InDefault.bIsPinnedLocation;
 	DefaultAttackTraceInfo.bIsPinnedRotation = InDefault.bIsPinnedRotation;
@@ -243,6 +257,11 @@ FAttackTraceSceneInfo::FAttackTraceSceneInfo
 void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 {
 	ACharacter* MyCharacter = Cast <ACharacter>(AttackSourceActor);
+
+	//if (GetIsAttackTraceEnded(InWorld) == true)
+	//{
+	//	return;
+	//}
 
 	if (IsValid(MyCharacter) == false)
 	{
@@ -325,14 +344,20 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 				CheckedActorList.Add(HitResult.GetActor());
 			}
 
-			ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+			IUSADamageableInterface* USADamageableInterface = Cast<IUSADamageableInterface>(HitResult.GetActor());
 
-			if (IsValid (OutCharacter) == true)
+			if (USADamageableInterface)
 			{
 				TSubclassOf<UDamageType> AttackDamageType = DefaultAttackTraceInfo.AttackDamageType;
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
 
-				OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
+				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter, 
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObject,
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX,
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY,
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ);
+
+				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
 
 		}
@@ -362,21 +387,45 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 				CheckedActorList.Add(HitResult.GetActor());
 			}
 
-			ACharacter* OutCharacter = Cast <ACharacter>(HitResult.GetActor());
+			IUSADamageableInterface* USADamageableInterface = Cast<IUSADamageableInterface>(HitResult.GetActor());
 
-			if (OutCharacter == nullptr)
+			if (USADamageableInterface)
 			{
-				continue;
+				TSubclassOf<UDamageType> AttackDamageType = DefaultAttackTraceInfo.AttackDamageType;
+				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+
+				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter, 
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObject,
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX,
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY,
+					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ);
+
+				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
 
-			TSubclassOf<UDamageType> AttackDamageType = DefaultAttackTraceInfo.AttackDamageType;
-			FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
-
-			OutCharacter->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 		}
 	}
 
 }
+
+//bool FAttackTraceSceneInfo::GetIsAttackTraceEnded(UWorld* InWorld)
+//{
+//	bool Result = false;
+//
+//	if (IsValid(InWorld) == false)
+//	{
+//		return false;
+//	}
+//
+//	if (IsValid(AttackSourceActor) == false)
+//	{
+//		return false;
+//	}
+//
+//	Result = ((StartAttackTime + DefaultAttackTraceInfo.AttackTraceDuration) < InWorld->GetTimeSeconds());
+//
+//	return Result;
+//}
 
 bool FAttackTraceSceneInfo::GetIsAttackEnded(UWorld* InWorld)
 {

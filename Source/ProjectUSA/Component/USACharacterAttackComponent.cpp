@@ -30,8 +30,7 @@ void UUSACharacterAttackComponent::TickComponent(float DeltaTime, ELevelTick Tic
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	if (GetWorld()->GetAuthGameMode() == nullptr)
 	{
 		return;
 	}

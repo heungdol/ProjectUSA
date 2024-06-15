@@ -11,7 +11,7 @@ public class ProjectUSA : ModuleRules
 		PublicIncludePaths.AddRange (new string[] {"ProjectUSA"});
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "UMG" , "LevelSequence", 
-"MovieScene", "AIModule"});
+"MovieScene", "AIModule", "Niagara"});
 
         PublicDependencyModuleNames.AddRange(new string[] {
             "GameFeatures",

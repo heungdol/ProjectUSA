@@ -63,6 +63,11 @@ void AUSAAttackActor::BeginPlay()
 	//	AttackProjectileMovementComponent->InitialSpeed = AttackMoveSpeed;
 	//}
 
+	if (GetWorld()->GetAuthGameMode())
+	{
+		AttackStartTime = GetWorld()->GetTimeSeconds();
+	}
+
 	PrevLocation = GetActorLocation();
 
 	if (IsValid(AttackSphereComponent) == true)
@@ -76,8 +81,7 @@ void AUSAAttackActor::BeginPlay()
 void AUSAAttackActor::OnOverlapTargetActor
 (UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-		&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
+	if (GetWorld()->GetAuthGameMode() == nullptr)
 	{
 		return;
 	}
@@ -97,6 +101,11 @@ void AUSAAttackActor::OnOverlapTargetActor
 
 void AUSAAttackActor::TryToGiveDamageToActor(AActor* InActor, const FHitResult& SweepResult)
 {
+	if (AttackStartTime + AttackTraceDurtaion < GetWorld()->GetTimeSeconds())
+	{
+		return;
+	}
+
 	if (IsValid(InActor) == false)
 	{
 		return;
@@ -122,6 +131,11 @@ void AUSAAttackActor::TryToGiveDamageToActor(AActor* InActor, const FHitResult& 
 	{
 		FVector AttackDirection = GetActorForwardVector();
 		FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, SweepResult, AttackDirection, AttackDamageType);
+
+		USADamageableInterface->ApplyDamageHitNiagaraEffect(OriginController, OriginActor, AttackHitNiagaraSystemObject,
+			AttackHitNiagaraSystemObjectRandomRatioX,
+			AttackHitNiagaraSystemObjectRandomRatioY,
+			AttackHitNiagaraSystemObjectRandomRatioZ);
 
 		USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, OriginController, this);
 

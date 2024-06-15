@@ -7,6 +7,8 @@
 #include "Enum/USAEnums.h"
 #include "GameplayTagContainer.h"
 
+//#include 
+
 #include "USAStructs.generated.h"
 
 // USA Attack
@@ -33,6 +35,19 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
 	TSubclassOf<UDamageType> AttackDamageType;
+
+	//
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	
+	TObjectPtr <class UNiagaraSystem> AttackHitNiagaraSystemObject;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	float AttackHitNiagaraSystemObjectRandomRatioX = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	float AttackHitNiagaraSystemObjectRandomRatioY = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	float AttackHitNiagaraSystemObjectRandomRatioZ = 0.0f;
 
 	//
 
@@ -64,6 +79,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting End Condition")
 	float AttackDuration = -1.0f;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting End Condition")
+	//float AttackTraceDuration = -1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trace Attack Info: Setting End Condition")
 	FGameplayTag AttackEndGameplayTag_Added;
@@ -134,6 +152,8 @@ public:
 public:
 
 	void DoAttackTrace(UWorld* InWorld, float DeltaTime);
+
+	//bool GetIsAttackTraceEnded(UWorld* InWorld);
 
 	bool GetIsAttackEnded(UWorld* InWorld);
 };

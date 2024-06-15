@@ -11,11 +11,13 @@
 #include "Components/ArrowComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+
 
 
 // Sets default values
@@ -124,11 +126,18 @@ void AUSACharacterSpawner::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Ov
 			continue;
 		}
 
+		FVector SpawnLocationOffset = FVector::ZeroVector;
+
+		if (IsValid(Cast<AUSACharacterBase>(CharacterSpawnClasses[Index]->GetDefaultObject())->GetCapsuleComponent()))
+		{
+			SpawnLocationOffset.Z += Cast<AUSACharacterBase>(CharacterSpawnClasses[Index]->GetDefaultObject())->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		}
+
 		UAIBlueprintHelperLibrary::SpawnAIFromClass
 		(GetWorld(),
 			CharacterSpawnClasses[Index],
 			Cast<AUSACharacterNonPlayer>(CharacterSpawnClasses[Index]->GetDefaultObject())->StartBehaviorTree,
-			CharacterSpawnSkeletalMeshComponents[Index]->GetComponentLocation(),
+			CharacterSpawnSkeletalMeshComponents[Index]->GetComponentLocation() + SpawnLocationOffset,
 			CharacterSpawnSkeletalMeshComponents[Index]->GetComponentRotation()
 		);
 	}
