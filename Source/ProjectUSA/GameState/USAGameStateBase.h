@@ -74,6 +74,18 @@ protected:
 	//UFUNCTION(BlueprintCallable)
 	//void SetPlayerControllerInputFinal(bool InActive);
 
+	UFUNCTION(BlueprintCallable)
+	void PlayUserWidgetAnmation_Panel(bool InActive, bool IsRaw);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_PlayUserWidgetAnmation_Panel(bool InActive, bool IsRaw);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_PlayUserWidgetAnmation_Panel(bool InActive, bool IsRaw);
+
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void K2_PlayUserWidgetAnmation_Panel(bool InActive, bool IsRaw);
+
 	//
 
 	UFUNCTION(Server, Reliable)
@@ -148,5 +160,5 @@ protected:
 	//
 
 	UFUNCTION(BlueprintCallable)
-	void PlayUserWidgetAnimationP_Panel (bool bIsShowing, bool bIsRaw);
+	void PlayUserWidgetAnimationLocal_Panel (bool bIsShowing, bool bIsRaw);
 };

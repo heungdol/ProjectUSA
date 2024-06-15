@@ -132,6 +132,7 @@ void AUSACharacterSpawner::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Ov
 		}
 
 		FVector SpawnLocationOffset = FVector::ZeroVector;
+		FRotator SpawnRotationOffset = FRotator(0.0f, 90.f, 0.0f);
 
 		if (IsValid(Cast<AUSACharacterBase>(CharacterSpawnClasses[Index]->GetDefaultObject())->GetCapsuleComponent()))
 		{
@@ -143,7 +144,7 @@ void AUSACharacterSpawner::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Ov
 			CharacterSpawnClasses[Index],
 			Cast<AUSACharacterNonPlayer>(CharacterSpawnClasses[Index]->GetDefaultObject())->StartBehaviorTree,
 			CharacterSpawnSkeletalMeshComponents[Index]->GetComponentLocation() + SpawnLocationOffset,
-			CharacterSpawnSkeletalMeshComponents[Index]->GetComponentRotation()
+			CharacterSpawnSkeletalMeshComponents[Index]->GetComponentRotation() + SpawnRotationOffset
 		);
 	}
 

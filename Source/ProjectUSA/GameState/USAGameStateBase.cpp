@@ -101,7 +101,7 @@ void AUSAGameStateBase::OnRep_CurrentBossHealth()
 	K2_UpdateBossHealthRatio(CurrentBossHealthRatio, MaxBossHealth, CurrentBossHealth);
 }
 
-void AUSAGameStateBase::PlayUserWidgetAnimationP_Panel(bool bIsShowing, bool bIsRaw)
+void AUSAGameStateBase::PlayUserWidgetAnimationLocal_Panel(bool bIsShowing, bool bIsRaw)
 {
 	if (IsValid(LocalUSAHUD) == false)
 	{
@@ -110,40 +110,6 @@ void AUSAGameStateBase::PlayUserWidgetAnimationP_Panel(bool bIsShowing, bool bIs
 
 	LocalUSAHUD->PlayUserWidgetAnimation_Panel(bIsShowing, bIsRaw);
 }
-
-
-//
-
-//void AUSAGameStateBase::SetPlayerControllerInput(bool InActive)
-//{
-//	ServerRPC_SetPlayerControllerInput(InActive);
-//}
-//
-//void AUSAGameStateBase::ServerRPC_SetPlayerControllerInput_Implementation(bool InActive)
-//{
-//	MulticastRPC_SetPlayerControllerInput(InActive);
-//}
-//
-//void AUSAGameStateBase::MulticastRPC_SetPlayerControllerInput_Implementation(bool InActive)
-//{
-//	SetPlayerControllerInputFinal(InActive);
-//}
-//
-//void AUSAGameStateBase::SetPlayerControllerInputFinal(bool InActive)
-//{
-//	if (IsValid(LocalUSACharacter) == true
-//		&& IsValid(LocalUSAPlayerController) == true)
-//	{
-//		if (InActive)
-//		{
-//			LocalUSACharacter->EnableInput(LocalUSAPlayerController);
-//		}
-//		else
-//		{
-//			LocalUSACharacter->DisableInput(LocalUSAPlayerController);
-//		}
-//	}
-//}
 
 //
 
@@ -167,8 +133,6 @@ void AUSAGameStateBase::MulticastRPC_PlayLevelSequence_Implementation(ALevelSequ
 		return;
 	}
 
-	//LevelSeqeunceActor = InLevelSequence;
-
 	K2_PlayLevelSequence(InLevelSequence);
 }
 
@@ -188,9 +152,24 @@ void AUSAGameStateBase::PlayLevelSequenceLocal(ALevelSequenceActor* InLevelSeque
 		return;
 	}
 
-	//LocalLevelSeqeunceActor = InLevelSequence;
-
 	K2_PlayLevelSequenceLocal(InLevelSequence);
+}
+
+//
+
+void AUSAGameStateBase::PlayUserWidgetAnmation_Panel(bool InActive, bool IsRaw)
+{
+	ServerRPC_PlayUserWidgetAnmation_Panel(InActive, IsRaw);
+}
+
+void AUSAGameStateBase::ServerRPC_PlayUserWidgetAnmation_Panel_Implementation(bool InActive, bool IsRaw)
+{
+	MulticastRPC_PlayUserWidgetAnmation_Panel(InActive, IsRaw);
+}
+
+void AUSAGameStateBase::MulticastRPC_PlayUserWidgetAnmation_Panel_Implementation(bool InActive, bool IsRaw)
+{
+	PlayUserWidgetAnimationLocal_Panel(InActive, IsRaw);
 }
 
 //
