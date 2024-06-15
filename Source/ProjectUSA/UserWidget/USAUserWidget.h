@@ -26,6 +26,8 @@ protected:
 	
 	virtual void NativeOnInitialized() override;
 
+	const int32 ScreenBumpOffset = 10;
+
 public:
 
 	UFUNCTION(BlueprintCallable)

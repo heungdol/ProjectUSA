@@ -100,12 +100,10 @@ void UUSAUserWidget::SimulateMoveMousePosition(FVector InDelta, float InSpeed, f
     Final.X += FinalDelta.X;
     Final.Y += FinalDelta.Y;
     
-    FVector ScreenSize;
+    FVector2D ScreenSize = UWidgetLayoutLibrary::GetViewportSize(PlayerController);
 
-    UWidgetLayoutLibrary::GetMousePositionScaledByDPI(PlayerController, ScreenSize.X, ScreenSize.Y);
-
-    Final.X = FMath::Clamp(Final.X, 0, ScreenSize.X);
-    Final.Y = FMath::Clamp(Final.Y, 0, ScreenSize.Y);
+    Final.X = FMath::Clamp(Final.X, ScreenBumpOffset, ScreenSize.X - ScreenBumpOffset);
+    Final.Y = FMath::Clamp(Final.Y, ScreenBumpOffset, ScreenSize.Y - ScreenBumpOffset);
 
     PlayerController->SetMouseLocation(Final.X, Final.Y);
 }

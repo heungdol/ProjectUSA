@@ -324,6 +324,18 @@ public:
 	//
 
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnUSAWin", ScriptName = "OnUSAWin"))
+	void K2_OnUSAWin();
+
+	UFUNCTION()
+	void WinUSACharacter();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_WinUSACharacter();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_WinUSACharacter();
+
 	//UFUNCTION()
 	//void SetWeaponDetectBoxComponentActive(bool InActive);
 
@@ -594,15 +606,22 @@ public:
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_ParryMomentumAir;
 
 	//
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
-	TSubclassOf<class UGameplayAbility> GameplayAbility_Respawn;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TObjectPtr <class UUSAJellyEffectData>> USAJellyEffectByDamageType;
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TSubclassOf<class UGameplayAbility> GameplayAbility_Respawn;
+
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TSubclassOf<class UGameplayAbility> GameplayAbility_Win;
 
 
 	//

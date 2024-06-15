@@ -14,7 +14,7 @@ class PROJECTUSA_API AUSAGameModeBase : public AGameMode
 {
 	GENERATED_BODY()
 	
-public:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Game Mode Info")
 	int32 CurrentPlayerStackCount = 0;
 	
@@ -64,10 +64,29 @@ public:
 
 	//
 
-	//UFUNCTION(BlueprintCallable)
-	//virtual void RestartUSAPlayer(class AUSAPlayerController* NewPlayer);
-
 	void UpdatePlayerControllerCheckpoint(class AUSAPlayerController* InPlayer, int32 InCheckpointIndex);
+
+	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA GameMode Info")
+	float GameClearFirstDelay = 3.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA GameMode Info")
+	float GameClearLastDelay = 8.0f;
+
+
+	UFUNCTION(BlueprintCallable)
+	void GameClear(/*float InFirstDelay, float InQuitDelay*/);
+
+	FTimerHandle FirstTimerHandle;
+	FTimerHandle LastTimerHandle;
+
+	void GameClearDelay();
+	void QuitGameLevel();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_QuitGameLevel();
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Character Info");

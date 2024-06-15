@@ -1484,6 +1484,7 @@ void AUSACharacterBase::RespawnUSACharacter()
 	ServerRPC_RespawnUSACharacter();
 }
 
+
 void AUSACharacterBase::ServerRPC_RespawnUSACharacter_Implementation()
 {
 	MulticastRPC_RespawnUSACharacter();
@@ -1537,6 +1538,43 @@ void AUSACharacterBase::MulticastRPC_RespawnUSACharacter_Implementation()
 
 	K2_OnUSARespawn();
 }
+
+//
+
+void AUSACharacterBase::WinUSACharacter()
+{
+	ServerRPC_WinUSACharacter();
+}
+
+void AUSACharacterBase::ServerRPC_WinUSACharacter_Implementation()
+{
+	MulticastRPC_WinUSACharacter();
+}
+
+void AUSACharacterBase::MulticastRPC_WinUSACharacter_Implementation()
+{
+	if (ASC != nullptr)
+	{
+		// 승리
+		FGameplayAbilitySpec* GameplayAbilitySpec_Win = ASC->FindAbilitySpecFromClass(GameplayAbility_Win);
+
+		if (GameplayAbilitySpec_Win)
+		{
+			if (GameplayAbilitySpec_Win->IsActive())
+			{
+				ASC->AbilitySpecInputPressed(*GameplayAbilitySpec_Win);
+			}
+			else
+			{
+				ASC->TryActivateAbility(GameplayAbilitySpec_Win->Handle);
+			}
+		}
+	}
+
+	K2_OnUSAWin();
+}
+
+//
 
 void AUSACharacterBase::SetCurrentWeaponsUsingStartWeaponClassList()
 {
@@ -2353,10 +2391,6 @@ void AUSACharacterBase::PostSetupGAS()
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
 
-		// 리스폰 어빌리티
-		FGameplayAbilitySpec GameplayAbilitySpec_Respawn(GameplayAbility_Respawn);
-		ASC->GiveAbility(GameplayAbilitySpec_Respawn);
-
 		// 죽음 어빌리티
 		for (const auto& GameplayTriggerAbility : GameplayAbilities_Death)
 		{
@@ -2370,6 +2404,14 @@ void AUSACharacterBase::PostSetupGAS()
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility);
 			ASC->GiveAbility(GameplayAbilitySpec);
 		}
+
+		// 리스폰 어빌리티
+		FGameplayAbilitySpec GameplayAbilitySpec_Respawn(GameplayAbility_Respawn);
+		ASC->GiveAbility(GameplayAbilitySpec_Respawn);
+
+		// 승리 어빌리티
+		FGameplayAbilitySpec GameplayAbilitySpec_Win(GameplayAbility_Win);
+		ASC->GiveAbility(GameplayAbilitySpec_Win);
 	}
 
 

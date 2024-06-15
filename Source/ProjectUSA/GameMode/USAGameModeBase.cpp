@@ -25,6 +25,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
+
 #include "Blueprint/BlueprintSupport.h"
 #include "Engine/GameInstance.h"
 #include "Engine/ServerStatReplicator.h"
@@ -229,6 +230,36 @@ void AUSAGameModeBase::UpdatePlayerControllerCheckpoint(AUSAPlayerController* In
 	}
 
 	PlayerControllerCheckpointMapList[InPlayer] = InCheckpointIndex;
+}
+
+void AUSAGameModeBase::GameClear(/*float InFirstDelay, float InQuitDelay*/)
+{
+	GetWorld()->GetTimerManager().SetTimer(FirstTimerHandle, this, &AUSAGameModeBase::GameClearDelay, GameClearFirstDelay);
+
+	GetWorld()->GetTimerManager().SetTimer(LastTimerHandle, this, &AUSAGameModeBase::QuitGameLevel, GameClearLastDelay);
+}
+
+void AUSAGameModeBase::GameClearDelay()
+{
+	TArray<AActor*> TempActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUSACharacterPlayer::StaticClass(), TempActors);
+
+	for (AActor* TempActor : TempActors)
+	{
+		AUSACharacterPlayer* USACharacterPlayer = Cast <AUSACharacterPlayer>(TempActor);
+
+		if (IsValid(USACharacterPlayer) == false)
+		{
+			continue;
+		}
+
+		USACharacterPlayer->WinUSACharacter();
+	}
+}
+
+void AUSAGameModeBase::QuitGameLevel()
+{
+	K2_QuitGameLevel();
 }
 
 //void AUSAGameModeBase::RestartUSAPlayer(AUSAPlayerController* NewPlayer)

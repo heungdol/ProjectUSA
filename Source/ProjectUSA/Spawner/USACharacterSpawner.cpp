@@ -18,6 +18,11 @@
 
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 
+#include "LevelSequenceActor.h"
+#include "LevelSequencePlayer.h"
+
+#include "GameMode/USAGameModeBase.h"
+#include "GameState/USAGameStateBase.h"
 
 
 // Sets default values
@@ -142,6 +147,14 @@ void AUSACharacterSpawner::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Ov
 		);
 	}
 
+	// 레벨 시퀀스 재생
+	AUSAGameModeBase* USAGameModeBase = Cast<AUSAGameModeBase>(GetWorld()->GetAuthGameMode());
+
+	if (IsValid(USAGameModeBase))
+	{
+		USAGameModeBase->PlayLevelSequenceToAllPlayer(LevelSequenceActor);
+	}
+	
+
 	bIsActivated = true;
 }
-

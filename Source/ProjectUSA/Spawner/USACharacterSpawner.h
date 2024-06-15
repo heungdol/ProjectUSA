@@ -33,6 +33,10 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "USA Character Spawn Info")
 	TArray<TObjectPtr<class USkeletalMeshComponent>> CharacterSpawnSkeletalMeshComponents;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Spawn Info")
+	TObjectPtr<class ALevelSequenceActor> LevelSequenceActor;
+
+
 	UPROPERTY()
 	int32 CharacterSpawnNum = 10;
 
@@ -45,7 +49,9 @@ protected:
 	UFUNCTION()
 	void OnPlayerDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastRPC_SpawnCharacterEvent ();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void K2_OnSpawnCharacter();
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void K2_SpawnCharacterEvent();
 };
