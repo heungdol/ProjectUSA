@@ -45,6 +45,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+	FTimerHandle DebugLineTimerHandle;
+
+	UFUNCTION()
+	void DrawLineToNextWaypoint ();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

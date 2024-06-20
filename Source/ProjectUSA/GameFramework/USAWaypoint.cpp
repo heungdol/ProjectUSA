@@ -35,11 +35,9 @@ void AUSAWaypoint::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	if (IsValid(NextUSAWaypoint))
-	{
-		DrawDebugLine(GetWorld(), GetActorLocation(), NextUSAWaypoint->GetActorLocation(), FColor::Green, false, -1.0f, 0U, 10.f);
-	}
+	GetWorld()->GetTimerManager().ClearTimer(DebugLineTimerHandle);
 
+	GetWorld()->GetTimerManager().SetTimer(DebugLineTimerHandle, this, &AUSAWaypoint::DrawLineToNextWaypoint, 1.0f, true);
 }
 
 void AUSAWaypoint::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -115,6 +113,14 @@ void AUSAWaypoint::BeginPlay()
 	else
 	{
 		SetActiveWaypoint(false);
+	}
+}
+
+void AUSAWaypoint::DrawLineToNextWaypoint()
+{
+	if (IsValid(NextUSAWaypoint))
+	{
+		DrawDebugLine(GetWorld(), GetActorLocation(), NextUSAWaypoint->GetActorLocation(), FColor::Green, false, 1.0f, 0U, 10.f);
 	}
 }
 

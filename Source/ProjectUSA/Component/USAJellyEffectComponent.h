@@ -47,6 +47,7 @@ public:
 
 	//
 
+	UFUNCTION(BlueprintCallable)
 	virtual void SetJellySceneComponent(class ACharacter* InCharacter, class USceneComponent* InComponent);
 
 	FORCEINLINE class USceneComponent* GetJellySceneComponent() const { return JellySceneComponent; }
