@@ -23,6 +23,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAHUD> LocalUSAHUD;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
+	TObjectPtr<class AUSAPlayerState> USAPlayerState;
 	
 	virtual void NativeOnInitialized() override;
 

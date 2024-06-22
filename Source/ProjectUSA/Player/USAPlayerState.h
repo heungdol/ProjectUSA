@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetIsUsingGamepad(bool InUsing);
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsUsingGamepad() { return bIsUsingGamepad;}
+
 	virtual void OnRep_PlayerName() override;
 
 };

@@ -16,6 +16,7 @@
 
 #include "GameFramework/PlayerController.h"
 #include "Player/USAPlayerController.h"
+#include "Player/USAPlayerState.h"
 
 #include "Character/USACharacterPlayer.h"
 #include "Character/USACharacterBase.h"
@@ -42,6 +43,12 @@ void UUSAUserWidget::NativeOnInitialized()
         {
             LocalUSAHUD = Cast<AUSAHUD>(LocalUSAPlayerController->GetHUD());
         }
+    }
+
+    APlayerController* FirstPlayerController = GetWorld()->GetFirstPlayerController();
+    if (FirstPlayerController)
+    {
+        USAPlayerState = FirstPlayerController->GetPlayerState<AUSAPlayerState>();
     }
 }
 
