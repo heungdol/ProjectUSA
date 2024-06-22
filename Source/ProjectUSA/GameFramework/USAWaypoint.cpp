@@ -63,6 +63,8 @@ void AUSAWaypoint::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Overlapped
 
 	if (bIsLastWaypoint)
 	{
+		SetActiveWaypoint(false);
+
 		return;
 	}
 
