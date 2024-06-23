@@ -195,7 +195,15 @@ protected:
 	//
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Info")
+	
 	//ECharacterTeam CharacterTeam;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Footstep")
+	TObjectPtr<class USoundBase> CharacterFootstepDefaultSound;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Footstep")
+	TMap <TObjectPtr<class UPhysicalMaterial>, TObjectPtr<class USoundBase>> CharacterFootstepSounds;
 
 public:
 
@@ -233,6 +241,9 @@ public:
 	virtual void Landed(const FHitResult& Hit) override;
 
 	virtual void SetPlayerDefaults() override;
+
+	UFUNCTION(BlueprintCallable)
+	void PlaySound_Footstep();
 
 public:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -550,6 +561,12 @@ protected:
 public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
+	FVector ActionCustomLocation;
+
+	FORCEINLINE FVector GetActionCustomLocation() { return ActionCustomLocation; }
+
+protected:
 	// For Player State
 	UFUNCTION()
 	virtual void OnRep_ASC();
@@ -639,10 +656,7 @@ public:
 	int32 CurrentUSAItemOrderIndex; 
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character GAS")
-	FVector ActionCustomLocation;
 
-	FORCEINLINE FVector GetActionCustomLocation() {return ActionCustomLocation;}
 
 	//
 

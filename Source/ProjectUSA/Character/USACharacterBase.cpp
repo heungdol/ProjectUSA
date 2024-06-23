@@ -57,6 +57,8 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 
+#include "PhysicalMaterials/PhysicalMaterial.h"
+
 //void AUSACharacterBase::SetWeaponDetectBoxComponentActive(bool InActive)
 //{
 //	ServerRPC_SetWeaponDetectBoxComponentActive(InActive);
@@ -591,6 +593,55 @@ void AUSACharacterBase::SetPlayerDefaults()
 	ResetAttributeSet();
 
 	RespawnUSACharacter();
+}
+
+void AUSACharacterBase::PlaySound_Footstep()
+{
+	float Radius = 10.0f; // 트레이스 반경 설정
+	TArray<AActor*> IgnoreActors; // 트레이스에서 무시할 액터들
+	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None; // 디버그 트레이스 타입 설정
+
+	FVector StartLocation = GetActorLocation();
+
+	FVector EndLocation = GetActorLocation();
+	EndLocation.Z += -1.0 * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
+	FHitResult HitResult;
+
+	bool bHit = UKismetSystemLibrary::SphereTraceSingle
+	(
+		this,
+		StartLocation,
+		EndLocation,
+		Radius,
+		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility),
+		false,
+		IgnoreActors,
+		DrawDebugType,
+		HitResult,
+		true
+	);
+
+	if (bHit == false)
+	{
+		return;
+	}
+
+	TObjectPtr<UPhysicalMaterial> PhysicalMaterial = HitResult.PhysMaterial.Get();
+
+	if (IsValid(PhysicalMaterial) == false)
+	{
+ 		UGameplayStatics::PlaySoundAtLocation(this, CharacterFootstepDefaultSound, EndLocation);
+		return;
+	}
+
+	if (CharacterFootstepSounds.Contains(PhysicalMaterial) == false)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, CharacterFootstepDefaultSound, EndLocation);
+		return;
+	}
+	
+	UGameplayStatics::PlaySoundAtLocation(this, CharacterFootstepSounds[PhysicalMaterial], EndLocation);
 }
 
 //
