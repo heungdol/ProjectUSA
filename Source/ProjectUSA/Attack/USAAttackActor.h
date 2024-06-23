@@ -81,13 +81,16 @@ protected:
 	TObjectPtr <class UNiagaraSystem> AttackHitNiagaraSystemObject;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
-	float AttackHitNiagaraSystemObjectRandomRatioX = 0.0f;
+	bool bIsAttackHitNiagaraOffset = true;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
-	float AttackHitNiagaraSystemObjectRandomRatioY = 0.0f;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	//float AttackHitNiagaraSystemObjectRandomRatioX = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
-	float AttackHitNiagaraSystemObjectRandomRatioZ = 0.0f;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	//float AttackHitNiagaraSystemObjectRandomRatioY = 0.0f;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Attack Actor Info")
+	//float AttackHitNiagaraSystemObjectRandomRatioZ = 0.0f;
 
 public:	
 	// Sets default values for this actor's properties

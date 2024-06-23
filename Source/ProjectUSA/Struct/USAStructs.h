@@ -41,13 +41,15 @@ public:
 	
 	TObjectPtr <class UNiagaraSystem> AttackHitNiagaraSystemObject;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
-	float AttackHitNiagaraSystemObjectRandomRatioX = 0.0f;
+	bool bIsAttackHitNiagaraOffset = true;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
-	float AttackHitNiagaraSystemObjectRandomRatioY = 0.0f;
+//float AttackHitNiagaraSystemObjectRandomRatioX = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
-	float AttackHitNiagaraSystemObjectRandomRatioZ = 0.0f;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	//float AttackHitNiagaraSystemObjectRandomRatioY = 0.0f;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Trace Attack Info: Setting Type")
+	//float AttackHitNiagaraSystemObjectRandomRatioZ = 0.0f;
 
 	//
 

@@ -133,9 +133,7 @@ void AUSAAttackActor::TryToGiveDamageToActor(AActor* InActor, const FHitResult& 
 		FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, SweepResult, AttackDirection, AttackDamageType);
 
 		USADamageableInterface->ApplyDamageHitNiagaraEffect(OriginController, OriginActor, AttackHitNiagaraSystemObject,
-			AttackHitNiagaraSystemObjectRandomRatioX,
-			AttackHitNiagaraSystemObjectRandomRatioY,
-			AttackHitNiagaraSystemObjectRandomRatioZ);
+			bIsAttackHitNiagaraOffset);
 
 		USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, OriginController, this);
 

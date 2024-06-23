@@ -114,6 +114,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Weapon Drop Info")
 	float bIsWeaponDropping = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	TObjectPtr <class USoundBase> WeaponImpactSound;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

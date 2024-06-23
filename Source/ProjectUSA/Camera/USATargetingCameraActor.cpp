@@ -9,6 +9,7 @@
 #include "Component/USAJellyEffectComponent.h"
 
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Math/UnrealMathUtility.h"
 
 AUSATargetingCameraActor::AUSATargetingCameraActor()
@@ -82,6 +83,8 @@ void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 			{
 				CameraFocusStaticMeshComponent->SetVisibility(true);
 				CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusShowJellyEffectData);
+
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), CameraFocusSoundOn, GetActorLocation());
 			}
 
 			bIsOn = true;
@@ -91,6 +94,8 @@ void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 			if (bIsOn)
 			{
 				CameraFocusJelleyEffectComponent->PlayJellyEffect(FocusHideJellyEffectData);
+
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), CameraFocusSoundOff, GetActorLocation());
 			}
 		
 			bIsOn = false;

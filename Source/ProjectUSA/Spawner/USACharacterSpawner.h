@@ -36,6 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "USA Character Spawn Info")
 	TObjectPtr<class ALevelSequenceActor> LevelSequenceActor;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USA Character Spawn Info")
+	TObjectPtr <USoundBase> CharacterSpawnSound;
+
 
 	UPROPERTY()
 	int32 CharacterSpawnNum = 10;
@@ -49,6 +52,8 @@ protected:
 	UFUNCTION()
 	void OnPlayerDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPC_PlaySpawnSound ();
 	//UFUNCTION(NetMulticast, Reliable)
 	//void MulticastRPC_SpawnCharacterEvent ();
 

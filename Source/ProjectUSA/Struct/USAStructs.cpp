@@ -220,9 +220,11 @@ FAttackTraceSceneInfo::FAttackTraceSceneInfo
 	DefaultAttackTraceInfo.AttackTraceRadius = InDefault.AttackTraceRadius;
 	DefaultAttackTraceInfo.AttackHitNiagaraSystemObject = InDefault.AttackHitNiagaraSystemObject;
 	
-	DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX = InDefault.AttackHitNiagaraSystemObjectRandomRatioX;
-	DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY = InDefault.AttackHitNiagaraSystemObjectRandomRatioY;
-	DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ = InDefault.AttackHitNiagaraSystemObjectRandomRatioZ;
+	DefaultAttackTraceInfo.bIsAttackHitNiagaraOffset = InDefault.bIsAttackHitNiagaraOffset;
+
+	//DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX = InDefault.AttackHitNiagaraSystemObjectRandomRatioX;
+	//DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY = InDefault.AttackHitNiagaraSystemObjectRandomRatioY;
+	//DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ = InDefault.AttackHitNiagaraSystemObjectRandomRatioZ;
 	
 	DefaultAttackTraceInfo.bIsDirectToTarget = InDefault.bIsDirectToTarget;
 	DefaultAttackTraceInfo.bIsPinnedLocation = InDefault.bIsPinnedLocation;
@@ -353,9 +355,7 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 
 				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter, 
 					DefaultAttackTraceInfo.AttackHitNiagaraSystemObject,
-					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX,
-					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY,
-					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ);
+					DefaultAttackTraceInfo.bIsAttackHitNiagaraOffset);
 
 				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
@@ -396,9 +396,7 @@ void FAttackTraceSceneInfo::DoAttackTrace(UWorld* InWorld, float DeltaTime)
 
 				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter, 
 					DefaultAttackTraceInfo.AttackHitNiagaraSystemObject,
-					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioX,
-					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioY,
-					DefaultAttackTraceInfo.AttackHitNiagaraSystemObjectRandomRatioZ);
+					DefaultAttackTraceInfo.bIsAttackHitNiagaraOffset);
 
 				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}

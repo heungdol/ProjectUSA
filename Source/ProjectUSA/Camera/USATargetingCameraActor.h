@@ -102,6 +102,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Targeting Camera")
 	TObjectPtr <class UUSAJellyEffectComponent> CameraFocusJelleyEffectComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	TObjectPtr <class USoundBase> CameraFocusSoundOn;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting Camera")
+	TObjectPtr <class USoundBase> CameraFocusSoundOff;
 
 public:	
 	// Sets default values for this actor's properties

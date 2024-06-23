@@ -36,4 +36,15 @@ public:
 	//UFUNCTION(NetMulticast, Unreliable)
 	//virtual void MulticastRPC_ImpulseWeapon(const FVector& InLocation, const FRotator& InRotatoin, const FVector& InScale, const FVector& InImpulse);
 
+protected:
+
+	UFUNCTION()
+	void OnHitForPlayingImpactSound(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	float PlayImpactSoundCutOff = 200.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Info")
+	float PlayImpactSoundMax = 500.0f;
+
 };
+

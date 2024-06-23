@@ -2084,7 +2084,7 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 //	return GetMesh();
 //}
 
-void AUSACharacterBase::ApplyDamageHitNiagaraEffect(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX, float OffsetRandomRatioY, float OffsetRandomRatioZ)
+void AUSACharacterBase::ApplyDamageHitNiagaraEffect(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, bool bIsOffset)
 {
 	// 팀킬 방지
 	// 서버에서만 수행하기 때문에 컨트롤러를 활용할 수 있음
@@ -2105,33 +2105,42 @@ void AUSACharacterBase::ApplyDamageHitNiagaraEffect(AController* EventInstigator
 		return;
 	}
 
-	MulticastRPC_ApplyDamageHitNiagaraEffect(EventInstigator, DamageCauser, SystemTemplate, OffsetRandomRatioX, OffsetRandomRatioY, OffsetRandomRatioZ);
+	MulticastRPC_ApplyDamageHitNiagaraEffect(EventInstigator, DamageCauser, SystemTemplate, bIsOffset);
 }
 
-void AUSACharacterBase::MulticastRPC_ApplyDamageHitNiagaraEffect_Implementation(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX, float OffsetRandomRatioY, float OffsetRandomRatioZ)
+void AUSACharacterBase::MulticastRPC_ApplyDamageHitNiagaraEffect_Implementation(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, bool bIsOffset)
 {
 	if (IsValid(GetCapsuleComponent()) == false)
 	{
 		return;
 	}
 
-	FVector AttachLocalLocation = FVector::ZeroVector;
-
-	if (OffsetRandomRatioX > 0 || OffsetRandomRatioY > 0 || OffsetRandomRatioZ > 0)
+	if (IsValid(GetMesh()) == false)
 	{
-		AttachLocalLocation.X = FMath::RandRange(-GetCapsuleComponent()->GetScaledCapsuleRadius(), GetCapsuleComponent()->GetScaledCapsuleRadius());
-		AttachLocalLocation.X *= OffsetRandomRatioX;
-
-		AttachLocalLocation.Y = FMath::RandRange(-GetCapsuleComponent()->GetScaledCapsuleRadius(), GetCapsuleComponent()->GetScaledCapsuleRadius());
-		AttachLocalLocation.Y *= OffsetRandomRatioY;
-		
-		AttachLocalLocation.Z = FMath::RandRange(-GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-		AttachLocalLocation.Z *= OffsetRandomRatioZ;
+		return;
 	}
 
-	AttachLocalLocation.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	if (IsValid(ASC) == true && ASC->GetGameplayTagCount(USA_CHARACTER_ACTION_PARRY) > 0)
+	{
+		return;
+	}
 
-	UNiagaraFunctionLibrary::SpawnSystemAttached(SystemTemplate, GetMesh(), NAME_None, AttachLocalLocation, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+	FVector SocketLocation = GetMesh()->GetComponentLocation();
+	FRotator SocketRotation = GetMesh()->GetComponentRotation();
+	FName RandomSocketName = NAME_None;
+
+	if (bIsOffset && IsValid(GetMesh()) == true)
+	{
+		int32 RandomIndex = FMath::RandRange(0, GetMesh()->GetAllSocketNames().Num() - 1);
+
+		RandomSocketName = GetMesh()->GetAllSocketNames()[RandomIndex];
+		SocketLocation = GetMesh()->GetSocketLocation(RandomSocketName);
+		SocketRotation = GetMesh()->GetSocketRotation(RandomSocketName);
+	}
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SystemTemplate, SocketLocation, SocketRotation);
+
+	//UNiagaraFunctionLibrary::SpawnSystemAttached(SystemTemplate, GetMesh(), NAME_None, SocketLocation, SocketRotation, EAttachLocation::KeepRelativeOffset, true);
 }
 
 //
@@ -2666,6 +2675,8 @@ void AUSACharacterBase::OnRep_CurrentEquipedWeapons(TArray<AUSAWeaponBase*> Prev
 				CurrentEquipedWeapons[i]->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
 
 				K2_OnUSACurrentWeaponChanged(CurrentEquipedWeapons[i]->GetWeaponEquipIndex(), CurrentEquipedWeapons[i]);
+
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), CharacterPickupSound, GetActorLocation());
 			}
 		}
 	}
@@ -2684,6 +2695,8 @@ void AUSACharacterBase::OnRep_CurrentOwnedItems(TArray<TSubclassOf<AUSAItemBase>
 		{
 			Cast<AUSAItemBase>(TargetItem->GetDefaultObject())->PlayPickUpAnimationMontageInUSACharacter(ASC, this);
 		}
+
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CharacterPickupSound, GetActorLocation());
 	}
 	// 소모
 	//else if (CurrentOwnedItems.Num() < PrevItems.Num())

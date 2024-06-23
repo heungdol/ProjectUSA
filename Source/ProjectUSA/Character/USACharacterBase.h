@@ -489,10 +489,12 @@ protected:
 
 	//
 
-	virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate,  float OffsetRandomRatioX = 0.0f, float OffsetRandomRatioY = 0.0f, float OffsetRandomRatioZ = 0.0f) override;
+	//virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate,  float OffsetRandomRatioX = 0.0f, float OffsetRandomRatioY = 0.0f, float OffsetRandomRatioZ = 0.0f) override;
+
+	virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, bool bIsOffset) override;
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPC_ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX = 0.0f, float OffsetRandomRatioY = 0.0f, float OffsetRandomRatioZ = 0.0f);
+	void MulticastRPC_ApplyDamageHitNiagaraEffect(class AController* EventInstigator, AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, bool bIsOffset);
 
 	//
 
@@ -511,6 +513,9 @@ protected:
 	void K2_OnUSADeath();
 
 	//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Pickup Sound")
+	TObjectPtr<USoundBase> CharacterPickupSound;
 
 	UFUNCTION()
 	virtual void OnPickableDetectBoxOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

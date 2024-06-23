@@ -12,6 +12,8 @@
 #include "Components/PrimitiveComponent.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AUSAWeaponStaticMesh::AUSAWeaponStaticMesh()
@@ -27,7 +29,8 @@ AUSAWeaponStaticMesh::AUSAWeaponStaticMesh()
 	WeaponMeshComponent->BodyInstance.bOverrideMass = true;
 	WeaponMeshComponent->BodyInstance.SetMassOverride (200.0f);
 	WeaponMeshComponent->SetAngularDamping(1.0f);
-	WeaponMeshComponent->SetNotifyRigidBodyCollision(false);
+	WeaponMeshComponent->SetNotifyRigidBodyCollision(true);
+	WeaponMeshComponent->OnComponentHit.AddDynamic(this, &AUSAWeaponStaticMesh::OnHitForPlayingImpactSound);
 
 	WeaponBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Box Component"));
 	WeaponBoxComponent->SetupAttachment(RootComponent);
@@ -98,6 +101,37 @@ void AUSAWeaponStaticMesh::SetWeaponPhysics(bool IsDropping, bool IsFirst)
 			WeaponMeshComponent->SetCollisionProfileName(TEXT("OverlapAll"), true);
 			//WeaponMeshComponent->SetGenerateOverlapEvents(false);
 		}
+	}
+}
+
+void AUSAWeaponStaticMesh::OnHitForPlayingImpactSound(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (IsValid(WeaponMeshComponent) == false)
+	{
+		return;
+	}
+
+	if (WeaponMeshComponent->IsSimulatingPhysics() == false)
+	{
+		return;
+	}
+
+	if (IsValid (HitComp)  == false)
+	{
+		return;
+	}
+
+	float ImpactNormalLength = HitComp->GetComponentVelocity().Length();
+
+	if (ImpactNormalLength < PlayImpactSoundCutOff)
+	{
+		return;
+	}
+
+	if (WeaponImpactSound)
+	{
+		float SoundVolume = UKismetMathLibrary::MapRangeClamped(ImpactNormalLength, 0, PlayImpactSoundMax, 0, 1.0f);
+		UGameplayStatics::PlaySoundAtLocation(this, WeaponImpactSound, Hit.Location, SoundVolume);
 	}
 }
 

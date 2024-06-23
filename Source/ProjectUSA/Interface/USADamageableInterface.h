@@ -27,5 +27,5 @@ public:
 
 	//virtual USceneComponent* GetDamageMesh() = 0;
 
-	virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, class AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, float OffsetRandomRatioX = 0.0f, float OffsetRandomRatioY = 0.0f, float OffsetRandomRatioZ = 0.0f) = 0;
+	virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, class AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, bool bIsOffset) = 0;
 };

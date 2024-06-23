@@ -24,6 +24,7 @@
 #include "GameMode/USAGameModeBase.h"
 #include "GameState/USAGameStateBase.h"
 
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AUSACharacterSpawner::AUSACharacterSpawner()
@@ -60,6 +61,8 @@ AUSACharacterSpawner::AUSACharacterSpawner()
 		CharacterSpawnSkeletalMeshComponents[Index]->SetupAttachment(RootComponent);
 		CharacterSpawnSkeletalMeshComponents[Index]->SetHiddenInGame(true);
 	}
+
+	bReplicates = true;
 }
 
 void AUSACharacterSpawner::OnConstruction(const FTransform& Transform)
@@ -155,7 +158,14 @@ void AUSACharacterSpawner::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Ov
 	{
 		USAGameModeBase->PlayLevelSequenceToAllPlayer(LevelSequenceActor);
 	}
-	
+
+	MulticastRPC_PlaySpawnSound();
 
 	bIsActivated = true;
+}
+
+void AUSACharacterSpawner::MulticastRPC_PlaySpawnSound_Implementation()
+{
+	// 서버 클라 모두 수행
+	UGameplayStatics::PlaySound2D(GetWorld(), CharacterSpawnSound);
 }

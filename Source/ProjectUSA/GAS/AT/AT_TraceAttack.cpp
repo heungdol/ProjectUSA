@@ -180,9 +180,7 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 
 				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter,
 					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObject,
-					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioX,
-					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioY,
-					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioZ);
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].bIsAttackHitNiagaraOffset);
 
 				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
@@ -227,9 +225,7 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 
 				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter,
 					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObject,
-					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioX,
-					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioY,
-					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObjectRandomRatioZ);
+					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].bIsAttackHitNiagaraOffset);
 
 				USADamageableInterface->TakeDamage(AttackDamage, AttackDamageEvent, MyCharacter->GetController(), MyCharacter);
 			}
