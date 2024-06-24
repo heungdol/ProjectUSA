@@ -87,8 +87,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_QuitGameLevel();
 
-
 protected:
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Boss Character Info");
 	TObjectPtr<class AUSACharacterBase> BossUSACharacter;
 

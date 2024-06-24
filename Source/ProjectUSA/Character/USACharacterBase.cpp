@@ -606,13 +606,16 @@ void AUSACharacterBase::PlaySound_Footstep()
 	FVector EndLocation = GetActorLocation();
 	EndLocation.Z += -1.0 * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
+	FVector TraceEndLocation = EndLocation;
+	EndLocation.Z += -30.0f;
+
 	FHitResult HitResult;
 
 	bool bHit = UKismetSystemLibrary::SphereTraceSingle
 	(
 		this,
 		StartLocation,
-		EndLocation,
+		TraceEndLocation,
 		Radius,
 		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility),
 		false,

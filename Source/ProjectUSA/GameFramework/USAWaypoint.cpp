@@ -35,9 +35,9 @@ void AUSAWaypoint::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	GetWorld()->GetTimerManager().ClearTimer(DebugLineTimerHandle);
+	//GetWorld()->GetTimerManager().ClearTimer(DebugLineTimerHandle);
 
-	GetWorld()->GetTimerManager().SetTimer(DebugLineTimerHandle, this, &AUSAWaypoint::DrawLineToNextWaypoint, 1.0f, true);
+	//GetWorld()->GetTimerManager().SetTimer(DebugLineTimerHandle, this, &AUSAWaypoint::DrawLineToNextWaypoint, 1.0f, true);
 }
 
 void AUSAWaypoint::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -64,8 +64,6 @@ void AUSAWaypoint::OnPlayerDetectBoxOverlapBegin(UPrimitiveComponent* Overlapped
 	if (bIsLastWaypoint)
 	{
 		SetActiveWaypoint(false);
-
-		return;
 	}
 
 	TArray<TObjectPtr<AActor>> TempActors;

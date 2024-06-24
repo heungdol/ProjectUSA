@@ -255,12 +255,20 @@ void AUSAGameModeBase::GameClearDelay()
 
 		USACharacterPlayer->WinUSACharacter();
 	}
+
+	AUSAGameStateBase* USAGameStateBase = GetWorld()->GetGameState<AUSAGameStateBase>();
+	
+	if (IsValid(USAGameStateBase))
+	{
+		USAGameStateBase->OnPlayerWinning();
+	}
 }
 
 void AUSAGameModeBase::QuitGameLevel()
 {
 	K2_QuitGameLevel();
 }
+
 
 //void AUSAGameModeBase::RestartUSAPlayer(AUSAPlayerController* NewPlayer)
 //{

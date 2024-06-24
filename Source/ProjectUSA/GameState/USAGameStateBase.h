@@ -22,6 +22,8 @@ protected:
 
 public:
 
+	AUSAGameStateBase();
+
 	UFUNCTION(BlueprintCallable)
 	void ShowHideBossHPBar(bool bIsShowing);
 
@@ -44,6 +46,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlayLevelSequenceLocal(class ALevelSequenceActor* InLevelSequence);
 
+
+
+	UFUNCTION(BlueprintCallable)
+	void SetMusicInfoAndPlay(USoundBase* InBackgroundSound, USoundBase* InBackgroundMusic_Peaseful, USoundBase* InBackgroundMusic_Boss);
+
+	UFUNCTION(BlueprintCallable)
+	void OnPlayerWinning();
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
@@ -54,6 +64,26 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
 	TObjectPtr<class AUSAHUD> LocalUSAHUD;
+
+	//
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Music Info")
+	TObjectPtr<class UAudioComponent> AudioComponent_BGS;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Music Info")
+	TObjectPtr<class UAudioComponent> AudioComponent_BGM;
+
+	//
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Music Info");
+	TObjectPtr<USoundBase> BackgroundSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Music Info");
+	TObjectPtr<USoundBase> BackgroundMusic_Peaseful;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USA Music Info");
+	TObjectPtr<USoundBase> BackgroundMusic_Boss;
+
 
 	//
 
@@ -161,4 +191,13 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayUserWidgetAnimationLocal_Panel (bool bIsShowing, bool bIsRaw);
+
+	//
+
+
+	UFUNCTION(NetMulticast,Reliable)
+	void MulticastRPC_OnPlayerWinning ();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void K2_OnPlayerWinning ();
 };

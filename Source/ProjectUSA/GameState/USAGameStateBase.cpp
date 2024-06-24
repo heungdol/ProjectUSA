@@ -23,6 +23,17 @@
 #include "Kismet/GameplayStatics.h"
 #include "Trigger/USALevelSequenceBegin.h"
 
+#include "Components/AudioComponent.h"
+
+AUSAGameStateBase::AUSAGameStateBase()
+{
+	AudioComponent_BGS = CreateDefaultSubobject<UAudioComponent>(TEXT("BackgroundSound"));
+	AudioComponent_BGS->bAutoActivate = false;
+
+	AudioComponent_BGM = CreateDefaultSubobject<UAudioComponent>(TEXT("BackgroundMusic"));
+	AudioComponent_BGM->bAutoActivate = false;
+}
+
 void AUSAGameStateBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -44,6 +55,7 @@ void AUSAGameStateBase::BeginPlay()
 		}
 	}
 }
+
 
 void AUSAGameStateBase::ShowHideBossHPBar(bool bIsShowing)
 {
@@ -84,6 +96,22 @@ void AUSAGameStateBase::UpdateBossHealthRatio(float InRatio, float InMax, float 
 void AUSAGameStateBase::OnRep_bIsShowingBossHPBar()
 {
 	K2_ShowHideBossHPBar(bIsShowingBossHPBar);
+
+	if (IsValid(AudioComponent_BGM))
+	{
+		AudioComponent_BGM->Stop();
+
+		if (bIsShowingBossHPBar)
+		{
+			AudioComponent_BGM->Sound = BackgroundMusic_Boss;
+		}
+		else
+		{
+			AudioComponent_BGM->Sound = BackgroundMusic_Peaseful;
+		}
+
+		AudioComponent_BGM->Play();
+	}
 }
 
 void AUSAGameStateBase::OnRep_CurrentBossName()
@@ -109,6 +137,16 @@ void AUSAGameStateBase::PlayUserWidgetAnimationLocal_Panel(bool bIsShowing, bool
 	}
 
 	LocalUSAHUD->PlayUserWidgetAnimation_Panel(bIsShowing, bIsRaw);
+}
+
+void AUSAGameStateBase::OnPlayerWinning()
+{
+	MulticastRPC_OnPlayerWinning();
+}
+
+void AUSAGameStateBase::MulticastRPC_OnPlayerWinning_Implementation()
+{
+	K2_OnPlayerWinning();
 }
 
 //
@@ -153,6 +191,38 @@ void AUSAGameStateBase::PlayLevelSequenceLocal(ALevelSequenceActor* InLevelSeque
 	}
 
 	K2_PlayLevelSequenceLocal(InLevelSequence);
+}
+
+void AUSAGameStateBase::SetMusicInfoAndPlay(USoundBase* InBackgroundSound, USoundBase* InBackgroundMusic_Peaseful, USoundBase* InBackgroundMusic_Boss)
+{
+	BackgroundSound = InBackgroundSound;
+	BackgroundMusic_Peaseful = InBackgroundMusic_Peaseful;
+	BackgroundMusic_Boss = InBackgroundMusic_Boss;
+
+	if (IsValid(AudioComponent_BGS))
+	{
+		AudioComponent_BGS->Stop();
+		
+		AudioComponent_BGS->Sound = BackgroundSound;
+		
+		AudioComponent_BGS->Play();
+	}
+
+	if (IsValid(AudioComponent_BGM))
+	{
+		AudioComponent_BGM->Stop();
+
+		if (bIsShowingBossHPBar)
+		{
+			AudioComponent_BGM->Sound = BackgroundMusic_Boss;
+		}
+		else
+		{
+			AudioComponent_BGM->Sound = BackgroundMusic_Peaseful;
+		}
+
+		AudioComponent_BGM->Play();
+	}
 }
 
 //
