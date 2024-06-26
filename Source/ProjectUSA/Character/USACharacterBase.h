@@ -102,6 +102,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
 	TObjectPtr <class UInputAction> DropAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "USA Character Input")
+	TObjectPtr <class UInputAction> RestartAction;
+
 	//
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "USA Character Widget")
@@ -630,6 +633,9 @@ protected:
 	//
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_Death;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
+	TMap <TSubclassOf<class UDamageType>, TSubclassOf<class UGameplayAbility>> GameplayAbilities_DeathAir;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character GAS")
 	TMap <TSubclassOf<class UDamageType>, TObjectPtr <class UUSAJellyEffectData>> USAJellyEffectByDamageType;

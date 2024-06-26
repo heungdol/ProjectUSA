@@ -62,14 +62,41 @@ void UAT_PlayAnimMontages::Activate()
 	//}
 	bool bPlayedMontage = false;
 
+	UAbilitySystemComponent* ASC = Ability->GetAbilitySystemComponentFromActorInfo();
 	ACharacter* MyCharacter = Cast<ACharacter>(Ability->GetAvatarActorFromActorInfo());
+
+	FName StartSectionName = PlayAnimMontageData->StartAnimMontageSectionName;
+
+	if (ASC)
+	{
+		TArray<FGameplayTag> KeyArray;
+		PlayAnimMontageData->AnimMontageSectionMapByGameplayTagAdded.GenerateKeyArray(KeyArray);
+		for (const FGameplayTag TagAdded : KeyArray)
+		{
+			FDelegateHandle DelegateHandle = ASC->RegisterGameplayTagEvent(TagAdded).AddUObject(this, &UAT_PlayAnimMontages::OnAnimSectionGameplayTagAdded);
+			DelegateHandles.Add({ TagAdded, DelegateHandle });
+
+			if (ASC->HasMatchingGameplayTag(TagAdded))
+			{
+				StartSectionName = PlayAnimMontageData->AnimMontageSectionMapByGameplayTagAdded[TagAdded];
+			}
+		}
+
+		PlayAnimMontageData->AnimMontageSectionMapByGameplayTagRemoved.GenerateKeyArray(KeyArray);
+		for (const FGameplayTag TagRemoved : KeyArray)
+		{
+			FDelegateHandle DelegateHandle = ASC->RegisterGameplayTagEvent(TagRemoved).AddUObject(this, &UAT_PlayAnimMontages::OnAnimSectionGameplayTagRemoved);
+			DelegateHandles.Add({ TagRemoved, DelegateHandle });
+		}
+	}
 
 	if (MyCharacter != nullptr)
 	{
+
 		if (MyCharacter->PlayAnimMontage
 		(PlayAnimMontageData->AnimMontage, 
 			PlayAnimMontageData->AnimMontageRate, 
-			PlayAnimMontageData->StartAnimMontageSectionName))
+			StartSectionName))
 		{
 			bPlayedMontage = true;
 			//CurrentPlayAnimMontageIndex = 0;	
@@ -89,28 +116,7 @@ void UAT_PlayAnimMontages::Activate()
 	//	GetWorld()->GetTimerManager().SetTimer(CallSectionTimerHandle, this, &UAT_PlayAnimMontages::OnSectionTimerHandleEnd, WaitTime, false);
 	//}
 
-	UAbilitySystemComponent* ASC = Ability->GetAbilitySystemComponentFromActorInfo();
-	if (ASC)
-	{
-		//DelegateHandle = ASC->RegisterGameplayTagEvent(Tag).AddUObject(this, &UAT_WaitGameplayTag::GameplayTagCallback);
-		//RegisteredCallback = true;
-
-		TArray<FGameplayTag> KeyArray;
-		PlayAnimMontageData->AnimMontageSectionMapByGameplayTagAdded.GenerateKeyArray(KeyArray);
-		for (const FGameplayTag TagAdded : KeyArray)
-		{
-			FDelegateHandle DelegateHandle = ASC->RegisterGameplayTagEvent(TagAdded).AddUObject(this, &UAT_PlayAnimMontages::OnAnimSectionGameplayTagAdded);
-			DelegateHandles.Add({TagAdded, DelegateHandle});
-		}
-
-		PlayAnimMontageData->AnimMontageSectionMapByGameplayTagRemoved.GenerateKeyArray(KeyArray);
-		for (const FGameplayTag TagRemoved : KeyArray)
-		{
-			FDelegateHandle DelegateHandle = ASC->RegisterGameplayTagEvent(TagRemoved).AddUObject(this, &UAT_PlayAnimMontages::OnAnimSectionGameplayTagRemoved);
-			DelegateHandles.Add({TagRemoved, DelegateHandle});
-		}
-	}
-
+	
 	SetWaitingOnAvatar();
 }
 

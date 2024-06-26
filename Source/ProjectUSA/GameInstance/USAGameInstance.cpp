@@ -6,6 +6,21 @@
 #include "AbilitySystemGlobals.h"
 
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+
+
+//void UUSAGameInstance::Init()
+//{
+//    Super::Init();
+//
+//    //if (GetEngine())
+//    //{
+//    //    GetEngine()->OnTravelFailure().AddUObject(this, &UUSAGameInstance::HandleTravelFailure);
+//    //}
+//}
 
 void UUSAGameInstance::OnStart()
 {
@@ -53,6 +68,77 @@ void UUSAGameInstance::SetUSAInputModeGame(APlayerController* InPlayerController
     InPlayerController->bShowMouseCursor = false;
 
     InPlayerController->SetInputMode(FInputModeGameOnly());
+}
+
+//
+
+void UUSAGameInstance::DemoOneButtonStart()
+{
+    FString ServerIP;
+    if (ReadTextFromFile(IPCONFIG_NAME, ServerIP) == false
+        || GetIsValidIPAddress(ServerIP) == false)
+    {
+        DemoOpenLevelAsHost();
+    }
+    else
+    {
+        DemoJoinServer(ServerIP);
+    }
+}
+
+void UUSAGameInstance::DemoJoinServer(const FString& InIpAddress)
+{
+    if (APlayerController* PlayerController = GetFirstLocalPlayerController())
+    {
+        FString URL = FString::Printf(TEXT("%s"), *InIpAddress);
+        PlayerController->ClientTravel(URL, ETravelType::TRAVEL_Absolute);
+    }
+}
+
+void UUSAGameInstance::DemoOpenLevelAsHost()
+{
+    UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName_MainGame), true, "listen");
+}
+
+bool UUSAGameInstance::GetIsDemo()
+{
+    FString DemoConfig;
+    //FString FilePath = FPaths::ProjectDir() + "DemoConfig.txt";
+    //bool bRead = FFileHelper::LoadFileToString(DemoConfig, *FilePath);
+    if (ReadTextFromFile(DEMOCONFIG_NAME, DemoConfig) == false)
+    {
+        return false;
+    }
+
+    DemoConfig = DemoConfig.ToUpper();
+
+    if (DemoConfig == "N"
+        || DemoConfig == "NONE"
+        || DemoConfig == "NULL"
+        || DemoConfig == "NO"
+        || DemoConfig == "NOT")
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool UUSAGameInstance::GetIsDemoHost()
+{
+    if (GetIsDemo() == false)
+    {
+        return false;
+    }
+
+    FString ServerIP;
+    if (ReadTextFromFile(IPCONFIG_NAME, ServerIP) == false
+        || GetIsValidIPAddress(ServerIP) == false)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 //
@@ -112,7 +198,35 @@ FString UUSAGameInstance::GetPlayerNickByIndex(int32 InIndex)
     return USANicknames[InIndex];
 }
 
-//bool UUSAGameInstance::FunctionTestReturnBoolean_Implementation(int32 InValue)
-//{
-//    return false;
-//}
+bool UUSAGameInstance::ReadTextFromFile(const FString& InFileName, FString& OutIPAddress)
+{
+    FString FilePath = FPaths::ProjectDir() + InFileName;
+    return FFileHelper::LoadFileToString(OutIPAddress, *FilePath);
+}
+
+bool UUSAGameInstance::GetIsValidIPAddress(const FString& InIPAddress)
+{
+    TArray <FString> Parts;
+    InIPAddress.ParseIntoArray(Parts, TEXT("."));
+
+    if (Parts.Num() != 4)
+    {
+        return false;
+    }
+
+    for (const FString& Part : Parts)
+    {
+        if (Part.IsNumeric() == false)
+        {
+            return false;
+        }
+
+        int32 Number = FCString::Atoi(*Part);
+        if (Number < 0 || 255 < Number)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}

@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 
 #include "GameFramework/Character.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 
 UAT_LaunchCharacterForPeriod* UAT_LaunchCharacterForPeriod::GetNewAbilityTask_LaunchCharacterForPeriod
 (UGameplayAbility* OwningAbility, FVector InVelocity, bool InOverrideXY, bool InOverrideZ, float InPeriod)
@@ -30,6 +30,17 @@ void UAT_LaunchCharacterForPeriod::Activate()
 {
 	Super::Activate();
 
+	//ACharacter* MyCharacter = Cast <ACharacter>(Ability->GetCurrentActorInfo()->AvatarActor);
+	//if (MyCharacter && MyCharacter->GetCharacterMovement() &&
+	//	MyCharacter->GetCharacterMovement()->IsFalling() == false && LaunchVelocity.Z < 0)
+	//{
+	//	BroadcastSimpleDelegate(OnFinished);
+
+	//	SimpleEndAbilityTask();
+
+	//	return;
+	//}
+
 	StartTime = GetWorld()->GetTimeSeconds();
 	EndTime = StartTime + Period;
 }
@@ -49,7 +60,16 @@ void UAT_LaunchCharacterForPeriod::TickTask(float DeltaTime)
 		return;
 	}
 
-	MyCharacter->LaunchCharacter(LaunchVelocity, bXYOverride, bZOverride);
+	FVector FinalLaunchVelocity = LaunchVelocity;
+
+	//if (MyCharacter->GetCharacterMovement()
+	//	&& MyCharacter->GetCharacterMovement()->IsFalling() == false
+	//	&& FinalLaunchVelocity.Z < -500.0f)
+	//{
+	//	FinalLaunchVelocity.Z = -500.0f;
+	//}
+
+	MyCharacter->LaunchCharacter(FinalLaunchVelocity, bXYOverride, bZOverride);
 	
 	if (Period < SMALL_NUMBER)
 	{

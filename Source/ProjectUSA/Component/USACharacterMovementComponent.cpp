@@ -22,19 +22,23 @@ float UUSACharacterMovementComponent::GetGravityZ() const
 {
 	float FinalGravityZ = Super::GetGravityZ();
 
+	// 점프를 비롯하여 점프 중이라면 강한 중력을 가함
 	if (Velocity.Z > 0)
 	{
 		FinalGravityZ *= UppingGravityScale;
 	}
+	// 하강 중이라면
 	else
 	{
 		UAbilitySystemComponent* OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
 
-		if (OwnerASC != nullptr
+		// 대미지를 받는 상태라면, 수월한 공중콤보를 위해 더욱 천천히 떨어지도록 함
+		if (IsValid(OwnerASC) == true
 			&& OwnerASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_DAMAGE))
 		{
 			FinalGravityZ *= DowningGravityScale_Damage;
 		}
+		// 점프에 비해 천천히 떨어지도록 함
 		else
 		{
 			FinalGravityZ *= DowningGravityScale;

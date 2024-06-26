@@ -60,6 +60,12 @@ void UGA_CharacterStomp::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	if (MyCharacter != nullptr
 		&& MyCharacterMovementComponent != nullptr)
 	{
+		if (MyCharacterMovementComponent->IsFalling() == false)
+		{
+			SimpleCancelAbility();
+			return;
+		}
+
 		UAT_WaitDelay* AbilityTask0 = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, StompPreDelay);
 		UAT_MoveToGround* AbilityTask1 = UAT_MoveToGround::GetNewAbilityTask_MoveToGround(this, TEXT("Stomp"), StompMoveSpeed);
 		UAT_WaitDelay* AbilityTask2 = UAT_WaitDelay::GetNewAbilityTask_WaitDelay(this, StompPostDelay);

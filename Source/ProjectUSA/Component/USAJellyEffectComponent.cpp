@@ -43,13 +43,8 @@ void UUSAJellyEffectComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//GetMeshComponent()->SetRelativeLocation(StartMeshLocation);
-	//GetMeshComponent()->SetRelativeRotation(StartMeshRotation);
-	//GetMeshComponent()->SetRelativeScale3D(StartMeshScale);
-
 	TickJellyEffect();
 	TickJellyEffectByGravity();
-	//TickJellyEffectByCapsuleOffset();
 
 	TickJellyEffectFinal();
 }
@@ -82,29 +77,30 @@ void UUSAJellyEffectComponent::SetMeshStartLocation(FVector InVector)
 
 void UUSAJellyEffectComponent::PlayJellyEffect(UUSAJellyEffectData* InJellyEffectData)
 {
-	if (InJellyEffectData == nullptr)
+	// 젤리 데이터 유효성 판단
+	if (IsValid(InJellyEffectData) == false)
 	{
 		return;
 	}
 
-	if (GetJellySceneComponent() == nullptr)
+	// 젤리 이펙트 대상 존재 확인
+	if (IsValid(GetJellySceneComponent()) == false)
 	{
 		return;
 	}
 
+	// 젤리 데이터 및 시작 설정
 	CurrentJellyEffectData = InJellyEffectData;
+	bIsPlayingJellyEffect = true;
 
+	// 시작 및 마지막 시간 설정
 	PlayJellyEffectTime = GetWorld()->GetTimeSeconds();
 	EndJellyEffectTime = PlayJellyEffectTime + CurrentJellyEffectData->GetJellyEffectTime();
 
-	bIsPlayingJellyEffect = true;
-
-	// 젤리 이펙트 수행 (첫 틱)
+	// 젤리 이펙트 수행 (첫 틱 -> 0.0f)
 	CurrentJellyEffectLocation = CurrentJellyEffectData->GetLocationVectorByRatio(0.0f);
 	CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(0.0f));
 	CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(0.0f);
-
-	
 }
 
 void UUSAJellyEffectComponent::StopJellyEffect()
@@ -123,31 +119,36 @@ void UUSAJellyEffectComponent::StopJellyEffect()
 
 void UUSAJellyEffectComponent::TickJellyEffect()
 {
+	// 플레이 중인지 판단
 	if (bIsPlayingJellyEffect)
 	{
 		// 현재 젤리 이펙트 스케일 초기화
 		CurrentJellyEffectScale = FVector::OneVector;
 
 		// 만약 데이터가 없으면 초기화 후 수행하지 않음
-		if (CurrentJellyEffectData == nullptr)
+		if (IsValid(CurrentJellyEffectData) == false)
 		{
 			bIsPlayingJellyEffect = false;
 
 			return;
 		}
 
-		// 만약 시간이 모두 경과하면 초기화 후 수행하지 않음
+		// 만약 시간이 모두 경과하는 경우
 		float CurrentJellyEffectTime = GetWorld()->GetTimeSeconds();
 		if (CurrentJellyEffectTime > EndJellyEffectTime)
 		{
-			// 마지막 이펙트를 유지하면 bIsPlayingJellyEffect 유지
-			if (CurrentJellyEffectData->GetJellyKeepLastEffect() == true)
-			{
-				CurrentJellyEffectLocation = CurrentJellyEffectData->GetLocationVectorByRatio(1.0f);
-				CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(1.0f));
-				CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(1.0f);
-			}
-			else
+			// 마지막 순간의 절리 이펙트 수행 (1.0f)
+			CurrentJellyEffectLocation
+				= CurrentJellyEffectData->GetLocationVectorByRatio(1.0f);
+			CurrentJellyEffectRotation
+				= FRotator::MakeFromEuler
+				(CurrentJellyEffectData->GetRotationVectorByRatio(1.0f));
+			CurrentJellyEffectScale
+				= CurrentJellyEffectData->GetScaleVectorByRatio(1.0f);
+
+			// 마지막 이펙트를 유지하지 않으면
+			// bIsPlayingJellyEffect를 false로 설정하여 Tick 연산 멈추기
+			if (CurrentJellyEffectData->GetJellyKeepLastEffect() == false)
 			{
 				bIsPlayingJellyEffect = false;
 			}
@@ -155,16 +156,19 @@ void UUSAJellyEffectComponent::TickJellyEffect()
 			return;
 		}
 
+		// 현재 시간에 따라, 진행 정도 비율 계산
+		float CurrentJellyEffectRatio 
+			= (CurrentJellyEffectTime - PlayJellyEffectTime) 
+			/ (EndJellyEffectTime - PlayJellyEffectTime);
+
 		// 젤리 이펙트 수행
-		float CurrentJellyEffectRatio = (CurrentJellyEffectTime - PlayJellyEffectTime) / (EndJellyEffectTime - PlayJellyEffectTime);
-
-		CurrentJellyEffectLocation = CurrentJellyEffectData->GetLocationVectorByRatio(CurrentJellyEffectRatio);
-		CurrentJellyEffectRotation = FRotator::MakeFromEuler(CurrentJellyEffectData->GetRotationVectorByRatio(CurrentJellyEffectRatio));
-		CurrentJellyEffectScale = CurrentJellyEffectData->GetScaleVectorByRatio(CurrentJellyEffectRatio);
-	}
-	else
-	{
-
+		CurrentJellyEffectLocation 
+			= CurrentJellyEffectData->GetLocationVectorByRatio(CurrentJellyEffectRatio);
+		CurrentJellyEffectRotation 
+			= FRotator::MakeFromEuler
+			(CurrentJellyEffectData->GetRotationVectorByRatio(CurrentJellyEffectRatio));
+		CurrentJellyEffectScale 
+			= CurrentJellyEffectData->GetScaleVectorByRatio(CurrentJellyEffectRatio);
 	}
 }
 

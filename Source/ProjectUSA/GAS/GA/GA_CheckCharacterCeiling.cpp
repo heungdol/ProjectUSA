@@ -19,6 +19,11 @@ void UGA_CheckCharacterCeiling::ActivateAbility(const FGameplayAbilitySpecHandle
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	//if (GetWorld()->GetAuthGameMode() == nullptr)
+	//{
+	//	return;
+	//}
+
 	ACharacter* MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
 	if (MyCharacter == nullptr)
 	{

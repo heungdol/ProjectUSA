@@ -607,7 +607,7 @@ void AUSACharacterBase::PlaySound_Footstep()
 	EndLocation.Z += -1.0 * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
 	FVector TraceEndLocation = EndLocation;
-	EndLocation.Z += -30.0f;
+	TraceEndLocation.Z += -50.0f;
 
 	FHitResult HitResult;
 
@@ -1812,31 +1812,35 @@ bool AUSACharacterBase::PostUseItem()
 
 float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	// 서버에서만 수행
+	// 서버에서만 대미지 적용 수행
 	if (GetWorld()->GetAuthGameMode() == nullptr)
 	{
 		return 0;
 	}
 
-	float ResultDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	//USA_LOG(LogTemp, Log, TEXT("Taking Damage..."));
-
-	// 데미지
+	// 상대가 무적 상태라면 대미지 적용하지 않음
 	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_INVINCIBLE) > 0)
 	{
 		return 0;
 	}
 
-	// 팀킬 방지
-	// 서버에서만 수행하기 때문에 컨트롤러를 활용할 수 있음
+	// 상대가 무적 상태라면 쓰러진 경우면 적용하지 않음
+	if (ASC && ASC->GetGameplayTagCount(USA_CHARACTER_STATE_DEAD) > 0)
+	{
+		return 0;
+	}
+
+
+	float ResultDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	// 서버에서만 수행하기 때문에, 플레이어 및 AI 컨트롤러를 활용할 수 있음
 	AAIController* EventAIController = Cast<AAIController>(EventInstigator);
 	APlayerController* EventPlayerController = Cast<APlayerController>(EventInstigator);
 
 	AAIController* MyAIController = Cast<AAIController>(GetController());
 	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
 
-	// 같은 팀 (서로 같은 컨트롤러를 검사하는 이유는 스스로 맞는 공격을 구현하기 위함)
+	// 팀킬 방지를 위한 검사 (서로 같은 컨트롤러를 검사하는 이유는 스스로 대미지를 받는 공격을 구현하기 위함)
 	if (MyAIController && EventAIController && (MyAIController != EventAIController))
 	{
 		return 0;
@@ -1847,7 +1851,7 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		return 0;
 	}
 	
-	// 패리 중일 때는 데미지 무시
+	// 패리 중일 때 제외하고, 대미지 적용
 	if (IsValid(ASC) == true
 		&& ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY) == false)
 	{
@@ -1858,22 +1862,8 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			USAAttributeSet->SetDamage(DamageAmount);
 		}
 
+		// 가해자의 상대 피격 시 CameraShake 수행을 위한 MulticastRPC
 		MulticastRPC_TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-		//if (DamageCauser && EventInstigator)
-		//{
-		//	if (EventInstigator->IsLocalController())
-		//	{
-		//		if (AUSACharacterBase* CharacterCauser = Cast<AUSACharacterBase>(DamageCauser))
-		//		{
-		//			CharacterCauser->StartCameraShake_HitSuccess(DamageEvent.DamageTypeClass);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		MulticastRPC_TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-		//	}
-		//}
 	}
 
 	// 넉백 어빌리티 수행
@@ -1884,7 +1874,6 @@ float AUSACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	}
 
 	ApplyDamageMomentum(ResultDamageAmount, DamageEvent, EventInstigatorPawn, DamageCauser);
-
 	ApplyDamageUSAJellyEffect(DamageEvent.DamageTypeClass);
 
 	return ResultDamageAmount;
@@ -1901,38 +1890,26 @@ void AUSACharacterBase::ClientRPC_TakeDamage_Implementation(float DamageAmount, 
 
 void AUSACharacterBase::MulticastRPC_TakeDamage_Implementation(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	//if (ASC == nullptr)
-	//{
-	//	return;
-	//}
-
-	//// 패리 중일 때는 데미지 무시
-	//if (ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY))
-	//{
-	//	return;
-	//}
-
-	// 데미지 적용
-
-	// 
-	//UUSAAttributeSet* USAAttributeSet = const_cast<UUSAAttributeSet*>(ASC->GetSet<UUSAAttributeSet>());
-
-	//if (USAAttributeSet != nullptr)
-	//{
-	//	USAAttributeSet->SetDamage(DamageAmount);
-	//}
-
-	// 가해자의 카메라 쉐이크 수행 
+	// 가해자의 CameraShake 수행 
 	if (AUSACharacterBase* CharacterCauser = Cast<AUSACharacterBase>(DamageCauser))
 	{
+		// StartCameraShake_HitSuccess()는 virtual 형태로 만들어 놓은 함수
+		// Player에서 override를 통해 CameraShake 과정을 구현함
 		CharacterCauser->StartCameraShake_HitSuccess(DamageEvent.DamageTypeClass);
 	}
 }
 
 
-void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
+// 캐릭터 넉백을 구현하는 함수
+// 실제 물리 계산을 수행하는 서버에서만 동작하며, 호출자는 TakeDamage() 함수
+void AUSACharacterBase::ApplyDamageMomentum
+(float DamageTaken, 
+	FDamageEvent const& DamageEvent, 
+	APawn* PawnInstigator, 
+	AActor* DamageCauser)
 {
-	if (ASC == nullptr)
+	// ASC의 유효성 확인
+	if (IsValid(ASC) == false)
 	{
 		return;
 	}
@@ -1943,11 +1920,12 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		return;
 	}
 
-	// bIsJustDead 
-	// 데미지 적용 후 죽었는지 판단하기 위한 변수
+	// 캐릭터의 현재 체력을 확인하여 죽음 상태를 판단
 	float CheckCurrentHealth = 0.0f;
 	bool CheckIsAttributeFound = false;
-	CheckCurrentHealth = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentHealthAttribute(), CheckIsAttributeFound);
+	CheckCurrentHealth 
+		= ASC->GetGameplayAttributeValue
+		(UUSAAttributeSet::GetCurrentHealthAttribute(), CheckIsAttributeFound);
 
 	bool bIsJustDead = false;
 	if (CheckIsAttributeFound == true
@@ -1956,84 +1934,82 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		bIsJustDead = true;
 	}
 	
-	// bIsParrying
-	// 현재 팩링 중인지 판단하기 위한 변수
-
+	// 현재 캐릭터가 패링 상태인지 확인
 	bool bIsParrying = false;
 	if (ASC->HasMatchingGameplayTag(USA_CHARACTER_ACTION_PARRY))
 	{
 		bIsParrying = true;
 	}
 
-	// bIsFalling
-	// 현재 공중에 있는지 판단하기 위한 변수
+	// 현재 캐릭터가 공중에 있는지 확인
 	bool bIsFallingLocally = GetMovementComponent()->IsFalling();
 
-	// bIsBiggerDamageThanArmor
-	// 현재 들어온 데미지가 아머보다 높은지 판단하기 위한 변수
+	// 대미지가 현재 캐릭터의 아머를 초과하는지 확인 (대미지가 낮으면 넉백을 수행하지 않음)
 	bool bIsBiggerDamageThanArmor = true;
 
 	float CurrentArmor = 0.0f;
 	bool CheckIsCurrentArmorFound = false;
-	CurrentArmor = ASC->GetGameplayAttributeValue(UUSAAttributeSet::GetCurrentArmorAttribute(), CheckIsCurrentArmorFound);
+	CurrentArmor 
+		= ASC->GetGameplayAttributeValue
+		(UUSAAttributeSet::GetCurrentArmorAttribute(), CheckIsCurrentArmorFound);
 	if (DamageTaken < CurrentArmor)
 	{
 		bIsBiggerDamageThanArmor = false;
 	}
 
+	// 이동 방향을 결정하기 위한 변수
 	FVector NewDirection = FVector::ForwardVector;
-	TSubclassOf<UGameplayAbility> DamageAbilityClass;
 
+	// 공격 정보를 가져오기 위한 변수 초기화
+	TSubclassOf<UGameplayAbility> DamageAbilityClass;
 	FVector AttackDirection;
 	FHitResult HitResult;
 	TSubclassOf<UDamageType> DamageType;
 
+	// DamageEvent를 통해 DamageType을 가져옴
 	DamageEvent.GetBestHitInfo(nullptr, nullptr, HitResult, AttackDirection);
 	DamageType = DamageEvent.DamageTypeClass;
 
-	// 공격 타입 판단
-
-	// 폭파
+	// DamageType를 통해 이동 방향 계산
 	if (IsValid(USADamageType_Explosion) == true
 		&& USADamageType_Explosion == DamageType)
 	{
-		NewDirection = ((HitResult.TraceStart + HitResult.TraceEnd) * 0.5f) - GetActorLocation();
+		// 폭파인 경우, 이동 방향은 공격점으로부터 대미지 주체의 중점까지의 방향으로 설정
+		NewDirection = ((HitResult.TraceStart + HitResult.TraceEnd) * 0.5f
+			- GetActorLocation());
 		NewDirection.Z = 0.0f;
 		NewDirection.Normalize();
 	}
-	// 그랩
-	else if (IsValid(USADamageType_Grab) == true
-		&& USADamageType_Grab == DamageType)
-	{
-		// 커스텀 로케이션
-		ActionCustomLocation = HitResult.TraceStart;
-
-		NewDirection = AttackDirection * -1.0f;
-		NewDirection.Z = 0.0f;
-		NewDirection.Normalize();
-	}
-	// 그 외
 	else
 	{
+		// 일반 공격인 경우, DamageEvent의 AttackDirection을 이용하여 이동 방향 결정
 		NewDirection = AttackDirection * -1.0f;
 		NewDirection.Z = 0.0f;
 		NewDirection.Normalize();
 	}
 
-	//SetActorRotation(NewDirection.Rotation());
-	//UpdateComponentTransforms();
-
-	// 죽음
+	// 수행할 넉백 어빌리티 결정
 	if (bIsJustDead)
 	{
-		if (GameplayAbilities_Death.Contains(DamageType))
+		// 패링 성공으로 인한 넉백
+		if (bIsFallingLocally)
 		{
-			DamageAbilityClass = GameplayAbilities_Death[DamageType];
+			if (GameplayAbilities_Death.Contains(DamageType))
+			{
+				DamageAbilityClass = GameplayAbilities_DeathAir[DamageType];
+			}
+		}
+		else
+		{
+			if (GameplayAbilities_Death.Contains(DamageType))
+			{
+				DamageAbilityClass = GameplayAbilities_Death[DamageType];
+			}
 		}
 	}
-	// 패리
 	else if (bIsParrying)
 	{
+		// 패링 성공으로 인한 넉백
 		if (bIsFallingLocally)
 		{
 			if (GameplayAbilities_ParryMomentumAir.Contains(DamageType))
@@ -2049,9 +2025,9 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 			}
 		}
 	}
-	// 데미지
 	else
 	{
+		// 일반 대미지로 인한 넉백
 		if (bIsBiggerDamageThanArmor == false)
 		{
 			DamageAbilityClass = nullptr;
@@ -2075,11 +2051,8 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 		}
 	}
 
-	if (GetLocalRole() == ENetRole::ROLE_Authority
-		|| GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-	{
-		ServerRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
-	}
+	// 서버 및 클라이언트에게 수행할 이동 방향 및 넉백 어빌리티 전달
+	MulticastRPC_ApplyDamageMomentum(NewDirection, DamageAbilityClass);
 }
 
 //USceneComponent* AUSACharacterBase::GetDamageMesh()
@@ -2089,6 +2062,12 @@ void AUSACharacterBase::ApplyDamageMomentum(float DamageTaken, FDamageEvent cons
 
 void AUSACharacterBase::ApplyDamageHitNiagaraEffect(AController* EventInstigator, AActor* DamageCauser, UNiagaraSystem* SystemTemplate, bool bIsOffset)
 {
+	// 만약 죽은 상태라면 처리하지 않음
+	if (ASC && ASC->HasMatchingGameplayTag(USA_CHARACTER_STATE_DEAD) == true)
+	{
+		return;
+	}
+
 	// 팀킬 방지
 	// 서버에서만 수행하기 때문에 컨트롤러를 활용할 수 있음
 	AAIController* EventAIController = Cast<AAIController>(EventInstigator);
@@ -2456,6 +2435,12 @@ void AUSACharacterBase::PostSetupGAS()
 
 		// 죽음 어빌리티
 		for (const auto& GameplayTriggerAbility : GameplayAbilities_Death)
+		{
+			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility.Value);
+			ASC->GiveAbility(GameplayAbilitySpec);
+		}
+
+		for (const auto& GameplayTriggerAbility : GameplayAbilities_DeathAir)
 		{
 			FGameplayAbilitySpec GameplayAbilitySpec(GameplayTriggerAbility.Value);
 			ASC->GiveAbility(GameplayAbilitySpec);

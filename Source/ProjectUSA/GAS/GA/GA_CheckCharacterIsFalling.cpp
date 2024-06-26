@@ -18,6 +18,11 @@ void UGA_CheckCharacterIsFalling::ActivateAbility(const FGameplayAbilitySpecHand
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
+	//if (GetWorld()->GetAuthGameMode() == nullptr)
+	//{
+	//	return;
+	//}
+
 	ACharacter* MyCharacter = Cast <ACharacter>(ActorInfo->AvatarActor);
 	if (MyCharacter == nullptr)
 	{
