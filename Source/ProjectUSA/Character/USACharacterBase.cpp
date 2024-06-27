@@ -1368,7 +1368,7 @@ void AUSACharacterBase::OnGameplayTagCallback_Dead(const FGameplayTag CallbackTa
 	{
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-		DropWeapons(true);
+		//DropWeapons(true);
 
 		DownUSACharacter();
 	}

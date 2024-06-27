@@ -230,3 +230,27 @@ bool UUSAGameInstance::GetIsValidIPAddress(const FString& InIPAddress)
 
     return true;
 }
+
+int32 UUSAGameInstance::GetScalabilitySettingNumber()
+{
+    FString SettingNumber;
+
+    if (ReadTextFromFile(SCALABILITYCONFIG_NAME, SettingNumber) == false)
+    {
+        return 2;
+    }
+
+    if (SettingNumber.IsNumeric() == false)
+    {
+        return 2;
+    }
+
+    int32 ResultSettingNumber = FCString::Atoi(*SettingNumber);
+
+    if (ResultSettingNumber < 0 || ResultSettingNumber >= 5)
+    {
+        return 2;
+    }
+
+    return ResultSettingNumber;
+}

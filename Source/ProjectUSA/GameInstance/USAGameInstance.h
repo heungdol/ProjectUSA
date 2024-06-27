@@ -13,6 +13,8 @@
 
 #define IPCONFIG_NAME "IPConfig.txt"
 #define DEMOCONFIG_NAME "DemoConfig.txt"
+#define	SCALABILITYCONFIG_NAME "ScalabilityConfig.txt"
+
 
 /**
  * 
@@ -100,6 +102,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	bool GetIsValidIPAddress(const FString& InIPAddress);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetScalabilitySettingNumber ();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
