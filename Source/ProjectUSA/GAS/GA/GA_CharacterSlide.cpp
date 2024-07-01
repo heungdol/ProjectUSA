@@ -170,6 +170,8 @@ void UGA_CharacterSlide::DoSlide()
 
 	UAT_MaintainCharacterVelocity* AbilityTaskVelocity = UAT_MaintainCharacterVelocity::GetNewAbilityTask_MaintainCharacterVelocity
 	(this, TEXT("Slide Veloicty"), SlideStartPower, true);
+	OnEndAbility.AddDynamic(AbilityTaskVelocity, &UAT_MaintainCharacterVelocity::SimpleEndAbilityTask);
+	OnCancelAbility.AddDynamic(AbilityTaskVelocity, &UAT_MaintainCharacterVelocity::SimpleEndAbilityTask);
 	AbilityTaskVelocity->ReadyForActivation();
 
 	UAT_ChangeCharacterMovementInfo* AbilityTaskChangeMovementInfo = UAT_ChangeCharacterMovementInfo::GetNewAbilityTask_ChangeCharacterMovementInfo
