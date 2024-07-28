@@ -1,16 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AI/BTT/BTT_GiveAndActivateGA.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 
 #include "AIModule/Classes/AIController.h"
-
-//#include "GAS/GA/USAGameplayAbility.h"
-//
-//#include "ProjectUSA.h"
 
 
 UBTT_GiveAndActivateGA::UBTT_GiveAndActivateGA()
@@ -50,12 +45,6 @@ EBTNodeResult::Type UBTT_GiveAndActivateGA::ExecuteTask(UBehaviorTreeComponent& 
 	ASC = AbilitySystemComponent;
 
 	FGameplayAbilitySpec AbilitySpec = ASC->BuildAbilitySpecFromClass(InGameplayAbility, InLevel, InInputID);
-	//FGameplayAbilitySpecHandle GameplayAbilitySpecHandle = ASC->GiveAbility(AbilitySpec);
-
-	//AbilitySpec.GetPrimaryInstance()->OnGameplayAbilityCancelled.AddUObject(this, &UBTT_GiveAndActivateGA::OnAbilityCancelCallback);
-	//AbilitySpec.GetPrimaryInstance()->OnGameplayAbilityEnded.AddUObject(this, &UBTT_GiveAndActivateGA::OnAbilityEndCallback);
-
-	//ASC->TryActivateAbility(GameplayAbilitySpecHandle);
 
 	ASC->GiveAbilityAndActivateOnce(AbilitySpec);
 
@@ -64,12 +53,6 @@ EBTNodeResult::Type UBTT_GiveAndActivateGA::ExecuteTask(UBehaviorTreeComponent& 
 
 void UBTT_GiveAndActivateGA::OnAbilityCancelCallback()
 {
-	//if (ASC != nullptr)
-	//{
-	//	ASC->ClearAbility(GameplayAbilitySpecHandle);
-	//}
-
-	//UE_LOG(LogTemp, Log, TEXT("BT Task Cancelled"));
 	UBehaviorTreeComponent* OwnerComp = Cast<UBehaviorTreeComponent>(GetOuter());
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Aborted);
 
@@ -77,12 +60,6 @@ void UBTT_GiveAndActivateGA::OnAbilityCancelCallback()
 
 void UBTT_GiveAndActivateGA::OnAbilityEndCallback(UGameplayAbility* InGA)
 {
-	//if (ASC != nullptr)
-	//{
-	//	ASC->ClearAbility(GameplayAbilitySpecHandle);
-	//}
-
-	//UE_LOG(LogTemp, Log, TEXT("BT Task Finished"));
 	UBehaviorTreeComponent* OwnerComp = Cast<UBehaviorTreeComponent>(GetOuter());
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 
@@ -93,5 +70,4 @@ void UBTT_GiveAndActivateGA::OnAbilityEndStateCallback(FName InName)
 	UBehaviorTreeComponent* OwnerComp = Cast<UBehaviorTreeComponent>(GetOuter());
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 
-	//UE_LOG(LogTemp, Log, TEXT("BT Task Finished"));
 }

@@ -19,8 +19,6 @@
 
 #include "GAS/AttributeSet/USAAttributeSet.h"
 
-//#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
-
 #include "Interface/USAAttackableInterface.h"
 #include "Interface/USATargetableInterface.h"
 
@@ -45,22 +43,7 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		return;
 	}
 
-	// 무기 어태치 수행
-	//if (bHasToAttachedAllWeaponToHolder == true)
-	//{
-	//	AUSACharacterBase* MyUSACharacter = nullptr;
-	//	UCharacterMovementComponent* MyCharacaterMovementComponent = nullptr;
-
-	//	if (CurrentActorInfo != nullptr)
-	//	{
-	//		MyUSACharacter = Cast <AUSACharacterBase>(CurrentActorInfo->AvatarActor);
-	//	}
-
-	//	if (MyUSACharacter != nullptr)
-	//	{
-	//		MyUSACharacter->AttachAllWeaponToHolderSocket();
-	//	}
-	//}
+	// 무기 어태치 수행 -> AnimNotify를 통해 수행되도록 수정했다.
 
 	// Target Vector 활용
 	ActivateAbilityUsingTargetVector(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -69,55 +52,38 @@ void UGA_CharacterAction::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	AddArmorAttributeFromBase(ArmorAttributeAddNumber);
 
 	// 인터럽트 딜레이 체크 수행
-	//bIsInterruptDelayOver = false;
-	//bIsInterruptCondtion = false;
-
-	//if (InterruptDelay < SMALL_NUMBER)
-	//{
-	//	//SetInterruptDelayOver();
-	//}
-	//else
-	//{
-	//	GetWorld()->GetTimerManager().ClearTimer(TimerHandleInterruptDelay);
-	//	GetWorld()->GetTimerManager().SetTimer(TimerHandleInterruptDelay, FTimerDelegate::CreateLambda([=]()
-	//		{
-	//			SetInterruptDelayOver();
-	//		}
-	//	), InterruptDelay, false);
-
-		// 인터럽트 첫 체크
-		if (InterruptGameplayTag.IsValid() == true
-			&& IsValid(GetAbilitySystemComponentFromActorInfo()) == true)
+	// 인터럽트 첫 틱 체크
+	if (InterruptGameplayTag.IsValid() == true
+		&& IsValid(GetAbilitySystemComponentFromActorInfo()) == true)
+	{
+		switch (InterruptType)
 		{
-			switch (InterruptType)
+
+		case ECharacterActionEndType::WaitTagAdded:
+
+			if (GetAbilitySystemComponentFromActorInfo()->GetGameplayTagCount(InterruptGameplayTag) > 0)
 			{
-
-			case ECharacterActionEndType::WaitTagAdded:
-
-				if (GetAbilitySystemComponentFromActorInfo()->GetGameplayTagCount(InterruptGameplayTag) > 0)
-				{
-					SimpleEndAbility();
-				}
-
-				break;
-
-			case ECharacterActionEndType::WaitTagRemoved:
-
-				if (GetAbilitySystemComponentFromActorInfo()->GetGameplayTagCount(InterruptGameplayTag) <= 0)
-				{
-					SimpleEndAbility();
-				}
-
-				break;
-
-			case ECharacterActionEndType::WaitTime:
-			default:
-
-				break;
-
+				SimpleEndAbility();
 			}
+
+			break;
+
+		case ECharacterActionEndType::WaitTagRemoved:
+
+			if (GetAbilitySystemComponentFromActorInfo()->GetGameplayTagCount(InterruptGameplayTag) <= 0)
+			{
+				SimpleEndAbility();
+			}
+
+			break;
+
+		case ECharacterActionEndType::WaitTime:
+		default:
+
+			break;
+
 		}
-	//}
+	}
 
 	K2_DoSomething_Activate();
 }
@@ -129,10 +95,7 @@ void UGA_CharacterAction::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 	// 어트리뷰트 종료
 	ResetArmorAttributeToBase();
 
-	// 딜레이 종료
-	//GetWorld()->GetTimerManager().ClearTimer(TimerHandleInterruptDelay);
-	//TimerHandleInterruptDelay.Invalidate();
-
+	// 블루프린트에서 지정한 Cancel 수행
 	K2_DoSomething_Cancel();
 }
 
@@ -143,10 +106,7 @@ void UGA_CharacterAction::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	// 어트리뷰트 종료
 	ResetArmorAttributeToBase();
 
-	// 딜레이 종료
-	//GetWorld()->GetTimerManager().ClearTimer(TimerHandleInterruptDelay);
-	//TimerHandleInterruptDelay.Invalidate();
-
+	// 블루프린트에서 지정한 End 수행
 	K2_DoSomething_End();
 }
 
@@ -187,7 +147,7 @@ void UGA_CharacterAction::CalculateTargetVector()
 	//
 	
 	if (AttackableInterface != nullptr
-		&& AttackableInterface->GetIsTargeting() == true)
+		&& AttackableInterface->GetTargetableInterface() != nullptr)
 	{
 		TargetableActorInterface = AttackableInterface->GetTargetableInterface();
 
@@ -211,11 +171,11 @@ void UGA_CharacterAction::CalculateTargetVector()
 
 		bIsFinalMoveToTargetAction = (TempDistance <= MoveToTargetRange);
 	}
-
 	
 	//
 
 	// 스냅 이동
+	// TODO: 스냅 -> 마그넷 이동으로 리펙토링할 것
 	if (bIsMoveToTargetAction == true && bIsFinalMoveToTargetAction == true)
 	{
 		float TargetRadius = 0.0f;
@@ -256,18 +216,15 @@ void UGA_CharacterAction::CalculateTargetVector()
 				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector_Move = MyUSACharacter->GetUSACharacterDirection_InputMovement();
-				//TargetVector_Attack = TargetVector_Move;
 			}
 			else if (MyCharacter != nullptr
 				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector_Move = MyCharacter->GetPendingMovementInputVector();
-				//TargetVector_Attack = TargetVector_Move;
 			}
 			else
 			{
 				TargetVector_Move = MyCharacter->GetActorForwardVector();
-				//TargetVector_Attack = TargetVector_Move;
 			}
 
 			break;
@@ -277,24 +234,20 @@ void UGA_CharacterAction::CalculateTargetVector()
 				&& MyUSACharacter->GetUSACharacterDirection_Target().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector_Move = MyUSACharacter->GetUSACharacterDirection_Target();
-				//TargetVector_Attack = TempVector;
 			}
 			else if (MyUSACharacter != nullptr
 				&& MyUSACharacter->GetUSACharacterDirection_InputMovement().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector_Move = MyUSACharacter->GetUSACharacterDirection_InputMovement();
-				//TargetVector_Attack = TargetVector_Move;
 			}
 			else if (MyCharacter != nullptr
 				&& MyCharacter->GetPendingMovementInputVector().SquaredLength() > SMALL_NUMBER)
 			{
 				TargetVector_Move = MyCharacter->GetPendingMovementInputVector();
-				//TargetVector_Attack = TargetVector_Move;
 			}
 			else
 			{
 				TargetVector_Move = MyCharacter->GetActorForwardVector();
-				//TargetVector_Attack = TargetVector_Move;
 			}
 
 			break;
@@ -379,34 +332,10 @@ void UGA_CharacterAction::DoSomethingWithTargetVector()
 
 		//
 
-		//bool bIsFinalMoveToTargetAction = false;
-		//float BetweenDistance = 0.0f;
-
-		//AttackableInterface = Cast<IUSAAttackableInterface>(GetAvatarActorFromActorInfo());
-
-		//if (bIsMoveToTargetAction)
-		//{
-		//	if (AttackableInterface != nullptr
-		//		&& AttackableInterface->GetIsTargeting())
-		//	{
-		//		FVector TargetableActorLocation = AttackableInterface->GetTargetableActorLocation();
-		//		TargetableActorLocation.Z = MyCharacter->GetActorLocation().Z;
-
-		//		BetweenDistance = (TargetableActorLocation - MyCharacter->GetActorLocation()).Length();
-		//		if (BetweenDistance < MoveToTargetRange)
-		//		{
-		//			bIsFinalMoveToTargetAction = true;
-		//		}
-		//	}
-		//}
-
-
-		if (TargetDistance > -SMALL_NUMBER
+		// 마그넷 이동 검사 후 조건 충속시 수행
+		if (TargetDistance > SMALL_NUMBER
 			&& MoveType != ECharacterActionMoveType::Custom)
 		{
-			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("B"));
-			//USA_LOG_GAMEPLAYABILITY(LogTemp, Log, TEXT("%f %f %f"), EndMoveDistance, TargetRadius, SourceRadius);
-
 			EndLocation = MyCharacter->GetActorLocation() + TargetVector_Move * TargetDistance;
 
 			AfterVelocity = (ForwardDirection * MoveToTargetAfterVelocity.X)
@@ -633,23 +562,3 @@ void UGA_CharacterAction::ResetArmorAttributeToBase()
 		}
 	}
 }
-
-//void UGA_CharacterAction::SetInterruptDelayOver()
-//{
-//	bIsInterruptDelayOver = true;
-//
-//	if (bIsInterruptCondtion == true && bIsInterruptDelayOver == true)
-//	{
-//		SimpleEndAbility();
-//	}
-//}
-//
-//void UGA_CharacterAction::SetInterruptCondition()
-//{
-//	bIsInterruptCondtion = true;
-//
-//	if (bIsInterruptCondtion == true && bIsInterruptDelayOver == true)
-//	{
-//		SimpleEndAbility();
-//	}
-//}

@@ -361,7 +361,7 @@ float AUSACharacterBase::PlayAnimMontage(UAnimMontage* AnimMontage, float InPlay
 		return Super::PlayAnimMontage(AnimMontage, InPlayRate, StartSectionName);
 	}
 
-	if (AnimMontage == nullptr)
+	if (IsValid(AnimMontage) == false)
 	{
 		return 0.0f;
 	}
@@ -1645,7 +1645,6 @@ void AUSACharacterBase::ServerRPC_SetCurrentWeaponsUsingStartWeaponClassList_Imp
 		}
 
 		AUSAWeaponBase* StartWeapon = GetWorld()->SpawnActor<AUSAWeaponBase>(StartWeaponClass, GetActorTransform());
-		//PickupWeapon(StartWeapon);
 
 		IUSAPickableInterface* StartWeaponInterface = Cast<IUSAPickableInterface>(StartWeapon);
 		PickUpSomething(StartWeaponInterface);
@@ -1687,33 +1686,56 @@ bool AUSACharacterBase::GetIsTargetableCurrently()
 	return true;
 }
 
-FVector AUSACharacterBase::GetTargetablePivotlocation()
+//FVector AUSACharacterBase::GetTargetablePivotlocation()
+//{
+//	//if (GetMesh() != nullptr 
+//	//	&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
+//	//{
+//	//	FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
+//	//	DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+//	//}
+//
+//	return GetActorLocation();
+//}
+//
+//FVector AUSACharacterBase::GetTargetableToplocation()
+//{
+//	//if (GetMesh() != nullptr
+//	//	&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
+//	//{
+//	//	FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
+//	//	DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
+//	//}
+//
+//	if (GetCapsuleComponent())
+//	{
+//		return GetActorLocation() + FVector::UpVector * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+//	}
+//
+//	return GetActorLocation();
+//}
+
+FVector AUSACharacterBase::GetTargetableLocationByPivotType(const ETargetablePivotType& InPivotType)
 {
-	//if (GetMesh() != nullptr 
-	//	&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
-	//{
-	//	FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
-	//	DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
-	//}
+	FVector Result = GetActorLocation();
 
-	return GetActorLocation();
-}
-
-FVector AUSACharacterBase::GetTargetableToplocation()
-{
-	//if (GetMesh() != nullptr
-	//	&& GetMesh()->DoesSocketExist(TargetablePivotName) == true)
-	//{
-	//	FVector ResultLocation = GetMesh()->GetSocketLocation(TargetablePivotName);
-	//	DrawDebugSphere(GetWorld(), ResultLocation, 15.0f, 8, FColor::Red, false, -1.0f, 0U, 2.0f);
-	//}
-
-	if (GetCapsuleComponent())
+	switch (InPivotType)
 	{
-		return GetActorLocation() + FVector::UpVector * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	case ETargetablePivotType::Top:
+		Result.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		break;
+
+	case ETargetablePivotType::Center:
+
+
+		break;
+
+	case ETargetablePivotType::Bottom:
+		Result.Z += -1.0f * GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		break;
 	}
 
-	return GetActorLocation();
+	return Result;
 }
 
 float AUSACharacterBase::GetTargetableCapsuleRadius()
@@ -2159,19 +2181,9 @@ void AUSACharacterBase::UpdateCurrentTargetableActor_Instant()
 	UpdateCurrentTargetableActor();
 }
 
-bool AUSACharacterBase::GetIsTargeting()
-{
-	return IsValid (CurrentTargetableActor) || IsValid(CurrentTargetableActor_Instant);
-}
-
 FVector AUSACharacterBase::GetTargetingDirection()
 {
 	FVector Result = GetActorForwardVector();
-
-	if (GetIsTargeting() == false)
-	{
-		return Result;
-	}
 
 	if (IsValid(CurrentTargetableActor) == true)
 	{
@@ -2180,6 +2192,10 @@ FVector AUSACharacterBase::GetTargetingDirection()
 	else if (IsValid(CurrentTargetableActor_Instant) == true)
 	{
 		Result = (CurrentTargetableActor_Instant->GetActorLocation() - GetActorLocation());
+	}
+	else
+	{
+		return Result;
 	}
 
 	Result.Normalize();
@@ -2188,21 +2204,7 @@ FVector AUSACharacterBase::GetTargetingDirection()
 
 FVector AUSACharacterBase::GetTargetingDirection2D()
 {
-	FVector Result = GetActorForwardVector();
-
-	if (GetIsTargeting() == false)
-	{
-		return Result;
-	}
-
-	if (IsValid(CurrentTargetableActor) == true)
-	{
-		Result = (CurrentTargetableActor->GetActorLocation() - GetActorLocation());
-	}
-	else if (IsValid(CurrentTargetableActor_Instant) == true)
-	{
-		Result = (CurrentTargetableActor_Instant->GetActorLocation() - GetActorLocation());
-	}
+	FVector Result = GetTargetingDirection();
 
 	Result.Z = 0.0f;
 	Result.Normalize();
@@ -2212,11 +2214,6 @@ FVector AUSACharacterBase::GetTargetingDirection2D()
 FVector AUSACharacterBase::GetTargetableActorLocation()
 {
 	FVector Result = GetActorLocation();
-
-	if (GetIsTargeting() == false)
-	{
-		return Result;
-	}
 
 	if (IsValid(CurrentTargetableActor) == true)
 	{

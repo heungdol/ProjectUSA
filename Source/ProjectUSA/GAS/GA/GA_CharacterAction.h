@@ -10,8 +10,6 @@
 #include "GAS/AT/AT_TraceAttack.h"
 #include "GAS/AT/AT_ChangeCharacterMovementInfo.h"
 
-//#include "Interface/USATargetableInterface.h"
-
 #include "Enum/USAEnums.h"
 
 #include "GA_CharacterAction.generated.h"
@@ -25,7 +23,6 @@ class PROJECTUSA_API UGA_CharacterAction : public UUSAGameplayAbility
 	GENERATED_BODY()
 	
 public:
-
 
 	//
 
@@ -55,24 +52,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
 	FGameplayTag InterruptGameplayTag;
-
-	//
-
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
-	//ECharacterActionEndType InterruptType = ECharacterActionEndType::WaitTagAdded;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
-	//float InterruptDelay = 0.0f;
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Action Interrupt")
-	//FGameplayTag InterruptGameplayTag;
-
-
-	//bool bIsInterruptDelayOver = false;
-	//bool bIsInterruptCondtion = false;
-
-	//FTimerHandle TimerHandleInterruptDelay;
 
 	//
 
@@ -161,9 +140,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
 	struct FAttackTraceInfos AttackTraceData;
 
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attack")
-	//bool bHasToAttachedAllWeaponToHolder = false;
-
 	//
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: Attribute")
@@ -172,11 +148,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Action Info: Attribute")
 	bool bIsAppliedArmorAttribute = false;
 	
-	//
-
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Action Info: USA Jelly Effect")
-	//TMap<float, TSubclassOf<class UUSAJellyEffectData>*>  USAJellyEffectData;
-
 	//
 
 public:
@@ -215,11 +186,4 @@ protected:
 	UFUNCTION()
 	void ResetArmorAttributeToBase();
 
-	// ========================================================================
-
-	//UFUNCTION()
-	//void SetInterruptDelayOver();
-
-	//UFUNCTION()
-	//void SetInterruptCondition();
 };

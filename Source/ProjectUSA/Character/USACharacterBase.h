@@ -384,12 +384,13 @@ public:
 	virtual void UpdateCurrentTargetableActor_Instant();
 	virtual void UpdateCurrentTargetableActor();
 
-	virtual bool GetIsTargeting() override;
+	virtual IUSATargetableInterface* GetTargetableInterface() override;
+	virtual class UUSACharacterAttackComponent* GetUSACharacterAttackComponent() override;
+	
 	virtual FVector GetTargetingDirection() override;
 	virtual FVector GetTargetingDirection2D() override;
 	virtual FVector GetTargetableActorLocation() override;
-	virtual IUSATargetableInterface* GetTargetableInterface() override;
-	virtual class UUSACharacterAttackComponent* GetUSACharacterAttackComponent() override;
+
 	//
 
 	virtual void StartCameraShake_HitSuccess(TSubclassOf<class UDamageType> DamageType);
@@ -542,9 +543,11 @@ protected:
 
 	virtual bool GetIsTargetableCurrently() override;
 
-	virtual FVector GetTargetablePivotlocation() override;
+	//virtual FVector GetTargetablePivotlocation() override;
 
-	virtual FVector GetTargetableToplocation() override;
+	//virtual FVector GetTargetableToplocation() override;
+
+	virtual FVector GetTargetableLocationByPivotType(const ETargetablePivotType& InPivotType) override;
 
 	virtual float GetTargetableCapsuleRadius() override;
 

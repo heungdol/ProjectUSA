@@ -51,17 +51,6 @@ AUSAAttackActor::AUSAAttackActor()
 void AUSAAttackActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	//if (UKismetSystemLibrary::IsServer(GetWorld()) == false
-	//	&& UKismetSystemLibrary::IsStandalone(GetWorld()) == false)
-	//{
-	//	return;
-	//}
-
-	//if (IsValid(AttackProjectileMovementComponent) == true)
-	//{
-	//	AttackProjectileMovementComponent->InitialSpeed = AttackMoveSpeed;
-	//}
 
 	if (GetWorld()->GetAuthGameMode())
 	{
@@ -143,21 +132,6 @@ void AUSAAttackActor::TryToGiveDamageToActor(AActor* InActor, const FHitResult& 
 	{
 		bIsHittingStaticMeshActor = true;
 	}
-
-	//
-
-	//if (bIsDetectingStaticMesh == true
-	//	&& SweepResult.Component->GetCollisionObjectType() != ECollisionChannel::ECC_WorldStatic)
-	//{
-	//	return;
-	//}
-
-	//
-
-	//if (bIsUsingSingleTrace == true)
-	//{
-	//	Destroy();
-	//}
 }
 
 // Called every frame
@@ -178,60 +152,6 @@ void AUSAAttackActor::Tick(float DeltaTime)
 		return;
 	}
 
-	// 싱글 트래이스
-	//if (bIsUsingSingleTrace == true)
-	//{
-	//	// Pawn
-	//	FHitResult HitResult;
-	//	UKismetSystemLibrary::SphereTraceSingle
-	//	(GetWorld(),
-	//		PrevLocation,
-	//		CurrentLocation,
-	//		TraceRadius,
-	//		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Pawn),
-	//		false,
-	//		OutActors,
-	//		EDrawDebugTrace::ForDuration,
-	//		HitResult,
-	//		true,
-	//		FLinearColor::Red,
-	//		FLinearColor::Green,
-	//		0.1f);
-
-	//	if (HitResult.bBlockingHit == true)
-	//	{
-	//		TryToGiveDamageToActor(HitResult.GetActor(), HitResult);
-	//	}
-
-	//	if (bIsDetectingStaticMesh == true)
-	//	{
-	//		// WorldStatic
-	//		//FHitResult HitResult;
-	//		UKismetSystemLibrary::SphereTraceSingle
-	//		(GetWorld(),
-	//			PrevLocation,
-	//			CurrentLocation,
-	//			TraceRadius,
-	//			UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_WorldStatic),
-	//			false,
-	//			OutActors,
-	//			EDrawDebugTrace::ForDuration,
-	//			HitResult,
-	//			true,
-	//			FLinearColor::Red,
-	//			FLinearColor::Green,
-	//			0.1f);
-
-	//		if (HitResult.bBlockingHit == true
-	//			&& (IsValid(Cast<AStaticMeshActor>(HitResult.GetActor())) == true 
-	//				|| IsValid(Cast<ABrush>(HitResult.GetActor())) == true))
-	//		{
-	//			TryToGiveDamageToActor(HitResult.GetActor(), HitResult);
-	//		}
-	//	}
-	//}
-	////// 멀티 트래이스
-	//else
 	{
 		// Pawn
 		TArray<FHitResult> HitResults;
@@ -268,39 +188,6 @@ void AUSAAttackActor::Tick(float DeltaTime)
 				break;
 			}
 		}
-
-		// WorldStatic
-		//TArray<FHitResult> HitResults;
-		//HitResults.Reset();
-		//if (bIsDetectingStaticMesh == true)
-		//{
-		//	UKismetSystemLibrary::SphereTraceMulti
-		//	(GetWorld(),
-		//		PrevLocation,
-		//		CurrentLocation,
-		//		TraceRadius,
-		//		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_WorldStatic),
-		//		false,
-		//		OutActors,
-		//		EDrawDebugTrace::ForDuration,
-		//		HitResults,
-		//		true,
-		//		FLinearColor::Red,
-		//		FLinearColor::Green,
-		//		0.1f);
-
-		//	for (FHitResult HitResultOne : HitResults)
-		//	{
-		//		AActor* HitActor = HitResultOne.GetActor();
-		//		//UPrimitiveComponent* HitComponent = HitResultOne.GetComponent();
-
-		//		if (HitResultOne.bBlockingHit == true)
-		//		{
-		//			Destroy();
-		//			break;
-		//		}
-		//	}
-		//}
 	}
 
 	PrevLocation = CurrentLocation;

@@ -18,9 +18,11 @@ class PROJECTUSA_API AUSATargetingCameraActor : public AActor
 	
 public:
 
-	FORCEINLINE FViewTargetTransitionParams GetBeginViewTargetTransitionParams() { return BeginViewTargetTransitionParams; }
+	FORCEINLINE const FViewTargetTransitionParams& GetBeginViewTargetTransitionParams() const
+	{ return BeginViewTargetTransitionParams; }
 
-	FORCEINLINE FViewTargetTransitionParams GetEndViewTargetTransitionParams() { return EndViewTargetTransitionParams; }
+	FORCEINLINE const FViewTargetTransitionParams& GetEndViewTargetTransitionParams() const 
+	{ return EndViewTargetTransitionParams; }
 
 protected:
 
@@ -125,10 +127,10 @@ public:
 	//void SetOnOff(bool InBool);
 	
 	UFUNCTION(BlueprintCallable)
-	void SetSourceActor(AActor* InActor);
+	void SetSourceActor(AActor* const InActor);
 	
 	UFUNCTION(BlueprintCallable)
-	void SetTargetActor(AActor* InActor);
+	void SetTargetActor(AActor* const InActor);
 
 protected:
 	void CalculateTargetingCameraTransform();

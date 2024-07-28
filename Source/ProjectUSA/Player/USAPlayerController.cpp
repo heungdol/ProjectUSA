@@ -29,15 +29,6 @@ void AUSAPlayerController::BeginPlay()
     UUSAGameInstance* USAGameInstance = Cast <UUSAGameInstance>(GetGameInstance());
     AUSAPlayerState* USAPlayerState = GetPlayerState<AUSAPlayerState>();
 
-    // 시작시 호출
-    //if (IsLocalController() == true)
-    //{
-    //    if (USACharacterOwner && USAPlayerState && USAGameInstance)
-    //    {
-    //        USACharacterOwner->ChangeCharacterName(USAGameInstance->GetPlayerNickByIndex(USAPlayerState->GetPlayerIndex()));
-    //    }
-    //}
-
     // HUD 가져오기
     LocalUSAHUD = Cast<AUSAHUD>(GetHUD());
 }
@@ -63,11 +54,6 @@ void AUSAPlayerController::BeginPlayingState()
         {
             USACharacterOwner->SetCurrentWeaponsUsingStartWeaponClassList();
         }
-
-        //if (USACharacterOwner && USAPlayerState && USAGameInstance)
-        //{
-        //    USACharacterOwner->ChangeCharacterName(USAGameInstance->GetPlayerNickByIndex(USAPlayerState->GetPlayerIndex()));
-        //}
 
         if (USACharacterOwner && USAHUD)
         {

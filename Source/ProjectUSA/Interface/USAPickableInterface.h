@@ -26,9 +26,4 @@ public:
 	virtual bool PickUpByUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter) = 0;
 
 	virtual void PlayPickUpAnimationMontageInUSACharacter(class UAbilitySystemComponent* InASC, class AUSACharacterBase* InCharacter) = 0;
-
-	//virtual void SetPickableActorOwner(class AUSACharacterBase* InCharacter) = 0;
-
-	//virtual void OnRep_PickableActorOwner(class AUSACharacterBase* PrevCharacter) = 0;
-
 };

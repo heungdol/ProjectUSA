@@ -177,6 +177,8 @@ void UAT_TraceAttack::AttackTraceAndSetNextTimer()
 
 				TSubclassOf<UDamageType> AttackDamageType = AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackDamageType;
 				FPointDamageEvent AttackDamageEvent = FPointDamageEvent(AttackDamage, HitResult, AttackDirection, AttackDamageType);
+				//FDamageEvent AttackDamageEvent = FDamageEvent(AttackDamageType);
+
 
 				USADamageableInterface->ApplyDamageHitNiagaraEffect(MyCharacter->GetController(), MyCharacter,
 					AttackTraceData->AttackTraceInfos[CurrentAttackTraceIndex].AttackHitNiagaraSystemObject,

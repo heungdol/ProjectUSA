@@ -29,14 +29,4 @@ protected:
 
 	virtual void BeginPlayingState() override;
 
-//public:
-//	UFUNCTION(BlueprintCallable)
-//	void PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw);
-//
-//	UFUNCTION(Server, Reliable)
-//	void ServerRPC_PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw);
-//
-//	UFUNCTION(NetMulticast, Reliable)
-//	void MulticastRPC_PlayUserWidgetAnimation_Panel(bool bIsShowing, bool bIsRaw);
-
 };

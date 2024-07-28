@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+
+#include "Enum/USAEnums.h"
+
 #include "USATargetableInterface.generated.h"
+
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -24,11 +28,12 @@ class PROJECTUSA_API IUSATargetableInterface
 public:
 	virtual bool GetIsTargetableCurrently() = 0;
 	
-	virtual FVector GetTargetablePivotlocation() = 0;
+	//virtual FVector GetTargetablePivotlocation() = 0;
 
-	virtual FVector GetTargetableToplocation() = 0;
+	//virtual FVector GetTargetableToplocation() = 0;
+
+	virtual FVector GetTargetableLocationByPivotType(const ETargetablePivotType& InPivotType) = 0;
 
 	virtual float GetTargetableCapsuleRadius() = 0;
-
 
 };

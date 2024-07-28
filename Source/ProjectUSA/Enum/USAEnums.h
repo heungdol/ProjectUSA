@@ -60,10 +60,22 @@ enum class ECharacterActionDirectionType : uint8
 //	Second = 2 UMETA(DisplayName = "Second"),
 //};
 
+
+// TODO: 추후 활용 및 삭제여부 결정할 것
+//UENUM(BlueprintType)
+//enum class ECharacterTeam : uint8
+//{
+//	None UMETA(DisplayName = "None"),
+//	Player UMETA(DisplayName = "Player"),
+//	Enemy UMETA(DisplayName = "Enemy"),
+//};
+
+// =================================================================
+
 UENUM(BlueprintType)
-enum class ECharacterTeam : uint8
+enum class ETargetablePivotType : uint8
 {
-	None UMETA(DisplayName = "None"),
-	Player UMETA(DisplayName = "Player"),
-	Enemy UMETA(DisplayName = "Enemy"),
+	Bottom UMETA(DisplayName = "Bottom"),
+	Center UMETA(DisplayName = "Center"),
+	Top UMETA(DisplayName = "Top"),
 };

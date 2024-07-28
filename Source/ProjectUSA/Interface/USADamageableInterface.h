@@ -25,7 +25,6 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) = 0;
 
-	//virtual USceneComponent* GetDamageMesh() = 0;
-
-	virtual void ApplyDamageHitNiagaraEffect(class AController* EventInstigator, class AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, bool bIsOffset) = 0;
+	virtual void ApplyDamageHitNiagaraEffect
+	(class AController* EventInstigator, class AActor* DamageCauser, class UNiagaraSystem* SystemTemplate, bool bIsOffset) = 0;
 };

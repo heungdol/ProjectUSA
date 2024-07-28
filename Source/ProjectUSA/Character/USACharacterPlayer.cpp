@@ -544,14 +544,8 @@ void AUSACharacterPlayer::KeepTargeting()
 		return;
 	}
 
-	//if (PlayerController
-	//	&& TargetingCameraActor != nullptr)
-	//{
-	//	PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
-	//}
-
-	FVector SourceLocation = GetActorLocation();
-	FVector TargetLocation = CurrentTargetableActor->GetActorLocation();
+	const FVector& SourceLocation = GetActorLocation();
+	const FVector& TargetLocation = CurrentTargetableActor->GetActorLocation();
 
 	if ((SourceLocation-TargetLocation).SquaredLength() > TargetableActorRange * TargetableActorRange)
 	{
@@ -600,12 +594,6 @@ void AUSACharacterPlayer::FinishTargeting()
 	TargetingCameraActor->SetSourceActor(this);
 	TargetingCameraActor->SetTargetActor(nullptr);
 
-	//if (PlayerController
-//	&& TargetingCameraActor != nullptr)
-//{
-//	PlayerController->SetControlRotation(TargetingCameraActor->GetActorRotation());
-//}
-
 	if (LocalPlayerController != nullptr
 		&& CameraSpringArmComponent != nullptr
 		&& TargetingCameraActor != nullptr
@@ -621,7 +609,6 @@ void AUSACharacterPlayer::FinishTargeting()
 
 	TargetingCameraActor->SetTargetActor(nullptr);
 	CurrentTargetableActor = nullptr;
-
 
 	ManageAllCamera();
 }

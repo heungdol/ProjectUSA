@@ -40,13 +40,6 @@ EBTNodeResult::Type UBTT_ActivateGA::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	AbilitySpec = ASC->BuildAbilitySpecFromClass(InGameplayAbilityClass, InLevel, InInputID);
 	FGameplayAbilitySpecHandle GameplayAbilitySpecHandle = ASC->GiveAbility(AbilitySpec);
 
-	////AbilitySpec.GetPrimaryInstance()->OnGameplayAbilityCancelled.AddUObject(this, &UBTT_GiveAndActivateGA::OnAbilityCancelCallback);
-	////AbilitySpec.GetPrimaryInstance()->OnGameplayAbilityEnded.AddUObject(this, &UBTT_GiveAndActivateGA::OnAbilityEndCallback);
-
-	////ASC->TryActivateAbility(GameplayAbilitySpecHandle);
-
-	//ASC->GiveAbilityAndActivateOnce(AbilitySpec);
-
 	ASC->TryActivateAbility(GameplayAbilitySpecHandle);
 
 	bIsSetDelegates = false;
@@ -74,7 +67,6 @@ void UBTT_ActivateGA::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMem
 	}
 
 }
-
 
 void UBTT_ActivateGA::OnAbilityCancelCallback()
 {

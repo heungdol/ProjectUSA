@@ -75,36 +75,13 @@ public:
 
 	//
 
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartTargetingCamera", ScriptName = "OnStartTargetingCamera"))
-	//void K2_OnStartTargeting();
-
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnKeepTargetingCamera", ScriptName = "OnStartTargetingCamera"))
-	//void K2_OnKeepTargeting();
-	
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishTargetingCamera", ScriptName = "OnFinishTargetingCamera"))
-	//void K2_OnFinishTargeting();
-
-	//
-
 	void StartPlacedCamera(AUSAPlacedCameraActor* InActor);
 	
 	void FinishPlacedCamera(AUSAPlacedCameraActor* InActor);
 	
 	//
 
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartPlacedCamera", ScriptName = "OnStartPlacedCamera"))
-	//void K2_OnStartPlacedCamera();
-
-
-	//
-
 	void ManageAllCamera();
-
-	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnFinishPlacedCamera", ScriptName = "OnFinishPlacedCamera"))
-	//void K2_OnFinishPlacedCamera();
-
-
-	//virtual void DoDrop(const struct FInputActionValue& Value) override;
 
 	//
 

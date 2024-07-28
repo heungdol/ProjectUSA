@@ -34,24 +34,4 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	float GetCharacterCurrentHealthRatio();
 
-	//UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = MyInterface)
-	//float GetCharacterCurrentHealth();
-
-	//UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = MyInterface)
-	//float GetCharacterMaxHealth();
-
-	//UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = MyInterface)
-	//float GetCharacterCurrentArmor();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Character Interface")
-	float BP_GetCharacterCurrentHealth();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Character Interface")
-	float BP_GetCharacterMaxHealth();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Character Interface")
-	float BP_GetCharacterCurrentArmor();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Character Interface")
-	float BP_GetCharacterCurrentHealthRatio();
 };

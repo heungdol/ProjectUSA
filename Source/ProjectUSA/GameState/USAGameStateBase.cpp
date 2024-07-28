@@ -169,7 +169,7 @@ void AUSAGameStateBase::MulticastRPC_PlayLevelSequence_Implementation(ALevelSequ
 		K2_ResetLevelSequence(true, true);
 
 		return;
-	}
+	}	
 
 	K2_PlayLevelSequence(InLevelSequence);
 }

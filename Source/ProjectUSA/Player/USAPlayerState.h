@@ -26,17 +26,6 @@ public:
 	UPROPERTY()
 	TObjectPtr <class UUSAAttributeSet> AttributeSet;
 
-	//UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "USA Player Controller")
-	//int32 PlayerIndex;
-
-	//void SetPlayerIndex(int32 InIndex);
-
-	//FORCEINLINE int32 GetPlayerIndex() { return PlayerIndex; }
-	
-	//UFUNCTION()
-	//void OnRep_PlayerIndex();
-
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Option")
 	float LookSensitivityMouseRatio = 1.0f;
 

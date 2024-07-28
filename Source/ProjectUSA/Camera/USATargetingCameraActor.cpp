@@ -66,12 +66,12 @@ void AUSATargetingCameraActor::Tick(float DeltaTime)
 //	CalculateTargetingCameraTransform();
 //}
 
-void AUSATargetingCameraActor::SetSourceActor(AActor* InActor)
+void AUSATargetingCameraActor::SetSourceActor(AActor* const InActor)
 {
 	SourceActor = InActor;
 }
 
-void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
+void AUSATargetingCameraActor::SetTargetActor(AActor* const InActor)
 {
 	TargetActor = InActor;
 
@@ -105,11 +105,6 @@ void AUSATargetingCameraActor::SetTargetActor(AActor* InActor)
 
 void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 {
-	//if (bIsOn == false)
-	//{
-	//	return;
-	//}
-
 	if (SourceActor == nullptr
 		|| Cast<IUSATargetableInterface>(SourceActor) == nullptr)
 	{
@@ -125,10 +120,15 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 		return;
 	}
 
-	FVector CameraLocation = CameraComponent->GetComponentLocation();
+	const FVector& CameraLocation = CameraComponent->GetComponentLocation();
 
-	FVector SourceLocation = Cast<IUSATargetableInterface>(SourceActor)->GetTargetablePivotlocation();
-	FVector TargetLocation = Cast<IUSATargetableInterface>(TargetActor)->GetTargetablePivotlocation();
+	const FVector& SourceLocation 
+		= Cast<IUSATargetableInterface>(SourceActor)
+		->GetTargetableLocationByPivotType(ETargetablePivotType::Center);
+
+	const FVector& TargetLocation 
+		= Cast<IUSATargetableInterface>(TargetActor)
+		->GetTargetableLocationByPivotType(ETargetablePivotType::Center);
 
 	//
 
@@ -139,44 +139,42 @@ void AUSATargetingCameraActor::CalculateTargetingCameraTransform()
 	ResultDirection.Normalize();
 
 	SetActorLocation(ResultLocation);
-
-	//
-
+	
 	float BetweenDistance = (SourceLocation - TargetLocation).Length();
 
-	//if (BetweenDistance > MinUpdateRange /** MinUpdateRange*/)
+	FVector ResultDirection2D = TargetLocation - SourceLocation;
+	ResultDirection2D.Z = 0.0f;
+
+	FRotator ResultRotator = ResultDirection2D.Rotation();
+	ResultRotator.Yaw += OffsetRotationYaw;
+	ResultRotator.Pitch = FMath::Clamp(ResultDirection.Rotation().Pitch, MinRotationPitch, MaxRotationPitch);
+
+	if (ResultRotator.Pitch > PivotRotationPitch)
 	{
-		FVector ResultDirection2D = TargetLocation - SourceLocation;
-		ResultDirection2D.Z = 0.0f;
-
-		FRotator ResultRotator = ResultDirection2D.Rotation();
-		ResultRotator.Yaw += OffsetRotationYaw;
-		ResultRotator.Pitch = FMath::Clamp(ResultDirection.Rotation().Pitch, MinRotationPitch, MaxRotationPitch);
-
-		if (ResultRotator.Pitch > PivotRotationPitch)
-		{
-			ResultRotator.Pitch = UKismetMathLibrary::MapRangeClamped
-				(ResultRotator.Pitch, PivotRotationPitch, MaxRotationPitch, 0, MaxRotationPitch);
-		}
-		else
-		{
-			ResultRotator.Pitch = UKismetMathLibrary::MapRangeClamped
-			(ResultRotator.Pitch, MinRotationPitch, PivotRotationPitch, MinRotationPitch, 0);
-		}
-
-		SetActorRotation(ResultRotator);
+		ResultRotator.Pitch = UKismetMathLibrary::MapRangeClamped
+			(ResultRotator.Pitch, PivotRotationPitch, MaxRotationPitch, 0, MaxRotationPitch);
 	}
+	else
+	{
+		ResultRotator.Pitch = UKismetMathLibrary::MapRangeClamped
+		(ResultRotator.Pitch, MinRotationPitch, PivotRotationPitch, MinRotationPitch, 0);
+	}
+
+	SetActorRotation(ResultRotator);
 
 	//
 
 	if (CameraFocusStaticMeshHolder && TargetActor)
 	{
-		CameraFocusStaticMeshHolder->SetWorldLocation(Cast<IUSATargetableInterface>(TargetActor)->GetTargetableToplocation());
+		CameraFocusStaticMeshHolder->SetWorldLocation
+			(
+				Cast<IUSATargetableInterface>(TargetActor)
+				->GetTargetableLocationByPivotType(ETargetablePivotType::Top)
+			);
 	}
 
-	float DesiredFOV = UKismetMathLibrary::MapRangeClamped
+	// DesiredFOV
+	CameraComponent->FieldOfView = UKismetMathLibrary::MapRangeClamped
 	(BetweenDistance, MinDistanceForFOV, MaxDistanceForFOV, MinFOVOffset, MaxFOVOffset);
-
-	CameraComponent->FieldOfView = DesiredFOV;
 }
 
